@@ -5,6 +5,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import {
   Tooltip,
   TooltipTrigger,
@@ -160,19 +161,28 @@ export function ChatModeSelector() {
             </div>
           </SelectItem>
           {!isProEnabled && !isSubscription && (
-            <SelectItem value="local-agent" disabled={isQuotaExceeded}>
+            <SelectItem
+              value="local-agent"
+              disabled={PAID_FEATURES_ENABLED && isQuotaExceeded}
+            >
               <div className="flex flex-col items-start">
                 <div className="flex items-center gap-1.5">
                   <Bot size={14} className="text-muted-foreground" />
-                  <span className="font-medium">Basic Agent</span>
-                  <span className="text-xs text-muted-foreground">
-                    {`(${isQuotaExceeded ? "0" : messagesRemaining}/${messagesLimit} remaining for today)`}
+                  <span className="font-medium">
+                    {PAID_FEATURES_ENABLED ? "Basic Agent" : "Agent"}
                   </span>
+                  {PAID_FEATURES_ENABLED && (
+                    <span className="text-xs text-muted-foreground">
+                      {`(${isQuotaExceeded ? "0" : messagesRemaining}/${messagesLimit} remaining for today)`}
+                    </span>
+                  )}
                 </div>
                 <span className="text-xs text-muted-foreground ml-[22px]">
-                  {isQuotaExceeded
-                    ? "Daily limit reached"
-                    : "Try our AI agent for free"}
+                  {!PAID_FEATURES_ENABLED
+                    ? "Builds and edits your app step by step"
+                    : isQuotaExceeded
+                      ? "Daily limit reached"
+                      : "Try our AI agent for free"}
                 </span>
               </div>
             </SelectItem>

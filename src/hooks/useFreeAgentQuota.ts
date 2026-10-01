@@ -4,6 +4,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useSettings } from "./useSettings";
 import { isDyadProEnabled } from "@/lib/schemas";
 import { FREE_AGENT_QUOTA_LIMIT } from "@/lib/free_agent_quota_limit";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 // In test mode, use very short staleTime for faster E2E tests
@@ -31,7 +32,8 @@ export function useFreeAgentQuota() {
     queryKey: queryKeys.freeAgentQuota.status,
     queryFn: () => ipc.freeAgentQuota.getFreeAgentQuotaStatus(),
     // Only fetch for non-Pro users
-    enabled: !isPro && !!settings,
+    // Cimes has no quota (no paid tier), so never poll it.
+    enabled: PAID_FEATURES_ENABLED && !isPro && !!settings,
     // Refetch periodically to check for quota reset
     refetchInterval: THIRTY_MINUTES_IN_MS,
     // Consider stale after 30 seconds (500ms in test mode for faster E2E tests)

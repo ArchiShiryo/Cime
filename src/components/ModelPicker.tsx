@@ -31,6 +31,7 @@ import { usePostHog } from "posthog-js/react";
 import { useLocalModels } from "@/hooks/useLocalModels";
 import { useLocalLMSModels } from "@/hooks/useLMStudioModels";
 import { useLanguageModelsByProviders } from "@/hooks/useLanguageModelsByProviders";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 
 import { ipc, type LanguageModel, type LocalModel } from "@/ipc/types";
 import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
@@ -489,7 +490,10 @@ export function ModelPicker() {
 
   // Get auto provider models (if any)
   const catalogAutoModels =
-    !loading && modelsByProviders && modelsByProviders["auto"]
+    PAID_FEATURES_ENABLED &&
+    !loading &&
+    modelsByProviders &&
+    modelsByProviders["auto"]
       ? modelsByProviders["auto"].filter((model) => {
           if (model.apiName === FREE_PRO_MODEL_NAME) {
             return dyadProEnabled && !isTrial && !isLoadingTrialStatus;
@@ -882,9 +886,12 @@ export function ModelPicker() {
     });
   };
 
-  const unlockTargetIsFreeModel = unlockTarget
-    ? isFreeOpenRouterModelName(unlockTarget.model.apiName)
-    : false;
+  // Without paid features every locked model just needs the user's own key.
+  const unlockTargetIsFreeModel =
+    !PAID_FEATURES_ENABLED ||
+    (unlockTarget
+      ? isFreeOpenRouterModelName(unlockTarget.model.apiName)
+      : false);
   const unlockTargetProviderName = unlockTarget
     ? getProviderDisplayName(unlockTarget.providerId)
     : "";
@@ -1159,7 +1166,7 @@ export function ModelPicker() {
         key={modelKey}
         {...commonProps}
         aria-label={
-          isFreeProviderRow
+          isFreeProviderRow || !PAID_FEATURES_ENABLED
             ? `${model.displayName} — requires an API key from ${getProviderDisplayName(providerId)}`
             : `${model.displayName} — requires Dyad Pro or an API key from ${getProviderDisplayName(providerId)}`
         }
@@ -1904,7 +1911,7 @@ export function ModelPicker() {
             )}
 
             {/* Upgrade footer for non-Pro users */}
-            {!isTrial && !dyadProEnabled && (
+            {PAID_FEATURES_ENABLED && !isTrial && !dyadProEnabled && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -1948,7 +1955,7 @@ export function ModelPicker() {
                   {unlockTargetProviderName} API key
                 </DialogTitle>
                 <DialogDescription>
-                  Free models run through your own {unlockTargetProviderName}{" "}
+                  This model runs through your own {unlockTargetProviderName}{" "}
                   account. Add an API key in provider settings to use this
                   model.
                 </DialogDescription>

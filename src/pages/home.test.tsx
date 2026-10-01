@@ -2,6 +2,15 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage from "./home";
 
+// Upstream Dyad behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
+
 const mocks = vi.hoisted(() => ({
   attachments: [] as any[],
   effectiveDefaultChatMode: "build",
@@ -133,6 +142,20 @@ describe("HomePage first-prompt projection", () => {
     mocks.send.mockReturnValue(true);
     mocks.settings = { selectedChatMode: "build" };
     mocks.updateSettings.mockReset();
+  });
+
+  it("shows no Pro upgrade or paid AI setup entry in Cimes", () => {
+    branding.paid = false;
+    try {
+      render(<HomePage />);
+      expect(
+        screen.queryByRole("button", { name: /Upgrade to Pro/ }),
+      ).toBeNull();
+      expect(screen.queryByText("Manage AI setup")).toBeNull();
+      expect(screen.queryByText(/Connect AI to build/)).toBeNull();
+    } finally {
+      branding.paid = true;
+    }
   });
 
   it("opens the Pro page with home upgrade tracking from the upgrade button", () => {

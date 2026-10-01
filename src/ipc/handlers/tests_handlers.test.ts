@@ -1411,7 +1411,7 @@ describe("tests handlers", () => {
       // The prepare stage decides whether to skip the clean install from these;
       // the run stage builds the server command from its own row. Cleared
       // between the two and the workspace has no node_modules while the runtime
-      // takes the Dyad-managed `npm run dev` branch.
+      // takes the Cimes-managed `npm run dev` branch.
       const appId = seedApp("app");
       harness.db
         .update(apps)

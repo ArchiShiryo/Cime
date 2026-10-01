@@ -40,6 +40,7 @@ export function useAlbert() {
   return {
     status: statusQuery.data,
     isLoading: statusQuery.isLoading,
+    isError: statusQuery.isError,
     connect: connectMutation,
     testConnection: testMutation,
     disconnect: disconnectMutation,

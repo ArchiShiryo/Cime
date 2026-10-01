@@ -1,4 +1,6 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, app } from "electron";
+import fs from "node:fs";
+import path from "node:path";
 import log from "electron-log";
 import { buildSplashHtml } from "./splash_html";
 
@@ -7,16 +9,41 @@ const logger = log.scope("splash");
 const SPLASH_WIDTH = 900;
 const SPLASH_HEIGHT = 560;
 // Keep the splash up long enough to be read instead of flashing.
-const MIN_VISIBLE_MS = 2_000;
-// Never leave the user stuck behind a splash if the renderer never signals.
-const MAX_WAIT_MS = 20_000;
+const MIN_VISIBLE_MS = 2_500;
+// If the renderer never says it rendered, reveal this long after its page
+// finished loading anyway.
+const AFTER_LOAD_FALLBACK_MS = 8_000;
+// Never leave the user stuck behind a splash.
+const MAX_WAIT_MS = 30_000;
+
+let rendererReadyListener: (() => void) | null = null;
+let rendererReadyBeforeListener = false;
+
+/**
+ * Called (through IPC) once the renderer has painted the real app, so the
+ * main window is never revealed as an empty page.
+ */
+export function notifyRendererReady(): void {
+  if (rendererReadyListener) {
+    rendererReadyListener();
+  } else {
+    rendererReadyBeforeListener = true;
+  }
+}
 
 export interface Splash {
   /**
-   * Shows `target` and closes the splash once `target` is ready (and the
-   * splash has been visible for a minimum time), or after a safety timeout.
+   * Shows `target` and closes the splash once the renderer reported it has
+   * rendered (and the splash has been visible for a minimum time), with
+   * fallbacks so the app always opens.
    */
   revealWhenReady(target: BrowserWindow): void;
+}
+
+function writeSplashFile(): string {
+  const file = path.join(app.getPath("temp"), "cimes-splash.html");
+  fs.writeFileSync(file, buildSplashHtml(), "utf8");
+  return file;
 }
 
 export function showSplash(): Splash | null {
@@ -31,7 +58,9 @@ export function showSplash(): Splash | null {
       maximizable: false,
       fullscreenable: false,
       center: true,
-      show: false,
+      // Shown right away (white background) so it is visible even before the
+      // images decode.
+      show: true,
       skipTaskbar: true,
       backgroundColor: "#ffffff",
       title: "Cimes",
@@ -41,40 +70,48 @@ export function showSplash(): Splash | null {
         sandbox: true,
       },
     });
-    const shownAt = { value: 0 };
-    splash.once("ready-to-show", () => {
-      shownAt.value = Date.now();
-      splash.show();
-    });
+    const shownAt = Date.now();
     void splash
-      .loadURL(
-        `data:text/html;charset=utf-8,${encodeURIComponent(buildSplashHtml())}`,
-      )
+      .loadFile(writeSplashFile())
       .catch((error) => logger.warn("Splash failed to load:", error));
 
     return {
       revealWhenReady(target) {
         let done = false;
-        const finish = () => {
+        const timers: ReturnType<typeof setTimeout>[] = [];
+        const clearTimers = () => timers.forEach(clearTimeout);
+        const finish = (reason: string) => {
           if (done) return;
           done = true;
-          clearTimeout(safetyTimer);
+          rendererReadyListener = null;
+          clearTimers();
+          logger.info(`revealing main window (${reason})`);
           if (!target.isDestroyed()) {
             target.show();
             target.focus();
           }
           if (!splash.isDestroyed()) splash.close();
         };
-        const safetyTimer = setTimeout(finish, MAX_WAIT_MS);
-        const onReady = () => {
-          const elapsed = shownAt.value ? Date.now() - shownAt.value : 0;
-          setTimeout(finish, Math.max(0, MIN_VISIBLE_MS - elapsed));
+        const finishAfterMinimum = (reason: string) => {
+          const wait = Math.max(0, MIN_VISIBLE_MS - (Date.now() - shownAt));
+          timers.push(setTimeout(() => finish(reason), wait));
         };
-        if (target.isDestroyed()) return finish();
-        target.once("ready-to-show", onReady);
+
+        timers.push(setTimeout(() => finish("timeout"), MAX_WAIT_MS));
+        rendererReadyListener = () => finishAfterMinimum("renderer ready");
+        if (rendererReadyBeforeListener) {
+          rendererReadyBeforeListener = false;
+          finishAfterMinimum("renderer ready");
+        }
+        target.webContents.once("did-finish-load", () => {
+          timers.push(
+            setTimeout(() => finish("load fallback"), AFTER_LOAD_FALLBACK_MS),
+          );
+        });
         target.once("closed", () => {
           done = true;
-          clearTimeout(safetyTimer);
+          rendererReadyListener = null;
+          clearTimers();
           if (!splash.isDestroyed()) splash.close();
         });
       },

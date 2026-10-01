@@ -1,4 +1,5 @@
 import { StrictMode, useCallback, useEffect, useState } from "react";
+import { TELEMETRY_ENABLED } from "@/shared/branding";
 import { createRoot } from "react-dom/client";
 import { router } from "./router";
 import { RouterProvider } from "@tanstack/react-router";
@@ -114,12 +115,27 @@ const posthogClient = posthog.init(
   "phc_5Vxx0XT8Ug3eWROhP6mm4D6D2DgIIKT232q4AKxC2ab",
   {
     api_host: "https://us.i.posthog.com",
+    // Cimes: initialized fully disabled so nothing is ever sent (see
+    // TELEMETRY_ENABLED); the before_send guard below is a second barrier.
+    ...(TELEMETRY_ENABLED
+      ? {}
+      : {
+          opt_out_capturing_by_default: true,
+          advanced_disable_flags: true,
+          advanced_disable_decide: true,
+          disable_surveys: true,
+          disable_session_recording: true,
+          disable_external_dependency_loading: true,
+        }),
     // @ts-ignore
     debug: import.meta.env.MODE === "development",
     autocapture: false,
-    capture_exceptions: true,
+    capture_exceptions: TELEMETRY_ENABLED,
     capture_pageview: false,
     before_send: (event) => {
+      if (!TELEMETRY_ENABLED) {
+        return null;
+      }
       if (!isTelemetryOptedIn()) {
         console.debug("Telemetry not opted in, skipping event");
         return null;
@@ -169,7 +185,7 @@ const posthogClient = posthog.init(
       );
       return event;
     },
-    persistence: "localStorage",
+    persistence: TELEMETRY_ENABLED ? "localStorage" : "memory",
   },
 );
 

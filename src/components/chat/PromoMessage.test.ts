@@ -1,4 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Upstream Dyad behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
 import type { UserBudgetInfo } from "@/ipc/types";
 import type { UserSettings } from "@/lib/schemas";
 import {
@@ -72,6 +81,22 @@ describe("shouldShowPromoMessage", () => {
         messagesLength: 2,
       }),
     ).toBe(true);
+  });
+
+  it("never shows in Cimes", () => {
+    branding.paid = false;
+    try {
+      expect(
+        shouldShowPromoMessage({
+          promoSeed: 123,
+          settings: settingsWithAutoKey(),
+          userBudget: null,
+          messagesLength: 2,
+        }),
+      ).toBe(false);
+    } finally {
+      branding.paid = true;
+    }
   });
 
   it("hides when the user has a Pro key or budget", () => {

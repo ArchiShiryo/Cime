@@ -3,6 +3,15 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ChatErrorBox } from "./ChatErrorBox";
 
+// Upstream Dyad behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
+
 const mocks = vi.hoisted(() => ({
   openExternalUrl: vi.fn(),
   isTrial: false as boolean | null,
@@ -175,6 +184,26 @@ describe("ChatErrorBox exhausted credit notice", () => {
       mocks.isTrial = false;
     },
   );
+});
+
+describe("ChatErrorBox in Cimes (no paid features)", () => {
+  it("shows provider rate limits without any Dyad Pro upsell", () => {
+    branding.paid = false;
+    try {
+      render(
+        <ChatErrorBox
+          error="Provider returned error: Resource has been exhausted"
+          isDyadProEnabled={false}
+          onDismiss={vi.fn()}
+          onStartNewChat={vi.fn()}
+        />,
+      );
+      expect(screen.queryByText(/Dyad Pro/)).toBeNull();
+      expect(screen.getByText(/Resource has been exhausted/)).toBeTruthy();
+    } finally {
+      branding.paid = true;
+    }
+  });
 });
 
 describe("ChatErrorBox legacy rejected Pro key", () => {

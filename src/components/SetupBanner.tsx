@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useNavigate } from "@tanstack/react-router";
 import {
   CircleCheck,
@@ -243,7 +244,7 @@ export function SetupBanner({
         </div>
 
         <div className="mt-4 flex w-full flex-col items-center justify-around gap-2 text-xs sm:flex-row">
-          <SetupDyadProButton />
+          {PAID_FEATURES_ENABLED && <SetupDyadProButton />}
           <button
             type="button"
             onClick={() => {

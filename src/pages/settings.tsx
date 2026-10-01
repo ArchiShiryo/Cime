@@ -1,4 +1,5 @@
 import { ShellExperimentSwitch } from "@/components/ShellExperimentSwitch";
+import { PAID_FEATURES_ENABLED, TELEMETRY_ENABLED } from "@/shared/branding";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProviderSettingsGrid } from "@/components/ProviderSettings";
@@ -150,25 +151,27 @@ export default function SettingsPage() {
             <ProviderSettingsGrid />
           </SettingsSection>
 
-          <SettingsSection
-            id={SECTION_IDS.telemetry}
-            title="Telemetry"
-            description="Anonymous usage data that helps improve Dyad."
-          >
-            <div id={SETTING_IDS.telemetry} className="space-y-1.5">
-              <TelemetrySwitch />
-              <p className={hint}>
-                This records anonymous usage data to improve the product.
-              </p>
-            </div>
+          {TELEMETRY_ENABLED && (
+            <SettingsSection
+              id={SECTION_IDS.telemetry}
+              title="Telemetry"
+              description="Anonymous usage data that helps improve Dyad."
+            >
+              <div id={SETTING_IDS.telemetry} className="space-y-1.5">
+                <TelemetrySwitch />
+                <p className={hint}>
+                  This records anonymous usage data to improve the product.
+                </p>
+              </div>
 
-            <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-              <span className="font-medium">Telemetry ID</span>
-              <span className="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-foreground">
-                {settings ? settings.telemetryUserId : "n/a"}
-              </span>
-            </div>
-          </SettingsSection>
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <span className="font-medium">Telemetry ID</span>
+                <span className="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-foreground">
+                  {settings ? settings.telemetryUserId : "n/a"}
+                </span>
+              </div>
+            </SettingsSection>
+          )}
 
           <SettingsSection
             id={SECTION_IDS.integrations}
@@ -375,27 +378,30 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div id={SETTING_IDS.enableCodeExplorer} className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="enable-code-explorer"
-                  aria-label="Enable code explorer (Pro)"
-                  checked={!!settings?.enableCodeExplorer}
-                  onCheckedChange={(checked) => {
-                    updateSettings({
-                      enableCodeExplorer: checked,
-                    });
-                  }}
-                />
-                <Label htmlFor="enable-code-explorer">
-                  Enable code explorer (Pro)
-                </Label>
+            {/* Code explorer is a Dyad Pro feature, hidden in Cimes. */}
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.enableCodeExplorer} className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="enable-code-explorer"
+                    aria-label="Enable code explorer (Pro)"
+                    checked={!!settings?.enableCodeExplorer}
+                    onCheckedChange={(checked) => {
+                      updateSettings({
+                        enableCodeExplorer: checked,
+                      });
+                    }}
+                  />
+                  <Label htmlFor="enable-code-explorer">
+                    Enable code explorer (Pro)
+                  </Label>
+                </div>
+                <p className={hint}>
+                  Let the local agent explore configured TypeScript projects
+                  with a compiler-backed code graph.
+                </p>
               </div>
-              <p className={hint}>
-                Let the local agent explore configured TypeScript projects with
-                a compiler-backed code graph.
-              </p>
-            </div>
+            )}
 
             <RunTypeScriptForWholeProjectSwitch />
 

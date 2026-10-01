@@ -54,7 +54,7 @@ beforeEach(() => {
 
 describe("AlbertOnboarding", () => {
   it("asks only for the API key", () => {
-    renderWithClient(<AlbertOnboarding onSkip={vi.fn()} />);
+    renderWithClient(<AlbertOnboarding />);
     expect(screen.getByText("Connecter Albert")).toBeInTheDocument();
     expect(
       screen.getByText("Entrez votre clé API Albert pour commencer."),
@@ -66,7 +66,7 @@ describe("AlbertOnboarding", () => {
 
   it("connects with the typed key and confirms", async () => {
     mocks.connect.mockResolvedValue(CONNECTED);
-    renderWithClient(<AlbertOnboarding onSkip={vi.fn()} />);
+    renderWithClient(<AlbertOnboarding />);
     await userEvent.type(screen.getByLabelText("Clé API Albert"), "sk-abc");
     await userEvent.click(screen.getByRole("button", { name: "Connecter" }));
     await waitFor(() =>
@@ -81,7 +81,7 @@ describe("AlbertOnboarding", () => {
         "Cette clé Albert n'est pas valide.\nVérifiez-la puis réessayez.",
       ),
     );
-    renderWithClient(<AlbertOnboarding onSkip={vi.fn()} />);
+    renderWithClient(<AlbertOnboarding />);
     const input = screen.getByLabelText("Clé API Albert");
     await userEvent.type(input, "sk-bad");
     await userEvent.click(screen.getByRole("button", { name: "Connecter" }));
@@ -93,13 +93,11 @@ describe("AlbertOnboarding", () => {
     expect(screen.getByRole("button", { name: "Connecter" })).toBeEnabled();
   });
 
-  it("lets the user skip to another provider and open the key help", async () => {
-    const onSkip = vi.fn();
-    renderWithClient(<AlbertOnboarding onSkip={onSkip} />);
+  it("opens the key help and offers no way around the key", async () => {
+    renderWithClient(<AlbertOnboarding />);
     await userEvent.click(screen.getByText("Où trouver ma clé ?"));
     expect(mocks.openExternalUrl).toHaveBeenCalled();
-    await userEvent.click(screen.getByText("Utiliser un autre fournisseur"));
-    expect(onSkip).toHaveBeenCalled();
+    expect(screen.queryByText("Utiliser un autre fournisseur")).toBeNull();
   });
 });
 

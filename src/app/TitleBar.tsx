@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AppAvatar } from "@/components/AppAvatar";
 // @ts-ignore
 import logo from "../../assets/logo.svg";
-import { APP_DISPLAY_NAME } from "@/shared/branding";
+import { APP_DISPLAY_NAME, PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
 import { cn } from "@/lib/utils";
 import { useDeepLink } from "@/contexts/DeepLinkContext";
@@ -142,7 +142,9 @@ export const TitleBar = () => {
             </TooltipTrigger>
             <TooltipContent>{displayText}</TooltipContent>
           </Tooltip>
-          {isDyadPro && <DyadProButton isDyadProEnabled={isDyadProEnabled} />}
+          {PAID_FEATURES_ENABLED && isDyadPro && (
+            <DyadProButton isDyadProEnabled={isDyadProEnabled} />
+          )}
         </div>
 
         <div className="flex-1 min-w-0 overflow-hidden self-end">

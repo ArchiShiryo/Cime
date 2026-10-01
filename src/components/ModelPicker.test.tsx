@@ -9,6 +9,15 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ModelPicker } from "./ModelPicker";
+
+// Upstream Dyad behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
 vi.mock("./SubscriptionModelMenu", () => ({
   SubscriptionModelMenu: ({ children }: { children: React.ReactNode }) =>
     children,
@@ -1669,6 +1678,18 @@ describe("ModelPicker", () => {
       "model-picker:upgrade-click",
       { source: "unlock-all-footer" },
     );
+  });
+
+  it("never shows the unlock-all footer in Cimes", () => {
+    branding.paid = false;
+    try {
+      mocks.settings.enableDyadPro = false;
+      mocks.settings.providerSettings.auto.apiKey.value = "";
+      render(<ModelPicker />);
+      expect(screen.queryByText("Unlock all models with Dyad Pro")).toBeNull();
+    } finally {
+      branding.paid = true;
+    }
   });
 
   it("hides the unlock-all footer for Pro users", () => {

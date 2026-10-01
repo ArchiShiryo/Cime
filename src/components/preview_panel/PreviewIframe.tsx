@@ -1,4 +1,5 @@
 import { PreviewAuthBanner } from "./PreviewAuthBanner";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { currentTestRunStateAtom } from "@/atoms/testRuntimeAtoms";
 import { isPreviewOpenAtom } from "@/atoms/viewAtoms";
@@ -1156,49 +1157,52 @@ export const PreviewIframe = ({
                   : `Select component (${isMac ? "⌘ + ⇧ + C" : "Ctrl + ⇧ + C"})`}
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    onClick={handleAnnotatorClick}
-                    aria-label={
-                      annotatorMode
-                        ? "Annotator mode active"
-                        : "Activate annotator"
-                    }
-                    aria-pressed={annotatorMode}
-                    className={cn(
-                      PREVIEW_TOOLBAR_BUTTON_CLASSES,
-                      "rounded-none border-l border-border",
-                      annotatorMode
-                        ? "bg-purple-500 text-white hover:bg-purple-600 hover:text-white dark:bg-purple-600 dark:hover:bg-purple-700"
-                        : "text-purple-700 hover:bg-purple-100 hover:text-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/50 dark:hover:text-purple-200",
-                    )}
-                    disabled={
-                      loading ||
-                      !selectedAppId ||
-                      isPicking ||
-                      !isComponentSelectorInitialized ||
-                      // The mirror of the record button's `annotatorMode` gate.
-                      // Without it the annotator takes away the recording bar —
-                      // the session's only Stop — on the one tab the bar was
-                      // moved to PreviewPanel level to stay visible from.
-                      recorder.phase !== "idle"
-                    }
-                    data-testid="preview-annotator-button"
-                  />
-                }
-              >
-                <Pen size={16} />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {recorder.phase !== "idle"
-                  ? "Finish the recording before using the annotator"
-                  : annotatorMode
-                    ? "Annotator mode active"
-                    : "Activate annotator"}
-              </TooltipContent>
-            </Tooltip>
+            {/* The annotator is a Dyad Pro feature, hidden in Cimes. */}
+            {(PAID_FEATURES_ENABLED || isProMode) && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      onClick={handleAnnotatorClick}
+                      aria-label={
+                        annotatorMode
+                          ? "Annotator mode active"
+                          : "Activate annotator"
+                      }
+                      aria-pressed={annotatorMode}
+                      className={cn(
+                        PREVIEW_TOOLBAR_BUTTON_CLASSES,
+                        "rounded-none border-l border-border",
+                        annotatorMode
+                          ? "bg-purple-500 text-white hover:bg-purple-600 hover:text-white dark:bg-purple-600 dark:hover:bg-purple-700"
+                          : "text-purple-700 hover:bg-purple-100 hover:text-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/50 dark:hover:text-purple-200",
+                      )}
+                      disabled={
+                        loading ||
+                        !selectedAppId ||
+                        isPicking ||
+                        !isComponentSelectorInitialized ||
+                        // The mirror of the record button's `annotatorMode` gate.
+                        // Without it the annotator takes away the recording bar —
+                        // the session's only Stop — on the one tab the bar was
+                        // moved to PreviewPanel level to stay visible from.
+                        recorder.phase !== "idle"
+                      }
+                      data-testid="preview-annotator-button"
+                    />
+                  }
+                >
+                  <Pen size={16} />
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {recorder.phase !== "idle"
+                    ? "Finish the recording before using the annotator"
+                    : annotatorMode
+                      ? "Annotator mode active"
+                      : "Activate annotator"}
+                </TooltipContent>
+              </Tooltip>
+            )}
             {canRecordTests && (
               <Tooltip>
                 <TooltipTrigger

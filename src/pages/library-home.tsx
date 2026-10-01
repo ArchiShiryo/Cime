@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useCustomThemes } from "@/hooks/useCustomThemes";
 import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
@@ -134,7 +135,11 @@ export default function LibraryHomePage() {
               <NewLibraryItemMenu
                 onNewPrompt={() => setPromptDialogOpen(true)}
                 onNewTheme={() => setCreateThemeDialogOpen(true)}
-                onNewImage={() => setImageGeneratorOpen(true)}
+                onNewImage={
+                  PAID_FEATURES_ENABLED
+                    ? () => setImageGeneratorOpen(true)
+                    : undefined
+                }
               />
             </div>
           </div>

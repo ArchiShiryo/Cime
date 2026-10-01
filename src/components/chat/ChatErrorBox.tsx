@@ -2,6 +2,7 @@ import {
   parseSubscriptionBillingError,
   SUBSCRIPTION_BILLING_ERRORS,
 } from "@/shared/subscription_billing_error";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { ipc } from "@/ipc/types";
 import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
 import { useFreeModelQuota } from "@/hooks/useFreeModelQuota";
@@ -61,7 +62,7 @@ export function ChatErrorBox({
     (error.includes("LiteLLM Virtual Key expected")
       ? SUBSCRIPTION_BILLING_ERRORS.KEY_REJECTED
       : null);
-  if (billingError) {
+  if (PAID_FEATURES_ENABLED && billingError) {
     return (
       <BillingNotice
         onDismiss={onDismiss}
@@ -73,7 +74,10 @@ export function ChatErrorBox({
     );
   }
 
-  if (error.includes("doesn't have a free quota tier")) {
+  if (
+    PAID_FEATURES_ENABLED &&
+    error.includes("doesn't have a free quota tier")
+  ) {
     return (
       <ChatErrorContainer onDismiss={onDismiss}>
         {error}
@@ -97,6 +101,7 @@ export function ChatErrorBox({
   // show the upgrade to Dyad Pro link in that case because they are
   // already on the Dyad Pro plan.
   if (
+    PAID_FEATURES_ENABLED &&
     !isDyadProEnabled &&
     (error.includes("Resource has been exhausted") ||
       error.includes("https://ai.google.dev/gemini-api/docs/rate-limits") ||
@@ -121,7 +126,11 @@ export function ChatErrorBox({
     );
   }
 
-  if (isDyadProEnabled && error.includes("ExceededBudget:")) {
+  if (
+    PAID_FEATURES_ENABLED &&
+    isDyadProEnabled &&
+    error.includes("ExceededBudget:")
+  ) {
     return (
       <BillingNotice
         onDismiss={onDismiss}
@@ -145,7 +154,7 @@ export function ChatErrorBox({
     error = normalizedError;
   }
   // Handle FREE_AGENT_QUOTA_EXCEEDED error (Basic Agent mode quota exceeded)
-  if (freeAgentQuotaError) {
+  if (PAID_FEATURES_ENABLED && freeAgentQuotaError) {
     const authoritativeResetTime = freeAgentQuotaError.resetTime ?? resetTime;
     const resetText = authoritativeResetTime
       ? ` Your quota resets at ${new Intl.DateTimeFormat(undefined, {

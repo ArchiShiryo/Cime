@@ -8,6 +8,7 @@ import {
   Loader2,
   Lock,
 } from "lucide-react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import {
   Tooltip,
   TooltipTrigger,
@@ -79,7 +80,7 @@ export function HomeChatInput({
   ]);
   const placeholder = selectedApp
     ? `Send a message to ${selectedApp.name}...`
-    : `Ask Dyad to build ${typingText ?? ""}`;
+    : `Ask Cimes to build ${typingText ?? ""}`;
 
   // Use the attachments hook
   const {
@@ -223,7 +224,7 @@ export function HomeChatInput({
                       : "Voice to text"}
                 </TooltipContent>
               </Tooltip>
-            ) : (
+            ) : PAID_FEATURES_ENABLED ? (
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -242,7 +243,7 @@ export function HomeChatInput({
                 </TooltipTrigger>
                 <TooltipContent>Voice to text (requires Pro)</TooltipContent>
               </Tooltip>
-            )}
+            ) : null}
 
             {isStreaming ? (
               <Tooltip>

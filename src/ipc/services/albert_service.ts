@@ -169,10 +169,13 @@ function getStoredKey(): string | undefined {
 
 export function getAlbertStatus(): AlbertStatus {
   const storedKey = getStoredKey();
+  // Only a key saved through Cimes counts as connected: an ALBERT_API_KEY
+  // environment variable must not skip the onboarding, which is also what
+  // selects the Albert model.
   const fromEnvironment =
     !storedKey && Boolean(process.env[ALBERT_ENV_VAR_NAME]);
   return {
-    connected: Boolean(storedKey) || fromEnvironment,
+    connected: Boolean(storedKey),
     modelDisplayName: ALBERT_MODEL_DISPLAY_NAME,
     fromEnvironment,
   };
