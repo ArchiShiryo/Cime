@@ -139,6 +139,13 @@ const ignore = (file: string) => {
   if (file === "/node_modules/ws" || file.startsWith("/node_modules/ws/")) {
     return false;
   }
+  // turndown (agent web reading) parses HTML with domino at runtime.
+  if (
+    file === "/node_modules/@mixmark-io" ||
+    file.startsWith("/node_modules/@mixmark-io/domino")
+  ) {
+    return false;
+  }
   if (file.startsWith("/.vite")) {
     return false;
   }
