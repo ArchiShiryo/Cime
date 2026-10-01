@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAlbert } from "@/hooks/useAlbert";
 import { ipc } from "@/ipc/types";
+import { APP_DISPLAY_NAME } from "@/shared/branding";
 // @ts-ignore
 import logo from "../../assets/logo.svg";
 
@@ -40,16 +41,17 @@ export function AlbertOnboarding({ onSkip }: { onSkip: () => void }) {
         onSubmit={submit}
         className="w-full max-w-md space-y-5 rounded-xl border bg-card p-8 shadow-sm"
       >
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="" className="size-10" />
-          <div>
-            <h1 className="text-2xl font-semibold text-primary">
-              Connecter Albert
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Entrez votre clé API Albert pour commencer.
-            </p>
-          </div>
+        <img src={logo} alt="Canopé" className="h-8 w-auto" />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Bienvenue dans {APP_DISPLAY_NAME}
+          </p>
+          <h1 className="text-2xl font-semibold text-primary">
+            Connecter Albert
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Entrez votre clé API Albert pour commencer.
+          </p>
         </div>
 
         <div className="space-y-2">

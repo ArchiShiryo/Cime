@@ -79,8 +79,37 @@ Vérifié :
 Non vérifié (nécessite l'application packagée sous Windows) : premier lancement réel (test A),
 redémarrage (test D), génération complète d'une application avec preview (test F).
 
+## Nom et branding : Cimes
+
+Le produit s'appelle **Cimes** (jeu de mots avec Canopé). Le logo est le logotype vectoriel CANOPÉ
+extrait du modèle institutionnel (`assets/logo.svg`).
+
+- Affichage : `productName` (`package.json`), titre de fenêtre (`index.html`), barre de titre,
+  écran de saisie de la clé, nom du protocole (`forge.config.ts`), installeur
+  (`Cimes-Setup.exe`). Constantes dans `src/shared/branding.ts`.
+- Volontairement inchangés : nom du paquet `dyad`, schéma d'URL `dyad://`, dépôt, identifiants internes.
+- **Mise à jour automatique désactivée** (`AUTO_UPDATE_AVAILABLE = false`) : le serveur de mise à jour
+  par défaut distribue le Dyad officiel et remplacerait Cimes. Pour mettre à jour un poste, installer
+  la nouvelle version issue du workflow de build Windows. Réactiver ce drapeau seulement avec un flux
+  de mise à jour propre à Cimes.
+- Le dossier de données Windows suit `productName` : `%APPDATA%\Cimes`.
+
+## Écran de démarrage
+
+Fenêtre sans cadre (900x560) affichée au lancement, puis remplacée par la fenêtre principale une fois
+le rendu prêt (2 s minimum, 20 s maximum). Contenu : logo Réseau Canopé et slogan, logo Cimes /
+Déploiement Albert, panorama de Guyane, une ligne de texte et une barre de progression.
+
+- Code : `src/splash/` (`splash_html.ts`, `splash_window.ts`) ; images dans `src/splash/assets/`
+  (WebP, environ 225 Ko), intégrées en base64 au build : l'écran ne dépend d'aucun fichier externe
+  (le dossier `assets/` n'est pas inclus dans l'application empaquetée).
+- Actif seulement pour l'application empaquetée hors build de test : le mode dev et les tests E2E
+  gardent l'ouverture directe.
+- Les visuels viennent de `CIMES_assets_visuels.zip`. Les cartes d'installation et de fonctionnalités
+  du zip ne sont volontairement pas utilisées.
+
 ## Limites
 
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
 - L'URL du lien « Où trouver ma clé ? » (`https://albert.sites.beta.gouv.fr/`) est à confirmer.
-- Le branding « Albert — Déploiement Guyane » n'est pas appliqué (priorité basse).
+- Icône Cimes (lettre « C » du logo CANOPÉ sur fond turquoise) : `assets/icon/logo.ico` (Windows, 7 tailles) et `logo.png` (Linux). `logo.icns` (macOS) est resté celui de Dyad.

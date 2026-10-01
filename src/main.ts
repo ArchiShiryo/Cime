@@ -47,6 +47,8 @@ import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
 import { ensureAlbertProvider } from "./ipc/services/albert_service";
+import { AUTO_UPDATE_AVAILABLE } from "./shared/branding";
+import { showSplash } from "./splash/splash_window";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
@@ -639,8 +641,13 @@ export async function onReady() {
     managed_node_version: managedNodeVersion,
   });
 
-  logger.info("Auto-update enabled=", settings.enableAutoUpdate);
-  if (settings.enableAutoUpdate) {
+  logger.info(
+    "Auto-update enabled=",
+    settings.enableAutoUpdate,
+    "available=",
+    AUTO_UPDATE_AVAILABLE,
+  );
+  if (settings.enableAutoUpdate && AUTO_UPDATE_AVAILABLE) {
     // Technically we could just pass the releaseChannel directly to the host,
     // but this is more explicit and falls back to stable if there's an unknown
     // release channel.
@@ -881,7 +888,8 @@ function deliverPendingCrashRecovery(target: BrowserWindow): void {
 const createWindow = ({
   windowSessionId = randomUUID() as WindowSessionId,
   visibleEntity,
-}: Partial<WindowSessionDescriptor> = {}): {
+  deferShow = false,
+}: Partial<WindowSessionDescriptor> & { deferShow?: boolean } = {}): {
   windowSessionId: WindowSessionId;
   browserWindow: BrowserWindow;
   rendererLoad: Promise<void>;
@@ -892,6 +900,8 @@ const createWindow = ({
 
   // Create the browser window.
   const browserWindow = new BrowserWindow({
+    // The splash screen reveals the window once the renderer is ready.
+    show: !deferShow,
     width: process.env.NODE_ENV === "development" ? 1280 : 960,
     minWidth: 800,
     height: 700,
@@ -1222,7 +1232,13 @@ async function createFreshStartupWindow(): Promise<void> {
     logger.info("Skipping initial window creation during shutdown");
     return;
   }
-  createWindow({ windowSessionId: PRIMARY_WINDOW_SESSION_ID });
+  // Packaged, non-test builds only: dev and E2E runs keep the direct window.
+  const splash = app.isPackaged && !IS_TEST_BUILD ? showSplash() : null;
+  const { browserWindow: initialWindow } = createWindow({
+    windowSessionId: PRIMARY_WINDOW_SESSION_ID,
+    deferShow: splash !== null,
+  });
+  splash?.revealWhenReady(initialWindow);
   hasCreatedInitialWindow = true;
 }
 

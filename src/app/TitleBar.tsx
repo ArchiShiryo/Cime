@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AppAvatar } from "@/components/AppAvatar";
 // @ts-ignore
 import logo from "../../assets/logo.svg";
+import { APP_DISPLAY_NAME } from "@/shared/branding";
 import { providerSettingsRoute } from "@/routes/settings/providers/$provider";
 import { cn } from "@/lib/utils";
 import { useDeepLink } from "@/contexts/DeepLinkContext";
@@ -98,7 +99,10 @@ export const TitleBar = () => {
         <div className="flex items-center shrink-0">
           <div className={`${showWindowControls ? "pl-2" : "pl-18"}`}></div>
 
-          <img src={logo} alt="Dyad" className="ml-2 w-5 h-5 shrink-0" />
+          <img src={logo} alt="Canopé" className="ml-2 h-4 w-auto shrink-0" />
+          <span className="ml-2 text-sm font-semibold text-primary">
+            {APP_DISPLAY_NAME}
+          </span>
 
           <Tooltip>
             <TooltipTrigger
