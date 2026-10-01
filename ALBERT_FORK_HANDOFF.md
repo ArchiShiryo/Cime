@@ -133,6 +133,29 @@ variable `ALBERT_API_KEY` existent (`src/lib/albertOnboarding.ts`).
 
 Thème clair Canopé par défaut ; bascule clair/sombre en bas de la barre latérale.
 
+## Accès web et shell de l'agent (sans Dyad Pro)
+
+Dans Dyad, la recherche web, la lecture de pages et le shell passent par le serveur payant de Dyad
+(ou une relecture OpenAI). Cimes les remplace par des versions locales.
+
+- **Lecture de pages** (`web_fetch`, `tools/local_web.ts`) : téléchargement via `net.fetch` d'Electron (proxy
+  système et certificats de Windows), puis extraction de l'article (`@mozilla/readability`, Apache-2.0),
+  conversion en Markdown (`turndown`, MIT) avec un DOM léger (`linkedom`, ISC). Taille limitée à 2,5 Mo,
+  redirections suivies avec cookies, **adresses locales et privées refusées** (localhost, 192.168.x, 10.x,
+  169.254.x, IPv6 locales, redirections et résolutions DNS comprises), schémas autres que http/https refusés.
+- **Recherche web** (`web_search`, `tools/local_web_search.ts`) : DuckDuckGo (HTML), puis Bing en repli, sans
+  clé. Un serveur **SearXNG** peut être indiqué dans Paramètres > IA pour des résultats plus fiables.
+  Limite connue : ces moteurs limitent parfois les connexions partagées (réseau d'établissement, serveurs
+  cloud) ; le message d'erreur l'explique à l'agent.
+- **Contenu non fiable** : tout texte venu du web est encadré par `<untrusted_web_content>` avec la consigne de ne
+  jamais suivre les instructions qu'il contient.
+- **Shell** (`run_shell`) : actif par défaut, sans Pro. PowerShell sous Windows, Bash ailleurs, sans profil,
+  60 s par défaut, 5 min au maximum. Chaque commande est relue par **le modèle sélectionné** (DeepSeek via
+  Albert, au lieu du modèle OpenAI imposé en amont) puis **soumise à votre validation** (consentement
+  « Ask » par défaut). Réglable dans Paramètres > Expériences et Autorisations de l'agent.
+- Non repris : `web_crawl` (clonage de sites), génération d'images, recherche de code assistée et sous-agents
+  (services payants de Dyad).
+
 ## Limites
 
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
