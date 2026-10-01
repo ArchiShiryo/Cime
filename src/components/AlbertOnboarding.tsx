@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAlbert } from "@/hooks/useAlbert";
 import { ipc } from "@/ipc/types";
+import { APP_DISPLAY_NAME } from "@/shared/branding";
 // @ts-ignore
 import logo from "../../assets/logo.svg";
 
@@ -42,6 +43,9 @@ export function AlbertOnboarding({ onSkip }: { onSkip: () => void }) {
       >
         <img src={logo} alt="Canopé" className="h-8 w-auto" />
         <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Bienvenue dans {APP_DISPLAY_NAME}
+          </p>
           <h1 className="text-2xl font-semibold text-primary">
             Connecter Albert
           </h1>

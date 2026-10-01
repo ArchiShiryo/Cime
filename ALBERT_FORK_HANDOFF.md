@@ -79,8 +79,23 @@ Vérifié :
 Non vérifié (nécessite l'application packagée sous Windows) : premier lancement réel (test A),
 redémarrage (test D), génération complète d'une application avec preview (test F).
 
+## Nom et branding : Cimes
+
+Le produit s'appelle **Cimes** (jeu de mots avec Canopé). Le logo est le logotype vectoriel CANOPÉ
+extrait du modèle institutionnel (`assets/logo.svg`).
+
+- Affichage : `productName` (`package.json`), titre de fenêtre (`index.html`), barre de titre,
+  écran de saisie de la clé, nom du protocole (`forge.config.ts`), installeur
+  (`Cimes-Setup.exe`). Constantes dans `src/shared/branding.ts`.
+- Volontairement inchangés : nom du paquet `dyad`, schéma d'URL `dyad://`, dépôt, identifiants internes.
+- **Mise à jour automatique désactivée** (`AUTO_UPDATE_AVAILABLE = false`) : le serveur de mise à jour
+  par défaut distribue le Dyad officiel et remplacerait Cimes. Pour mettre à jour un poste, installer
+  la nouvelle version issue du workflow de build Windows. Réactiver ce drapeau seulement avec un flux
+  de mise à jour propre à Cimes.
+- Le dossier de données Windows suit `productName` : `%APPDATA%\Cimes`.
+
 ## Limites
 
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
 - L'URL du lien « Où trouver ma clé ? » (`https://albert.sites.beta.gouv.fr/`) est à confirmer.
-- Le branding « Albert — Déploiement Guyane » n'est pas appliqué (priorité basse).
+- L'icône de l'exécutable reste celle de Dyad (un `.ico` Cimes reste à générer) ; l'écran de démarrage « Albert — Déploiement Guyane » n'est pas fait.

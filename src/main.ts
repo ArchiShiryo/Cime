@@ -47,6 +47,7 @@ import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
 import { ensureAlbertProvider } from "./ipc/services/albert_service";
+import { AUTO_UPDATE_AVAILABLE } from "./shared/branding";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
@@ -639,8 +640,13 @@ export async function onReady() {
     managed_node_version: managedNodeVersion,
   });
 
-  logger.info("Auto-update enabled=", settings.enableAutoUpdate);
-  if (settings.enableAutoUpdate) {
+  logger.info(
+    "Auto-update enabled=",
+    settings.enableAutoUpdate,
+    "available=",
+    AUTO_UPDATE_AVAILABLE,
+  );
+  if (settings.enableAutoUpdate && AUTO_UPDATE_AVAILABLE) {
     // Technically we could just pass the releaseChannel directly to the host,
     // but this is more explicit and falls back to stable if there's an unknown
     // release channel.

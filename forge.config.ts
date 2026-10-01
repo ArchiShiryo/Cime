@@ -189,7 +189,7 @@ const config: ForgeConfig = {
     ],
     protocols: [
       {
-        name: "Dyad",
+        name: "Cimes",
         schemes: ["dyad"],
       },
     ],
@@ -234,11 +234,15 @@ const config: ForgeConfig = {
       isWindowsSigningEnabled
         ? {
             windowsSign,
+            name: "Cimes",
+            setupExe: "Cimes-Setup.exe",
             iconUrl:
               "https://raw.githubusercontent.com/dyad-sh/dyad/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
           }
         : {
+            name: "Cimes",
+            setupExe: "Cimes-Setup.exe",
             iconUrl:
               "https://raw.githubusercontent.com/dyad-sh/dyad/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
