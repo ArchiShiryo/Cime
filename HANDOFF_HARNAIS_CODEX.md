@@ -136,3 +136,88 @@ Dépendances ajoutées : `linkedom` (ISC), `@mozilla/readability` (Apache-2.0), 
 - L'application de tâches (test F) se génère, démarre et se modifie, avec un taux de réussite documenté.
 - Aucune requête vers un service payant de Dyad pendant un tour d'agent (vérifier dans les logs réseau).
 - Le build Windows réussit et l'exe produit démarre jusqu'à l'écran « Connecter Albert ».
+
+## 7. Harnais agentique complet, compatible avec les skills Claude
+
+Objectif : l'agent de Cimes doit pouvoir **charger, découvrir et exécuter n'importe quel skill au format Claude (`SKILL.md`)**, sans Dyad Pro, avec DeepSeek V4 Flash via Albert. Les vérifications Windows du §3 restent à faire ; cette section est le vrai chantier restant. Faire les points dans l'ordre (S0 → S6), un commit par point, `npm run fmt && npm run lint && npm run ts` + tests avant chaque push.
+
+### Format à supporter (spec Claude Skills)
+
+Un skill = un dossier contenant `SKILL.md` :
+
+```
+mon-skill/
+  SKILL.md            # obligatoire
+  scripts/            # optionnel : scripts exécutables
+  references/         # optionnel : docs chargées à la demande
+  assets/             # optionnel : modèles, images, polices
+```
+
+`SKILL.md` commence par un frontmatter YAML : `name` (minuscules, chiffres, tirets, ≤ 64 car., identique au nom du dossier), `description` (≤ 1024 car., dit **quoi** et **quand** l'utiliser), optionnels : `allowed-tools`, `license`, `metadata`, `argument-hint`, `disable-model-invocation`, `user-invocable`. Le corps est du Markdown. Les champs inconnus sont ignorés sans erreur (tolérance : ne jamais rejeter un skill Claude valide).
+
+### S0 — Loader (pur, testable)
+
+- Nouveau module `src/skills/` (hors `pro/`) : `parseSkill(dir)` (frontmatter via `yaml`/`js-yaml` déjà présent ou à ajouter à l'allowlist Forge, cf. §4), validation souple, `discoverSkills(roots)`.
+- Racines, par priorité croissante : skills **intégrés** (dans l'app, voir S5), `<userData>/skills/`, et pour l'app ouverte `<app>/.cimes/skills/` **et** `<app>/.claude/skills/` (compatibilité directe avec un dépôt qui contient déjà des skills Claude).
+- Un skill plus proche écrase un skill du même nom ; signaler le doublon dans les logs.
+- Ne jamais suivre un lien symbolique qui sort du dossier du skill ; plafonner la taille de `SKILL.md` (≈ 100 Ko) et le nombre de skills.
+- Tests : frontmatter valide/invalide, champs inconnus, doublons, symlink évadé, BOM/CRLF Windows.
+
+### S1 — Divulgation progressive (cœur de la compat)
+
+1. **Niveau 1** : le prompt système n'embarque que `name` + `description` de chaque skill (liste courte, ~100 tokens/skill) dans un bloc `<available_skills>`, avec la consigne : « si la demande correspond à un skill, charge-le avec `read_skill` avant d'agir ». Fonctionne pour les prompts *basic* et *full* (`local_agent_prompt.ts`) ; mettre à jour les snapshots (`rules/prompt-guides.md`).
+2. **Niveau 2** : nouvel outil agent `read_skill({ name })` (`tools/read_skill.ts`, enregistré dans `tool_definitions.ts`, `modifiesState: false`, consentement « always », autorisé en Ask/Plan) → renvoie le corps de `SKILL.md` + la liste des fichiers du skill (chemins relatifs).
+3. **Niveau 3** : les fichiers `references/*`, `assets/*` sont lus à la demande avec l'outil de lecture existant ; ajouter à `read_skill` un paramètre optionnel `file` pour lire un fichier du skill **sans** sortir du dossier (chemin normalisé, refus de `..`).
+4. Les skills ne sont **pas** copiés dans l'app de l'utilisateur ; ils restent dans leur dossier d'origine.
+5. Test d'intégration : prompt contient les descriptions et pas les corps ; `read_skill` renvoie le corps ; `read_skill` avec `../../x` est refusé.
+
+### S2 — Invocation explicite `/nom-du-skill`
+
+Réutiliser le mécanisme existant des `/slug` prompts : `/nom [arguments]` charge le skill et injecte son corps comme message utilisateur (`$ARGUMENTS` remplacé, comme dans Claude Code). `disable-model-invocation: true` → exclu de `<available_skills>` mais invocable à la main ; `user-invocable: false` → l'inverse. Autocomplétion dans le Lexical editor des chats (voir `rules/chat-mentions.md`).
+
+### S3 — Exécution des scripts d'un skill
+
+- Les scripts passent **uniquement** par `run_shell` (revue par le modèle + consentement « Ask »). Aucune exécution implicite à l'import ou à la lecture.
+- Fournir au shell les variables `CLAUDE_SKILL_DIR` / `CIMES_SKILL_DIR` (chemin absolu du skill) et remplacer `${CLAUDE_SKILL_DIR}` dans le corps du skill au chargement, pour que les commandes des skills Claude marchent telles quelles.
+- Windows : PowerShell ; si le skill appelle `python`, `bash` ou `node` absents, l'agent doit expliquer proprement ce qui manque (ne pas inventer). Vérifier `rules/windows-spawn.md`. Un skill qui exige Bash ne doit pas être présenté comme fiable sous Windows : l'indiquer dans l'UI (badge « scripts : bash »).
+- `allowed-tools` : correspondance des noms Claude → outils Cimes (`Read→read_file`, `Write/Edit→write_file/edit_file/search_replace`, `Bash→run_shell`, `WebFetch→web_fetch`, `WebSearch→web_search`, `Grep→grep`, `Glob→list_files`). Sémantique retenue : ces outils sont **pré-approuvés pour la durée du skill chargé** uniquement s'ils sont déjà « Ask » (jamais de passage à « always » persistant, jamais de contournement de la revue shell ni du garde SSRF). Outil inconnu : ignoré + log.
+
+### S4 — Import et gestion (UI)
+
+- Paramètres > « Skills » : liste (nom, description, origine : intégré / utilisateur / app), activer/désactiver par skill (setting persistant), supprimer (utilisateur seulement), « Ouvrir le dossier ».
+- Import : dossier **ou** `.zip` / `.skill` contenant un skill (`SKILL.md` à la racine ou dans un unique dossier). Extraction vers `<userData>/skills/<name>/` avec protection **zip-slip**, limites de taille (ex. 20 Mo / 500 fichiers), validation S0, confirmation affichant la description et la liste des scripts (« ce skill contient des scripts : ils ne s'exécuteront qu'avec votre accord »).
+- IPC typé selon `rules/electron-ipc.md` (contrat + hook React Query, clés dans `queryKeys.ts`), erreurs en `DyadError`.
+- Ajouter l'entrée au `settingsSearchIndex.ts` et respecter `rules/adding-settings.md`, `rules/base-ui-components.md`, `rules/i18n.md`.
+
+### S5 — Skills intégrés Canopé
+
+À livrer dans `src/skills/builtin/` (copiés/inlinés au build : `assets/` n'est pas packagé, cf. §4 ; vérifier dans le paquet Linux que `read_skill` les trouve) :
+
+- `charte-canope` : palette (`#F4EFED` fond, `#005A5B` turquoise, `#94A088` sauge), typographie Marianne/alternatives libres, ton institutionnel, usage du logo.
+- `accessibilite-rgaa` : checklist RGAA/contraste/clavier/ARIA appliquée aux apps générées.
+- `atelier-pedagogique` : structure d'un atelier (objectif, durée, matériel, pas-à-pas pour un public non technique) et rédaction en français clair.
+- `app-web-simple` : conventions pour générer des apps front simples et robustes dans Cimes (stack par défaut, structure de fichiers, vérifications avant de rendre la main).
+Chacun ≤ 500 lignes, `description` précise (sinon DeepSeek ne les déclenchera pas).
+
+### S6 — Reste du harnais (sans Dyad Pro)
+
+Dans l'ordre d'utilité pour les ateliers :
+
+1. **Boucle agent fiable avec DeepSeek V4 Flash** : lancer `testing/cimes-e2e/agent.mjs` (jamais exécuté) avec `ALBERT_KEY_FOR_TEST` ; mesurer sur 5 runs la génération d'une app + preview, les appels d'outils mal formés, les boucles. Ajuster descriptions d'outils/prompt *basic* en conséquence (§3).
+2. **Planification / todos** : vérifier que `update_todos` (ou équivalent) et le mode Plan fonctionnent sans Pro ; sinon les rendre disponibles.
+3. **Sous-agents / exploration** : l'exploration de code est un service Pro. Fournir une version locale : un outil `explore` qui lance une boucle courte, lecture seule (`read_file`, `grep`, `list_files`), avec le même modèle, et renvoie un résumé ; plafonner étapes et tokens.
+4. **Compaction de contexte** : fenêtre Albert = 131 072 tokens ; vérifier que la compaction/troncature d'historique se déclenche avant dépassement (tests avec historique long, sorties shell/web volumineuses tronquées).
+5. **Mémoire / règles du projet** : `AI_RULES.md` + un fichier utilisateur global (`<userData>/CIMES.md`) injecté dans le prompt ; compatibilité de lecture de `CLAUDE.md`/`AGENTS.md` de l'app si présents.
+6. **MCP** : confirmer que l'ajout d'un serveur MCP stdio fonctionne sans Pro et sous Windows (`rules/windows-spawn.md`), consentement par outil.
+7. **Annulation et sécurité** : bouton Stop interrompt requête modèle, `web_fetch` et `run_shell` (kill de l'arbre de processus sous Windows) ; aucune action « modifiesState » en mode Ask/Plan.
+8. **Proxy** : appels modèle/Albert via `net.fetch` (proxy et certificats Windows), cf. §3 — bloquant potentiel dans les établissements.
+9. **Observabilité locale** : journaux d'agent (outil appelé, durée, refus de consentement) dans `logs/main.log`, jamais de clé ni de contenu de page ; export dans le rapport de bug existant.
+10. **Évals** : petit jeu de 8–10 tâches rejouables (`testing/cimes-e2e/evals/`) : générer une app, utiliser un skill intégré, lire une page web, refuser une commande shell dangereuse, résister à une injection dans une page web. Sortie : tableau de succès par tâche ; l'exécuter après chaque changement de prompt.
+
+### Critères d'acceptation supplémentaires
+
+- Un skill Claude public (ex. un dossier tiers avec `SKILL.md` + `scripts/` + `references/`) copié tel quel dans `<userData>/skills/` est découvert, listé dans Paramètres, déclenché par l'agent sur une demande qui correspond, et ses références sont lues à la demande — sans modification du skill.
+- Le prompt système ne contient que `name` + `description` (mesurer : < 150 tokens/skill).
+- Aucune exécution de script sans passage par la revue + consentement ; zip-slip et traversée de chemin couverts par des tests.
+- Les skills intégrés fonctionnent dans le paquet Windows (portable et installeur), pas seulement en dev.
+- `AUTO_UPDATE_AVAILABLE`, `PAID_FEATURES_ENABLED`, `TELEMETRY_ENABLED` restent à `false` ; la clé Albert n'apparaît nulle part dans le dépôt ni les logs.
