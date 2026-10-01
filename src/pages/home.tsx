@@ -1,5 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { APP_DISPLAY_NAME, PAID_FEATURES_ENABLED } from "@/shared/branding";
+import {
+  APP_DISPLAY_NAME,
+  PAID_FEATURES_ENABLED,
+  TELEMETRY_ENABLED,
+} from "@/shared/branding";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -275,7 +279,7 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        <PrivacyBanner />
+        {TELEMETRY_ENABLED && <PrivacyBanner />}
       </div>
       <FeaturedAppShowcase />
     </div>
