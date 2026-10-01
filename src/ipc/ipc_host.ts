@@ -43,6 +43,7 @@ import { registerVisualEditingHandlers } from "../pro/main/ipc/handlers/visual_e
 import { registerAgentToolHandlers } from "../pro/main/ipc/handlers/local_agent/agent_tool_handlers";
 import { registerFreeAgentQuotaHandlers } from "./handlers/free_agent_quota_handlers";
 import { registerFreeModelQuotaHandlers } from "./handlers/free_model_quota_handlers";
+import { registerAlbertHandlers } from "./handlers/albert_handlers";
 import { registerPlanHandlers } from "./handlers/plan_handlers";
 import { registerMediaHandlers } from "./handlers/media_handlers";
 import { registerMiscHandlers } from "./handlers/misc_handlers";
@@ -89,6 +90,7 @@ export function registerIpcHandlers() {
   registerVersionHandlers();
   registerVersionPreviewWindowInterestHandlers();
   registerLanguageModelHandlers();
+  registerAlbertHandlers();
   registerReleaseNoteHandlers();
   registerImportHandlers();
   registerSessionHandlers();

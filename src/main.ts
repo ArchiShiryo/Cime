@@ -46,6 +46,7 @@ import { handleDyadProReturn } from "./main/pro";
 import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
+import { ensureAlbertProvider } from "./ipc/services/albert_service";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
@@ -450,6 +451,11 @@ export async function onReady() {
   }
   try {
     initializeDatabase();
+    try {
+      ensureAlbertProvider();
+    } catch (error) {
+      logger.error("Failed to initialize Albert provider", error);
+    }
   } catch (error) {
     logger.error("Failed to initialize database", error);
     const message = error instanceof Error ? error.message : String(error);

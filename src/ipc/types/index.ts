@@ -84,6 +84,7 @@ export { securityContracts } from "./security";
 export { miscContracts, miscEvents } from "./misc";
 export { freeAgentQuotaContracts } from "./free_agent_quota";
 export { freeModelQuotaContracts } from "./free_model_quota";
+export { albertContracts } from "./albert";
 export { audioContracts } from "./audio";
 export { mediaContracts } from "./media";
 export {
@@ -150,6 +151,7 @@ export { securityClient } from "./security";
 export { miscClient, miscEventClient } from "./misc";
 export { freeAgentQuotaClient } from "./free_agent_quota";
 export { freeModelQuotaClient } from "./free_model_quota";
+export { albertClient } from "./albert";
 export { audioClient } from "./audio";
 export { mediaClient } from "./media";
 export {
@@ -446,6 +448,7 @@ export type {
 // Free agent quota types
 export type { FreeAgentQuotaStatus } from "./free_agent_quota";
 export type { FreeModelQuotaStatus } from "./free_model_quota";
+export type { AlbertStatus } from "./albert";
 
 // Pro types
 export type { TranscribeAudioParams, TranscribeAudioResult } from "./audio";
@@ -566,6 +569,7 @@ import { securityClient } from "./security";
 import { miscClient, miscEventClient } from "./misc";
 import { freeAgentQuotaClient } from "./free_agent_quota";
 import { freeModelQuotaClient } from "./free_model_quota";
+import { albertClient } from "./albert";
 import { audioClient } from "./audio";
 import { mediaClient } from "./media";
 import {
@@ -653,6 +657,7 @@ export const ipc = {
   misc: miscClient,
   freeAgentQuota: freeAgentQuotaClient,
   freeModelQuota: freeModelQuotaClient,
+  albert: albertClient,
   audio: audioClient,
   media: mediaClient,
   appBlueprint: appBlueprintClient,

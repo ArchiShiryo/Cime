@@ -288,6 +288,10 @@ export const queryKeys = {
     all: ["agent-tools"] as const,
   },
 
+  albert: {
+    status: ["albert", "status"] as const,
+  },
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Language Models / Providers
   // ─────────────────────────────────────────────────────────────────────────────
@@ -561,6 +565,7 @@ export type AppQueryKey =
   | QueryKeyOf<
       (typeof queryKeys.languageModels)[keyof typeof queryKeys.languageModels]
     >
+  | QueryKeyOf<(typeof queryKeys.albert)[keyof typeof queryKeys.albert]>
   | QueryKeyOf<(typeof queryKeys.userBudget)[keyof typeof queryKeys.userBudget]>
   | QueryKeyOf<
       (typeof queryKeys.cloudSandboxes)[keyof typeof queryKeys.cloudSandboxes]
