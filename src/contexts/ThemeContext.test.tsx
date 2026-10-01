@@ -67,7 +67,24 @@ afterEach(() => {
 });
 
 describe("ThemeProvider", () => {
+  it("defaults to the light (Canopé) theme even when the OS is dark", async () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: true })),
+    );
+    h.getNativeThemeState.mockResolvedValue({ shouldUseDarkColors: true });
+
+    renderTheme();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("theme-state").textContent).toBe("light:false");
+      expect(document.documentElement.classList.contains("light")).toBe(true);
+    });
+  });
+
   it("uses Electron's native theme for System and follows update events", async () => {
+    // Cimes defaults to light; these cover a user who picked System.
+    localStorage.setItem("theme", "system");
     const matchMedia = vi.fn(() => ({ matches: false }));
     vi.stubGlobal("matchMedia", matchMedia);
     h.getNativeThemeState.mockResolvedValue({ shouldUseDarkColors: true });
@@ -91,6 +108,8 @@ describe("ThemeProvider", () => {
   });
 
   it("falls back to the browser preference when native theme bootstrap fails", async () => {
+    // Cimes defaults to light; these cover a user who picked System.
+    localStorage.setItem("theme", "system");
     vi.stubGlobal(
       "matchMedia",
       vi.fn(() => ({ matches: true })),
@@ -106,6 +125,8 @@ describe("ThemeProvider", () => {
   });
 
   it("does not let an older bootstrap response overwrite a native update", async () => {
+    // Cimes defaults to light; these cover a user who picked System.
+    localStorage.setItem("theme", "system");
     let resolveBootstrap!: (state: { shouldUseDarkColors: boolean }) => void;
     h.getNativeThemeState.mockReturnValue(
       new Promise((resolve) => {

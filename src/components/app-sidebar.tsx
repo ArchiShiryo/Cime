@@ -6,7 +6,10 @@ import {
   Store,
   BookOpen,
   Blocks,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useSidebar } from "@/components/ui/sidebar"; // import useSidebar hook
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -316,6 +319,9 @@ export function AppSidebar() {
       <SidebarFooter className="px-1 items-start">
         <SidebarMenu>
           <SidebarMenuItem>
+            <ThemeToggleRailButton isExpanded={state === "expanded"} />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <AppSidebarRailButton
               icon={HelpCircle}
               label="Help"
@@ -380,5 +386,18 @@ function AppIcons({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
+  );
+}
+
+// Light is the Canopé theme, dark the original one.
+function ThemeToggleRailButton({ isExpanded }: { isExpanded: boolean }) {
+  const { isDarkMode, setTheme } = useTheme();
+  return (
+    <AppSidebarRailButton
+      icon={isDarkMode ? Sun : Moon}
+      label={isDarkMode ? "Clair" : "Sombre"}
+      isExpanded={isExpanded}
+      onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+    />
   );
 }
