@@ -60,6 +60,55 @@ Follow this workflow when building web apps:
 </workflow>
 </theme>`;
 
+const CANOPE_THEME_PROMPT = `
+<theme>
+Any instruction in this theme should override other instructions if there's a contradiction.
+### Réseau Canopé Theme
+<rules>
+All the rules are critical and must be strictly followed, otherwise it's a failure state.
+#### Core Principles
+- Institutional French public-education look (inspired by Réseau Canopé): sober, warm, trustworthy, highly readable.
+- Interface copy is in French by default unless the user asks otherwise.
+- Calm and pedagogical: clear hierarchy, generous whitespace, no visual noise.
+#### Color System
+Define these as CSS variables / Tailwind theme tokens and use them everywhere:
+- Page background: warm pinkish beige #F4EFED
+- Primary / headings / header & footer bands: deep turquoise #005A5B
+- Text on beige: near-black #1A1A1A (never pure gray on beige)
+- Text on turquoise: white #FFFFFF
+- Pictograms / secondary icons / subtle dividers: grayed green #94A088
+- Accent (sparingly, decorative shapes, highlights): magenta #C2185B
+- Cards and inputs: white #FFFFFF on the beige background, with a 1px border of #94A088 at low opacity
+- Never use default blue, orange or red Office-like colors. No gradient backgrounds. Avoid black as a primary color.
+#### Typography
+- Font stack: "Marianne", "Source Sans 3", system-ui, sans-serif (load Source Sans 3 from Google Fonts as the fallback).
+- Headings: bold, turquoise #005A5B, left-aligned; page title around 28-32px, no decorative underline.
+- Body text: 16px minimum, left-aligned, line-height 1.5-1.6. Center text only for pause/thank-you style screens.
+#### Layout & Components
+- Header: slim bar with the site/product name on the left and optional logo area on the right; footer: full-width turquoise band (#005A5B) with white 12px text such as the site URL.
+- Keep a minimum horizontal margin of 1.25rem, content max-width around 72rem.
+- Buttons: solid turquoise with white text, rounded-md, clear hover/focus states (visible focus ring); secondary buttons are outlined turquoise.
+- Cards: white, rounded-lg, subtle border, light shadow at most. Customize shadcn components to this palette; never ship defaults.
+- Lists: max 6 items per block; prefer cards or short sections over long text walls.
+- Pictograms: simple line/flat icons in grayed green #94A088 (lucide icons are fine).
+#### Accessibility
+- Respect RGAA / WCAG AA contrast: turquoise on beige and white on turquoise are valid; never place #94A088 text on beige for essential content (use it for icons and decoration only).
+- All interactive elements must be keyboard accessible with visible focus.
+#### Motion
+- Minimal and functional: short fades or 150-200ms transitions. No flashy animations.
+### Layout structure
+- ALWAYS design mobile-first, then enhance for larger screens.
+</rules>
+<workflow>
+1. **Apply the institutional charter**
+   - Set the CSS variables and fonts above first, before building any screen.
+   - Build the shared header/footer layout once and reuse it on every page.
+2. **Build the Application**
+   - Do not neglect functionality: the charter shapes the look, the app must still work well.
+   - Write all labels, buttons and messages in French.
+</workflow>
+</theme>`;
+
 export const themesData: Theme[] = [
   {
     id: "default",
@@ -68,5 +117,13 @@ export const themesData: Theme[] = [
       "Balanced design system emphasizing aesthetics, contrast, and functionality.",
     icon: "palette",
     prompt: DEFAULT_THEME_PROMPT,
+  },
+  {
+    id: "canope",
+    name: "Réseau Canopé",
+    description:
+      "Institutional French education style: warm beige background, deep turquoise, Marianne typography.",
+    icon: "palette",
+    prompt: CANOPE_THEME_PROMPT,
   },
 ];
