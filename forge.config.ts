@@ -244,7 +244,8 @@ const config: ForgeConfig = {
             setupIcon: "./assets/icon/logo.ico",
           },
     ),
-    new MakerZIP({}, ["darwin"]),
+    // The win32 ZIP is the portable build: unzip and run, no installer.
+    new MakerZIP({}, ["darwin", "win32"]),
     new MakerRpm({
       options: {
         mimeType: ["x-scheme-handler/dyad"],
