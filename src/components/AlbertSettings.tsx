@@ -37,7 +37,12 @@ export function AlbertSettings() {
       <div className="text-sm">
         <div className="font-medium">Albert - DINUM</div>
         <div className="text-muted-foreground">
-          État : {connected ? "● Connecté" : "○ Non connecté"}
+          État :{" "}
+          {connected ? (
+            <span className="font-medium text-primary">● Connecté</span>
+          ) : (
+            "○ Non connecté"
+          )}
           {status ? ` · Modèle : ${status.modelDisplayName}` : ""}
         </div>
         {status?.fromEnvironment && (
