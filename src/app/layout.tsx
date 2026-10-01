@@ -53,8 +53,11 @@ import { PreviewErrorFacadeProvider } from "@/app_wiring/preview_error_facade";
 import { usePreviewErrorFacade } from "@/app_wiring/preview_error_facade";
 import { AlbertOnboarding } from "@/components/AlbertOnboarding";
 import { useAlbert } from "@/hooks/useAlbert";
+import { ipc } from "@/ipc/types";
 import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+
+let rendererReadySent = false;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const { streamMessage } = useStreamChat({ hasChatId: false });
@@ -114,6 +117,13 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
   );
   const { settings } = useSettings();
   const { status: albertStatus, isError: albertStatusError } = useAlbert();
+  // Tell the splash screen the real UI is on screen (once per renderer).
+  useEffect(() => {
+    if (settings && !rendererReadySent) {
+      rendererReadySent = true;
+      void ipc.splash.rendererReady().catch(() => {});
+    }
+  }, [settings]);
   const showAlbertOnboarding = shouldShowAlbertOnboarding({
     settingsLoaded: Boolean(settings),
     isTestMode: Boolean(settings?.isTestMode),

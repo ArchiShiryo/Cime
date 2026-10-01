@@ -5,12 +5,18 @@ const { windows, FakeWindow } = vi.hoisted(() => {
   class FakeWindow {
     destroyed = false;
     handlers = new Map<string, () => void>();
+    contentsHandlers = new Map<string, () => void>();
+    webContents = {
+      once: (event: string, handler: () => void) => {
+        this.contentsHandlers.set(event, handler);
+      },
+    };
     show = vi.fn();
     focus = vi.fn();
     close = vi.fn(() => {
       this.destroyed = true;
     });
-    loadURL = vi.fn().mockResolvedValue(undefined);
+    loadFile = vi.fn().mockResolvedValue(undefined);
     isDestroyed() {
       return this.destroyed;
     }
@@ -20,6 +26,9 @@ const { windows, FakeWindow } = vi.hoisted(() => {
     emit(event: string) {
       this.handlers.get(event)?.();
     }
+    emitContents(event: string) {
+      this.contentsHandlers.get(event)?.();
+    }
     constructor() {
       windows.push(this);
     }
@@ -27,13 +36,17 @@ const { windows, FakeWindow } = vi.hoisted(() => {
   return { windows, FakeWindow };
 });
 
-vi.mock("electron", () => ({ BrowserWindow: FakeWindow }));
+vi.mock("electron", () => ({
+  BrowserWindow: FakeWindow,
+  app: { getPath: () => "/tmp" },
+}));
+vi.mock("node:fs", () => ({ default: { writeFileSync: vi.fn() } }));
 vi.mock("electron-log", () => ({
   default: { scope: () => ({ warn: vi.fn(), info: vi.fn(), error: vi.fn() }) },
 }));
 
 import { buildSplashHtml } from "./splash_html";
-import { showSplash } from "./splash_window";
+import { notifyRendererReady, showSplash } from "./splash_window";
 
 describe("buildSplashHtml", () => {
   it("is self-contained and shows the Cimes branding", () => {
@@ -72,22 +85,36 @@ describe("showSplash", () => {
     return { splashWindow, main };
   }
 
-  it("keeps the splash visible for a minimum time, then reveals the app", () => {
+  it("loads the splash from a file instead of a long data URL", () => {
+    const { splashWindow } = setup();
+    expect(splashWindow.loadFile).toHaveBeenCalledWith(
+      expect.stringContaining("cimes-splash.html"),
+    );
+  });
+
+  it("reveals the app once the renderer is ready, after a minimum time", () => {
     const { splashWindow, main } = setup();
-    splashWindow.emit("ready-to-show");
-    main.emit("ready-to-show");
+    notifyRendererReady();
     vi.advanceTimersByTime(1_000);
     expect(main.show).not.toHaveBeenCalled();
-    expect(splashWindow.close).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1_100);
+    vi.advanceTimersByTime(1_600);
     expect(main.show).toHaveBeenCalledTimes(1);
     expect(splashWindow.close).toHaveBeenCalledTimes(1);
   });
 
-  it("never leaves the user behind the splash if the renderer stays silent", () => {
+  it("does not reveal a blank window just because the page loaded", () => {
+    const { main } = setup();
+    main.emitContents("did-finish-load");
+    vi.advanceTimersByTime(5_000);
+    expect(main.show).not.toHaveBeenCalled();
+    // ...but still opens if the renderer never reports in.
+    vi.advanceTimersByTime(3_100);
+    expect(main.show).toHaveBeenCalledTimes(1);
+  });
+
+  it("never leaves the user behind the splash", () => {
     const { splashWindow, main } = setup();
-    splashWindow.emit("ready-to-show");
-    vi.advanceTimersByTime(20_001);
+    vi.advanceTimersByTime(30_001);
     expect(main.show).toHaveBeenCalledTimes(1);
     expect(splashWindow.close).toHaveBeenCalledTimes(1);
   });
@@ -96,7 +123,7 @@ describe("showSplash", () => {
     const { splashWindow, main } = setup();
     main.emit("closed");
     expect(splashWindow.close).toHaveBeenCalledTimes(1);
-    vi.advanceTimersByTime(30_000);
+    vi.advanceTimersByTime(40_000);
     expect(main.show).not.toHaveBeenCalled();
   });
 });

@@ -85,6 +85,7 @@ export { miscContracts, miscEvents } from "./misc";
 export { freeAgentQuotaContracts } from "./free_agent_quota";
 export { freeModelQuotaContracts } from "./free_model_quota";
 export { albertContracts } from "./albert";
+export { splashContracts } from "./splash";
 export { audioContracts } from "./audio";
 export { mediaContracts } from "./media";
 export {
@@ -152,6 +153,7 @@ export { miscClient, miscEventClient } from "./misc";
 export { freeAgentQuotaClient } from "./free_agent_quota";
 export { freeModelQuotaClient } from "./free_model_quota";
 export { albertClient } from "./albert";
+export { splashClient } from "./splash";
 export { audioClient } from "./audio";
 export { mediaClient } from "./media";
 export {
@@ -570,6 +572,7 @@ import { miscClient, miscEventClient } from "./misc";
 import { freeAgentQuotaClient } from "./free_agent_quota";
 import { freeModelQuotaClient } from "./free_model_quota";
 import { albertClient } from "./albert";
+import { splashClient } from "./splash";
 import { audioClient } from "./audio";
 import { mediaClient } from "./media";
 import {
@@ -658,6 +661,7 @@ export const ipc = {
   freeAgentQuota: freeAgentQuotaClient,
   freeModelQuota: freeModelQuotaClient,
   albert: albertClient,
+  splash: splashClient,
   audio: audioClient,
   media: mediaClient,
   appBlueprint: appBlueprintClient,

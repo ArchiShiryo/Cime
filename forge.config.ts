@@ -236,6 +236,8 @@ const config: ForgeConfig = {
             windowsSign,
             name: "Cimes",
             setupExe: "Cimes-Setup.exe",
+            // Shown by Squirrel while installing (replaces its default animation).
+            loadingGif: "./assets/installer/cimes-installing.gif",
             iconUrl:
               "https://raw.githubusercontent.com/ArchiShiryo/Cime/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
@@ -243,6 +245,8 @@ const config: ForgeConfig = {
         : {
             name: "Cimes",
             setupExe: "Cimes-Setup.exe",
+            // Shown by Squirrel while installing (replaces its default animation).
+            loadingGif: "./assets/installer/cimes-installing.gif",
             iconUrl:
               "https://raw.githubusercontent.com/ArchiShiryo/Cime/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
