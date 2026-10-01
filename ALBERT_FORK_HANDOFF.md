@@ -61,14 +61,23 @@ npm run make
 
 ## Vérifié / non vérifié
 
-Vérifié : `npm run ts`, lint, `npm run fmt`, tests unitaires du service (validation, erreurs,
-pas de fuite de clé), test sur vraie base SQLite (création, idempotence, réparation des limites).
-Appel réel à Albert : `/v1/models` → 200 avec le modèle listé, mauvaise clé → 401,
-chat completion avec `max_tokens: 8192` → 200.
+Vérifié :
 
-Non vérifié (à faire avec l'app lancée) : rendu de l'écran d'onboarding et des paramètres,
-redémarrage (test D), requête réellement émise par Dyad (test E), génération complète d'une
-application (test F), build Windows.
+- `npm run ts`, lint, `npm run fmt`.
+- Service : validation de la clé (200 + modèle, 401, réseau coupé, modèle absent, clé vide),
+  aucune fuite de la clé dans les messages, rien n'est enregistré si la validation échoue.
+- Base SQLite réelle : création, idempotence, réparation d'un modèle réglé à 131072 tokens de
+  sortie, suppression des doublons.
+- **Test E** : pour `custom::albert / deepseek-v4-flash-0731`, `getMaxTokens` renvoie 8192 et
+  `getContextWindow` 131072 (les valeurs que Dyad passe à la requête).
+- Composants : écran « Connecter Albert » et section Paramètres testés (Vitest + Testing Library)
+  et rendus dans Chromium avec le vrai CSS (IPC simulé) : saisie masquée, erreur avec saisie
+  conservée, confirmation, tester / modifier / déconnecter.
+- API Albert réelle : `/v1/models` → 200 avec le modèle listé, mauvaise clé → 401,
+  chat completion `deepseek-v4-flash-0731` avec `max_tokens: 8192` → 200.
+
+Non vérifié (nécessite l'application packagée sous Windows) : premier lancement réel (test A),
+redémarrage (test D), génération complète d'une application avec preview (test F).
 
 ## Limites
 

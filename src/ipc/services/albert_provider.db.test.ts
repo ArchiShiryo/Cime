@@ -7,7 +7,13 @@ import * as schema from "@/db/schema";
 const holder = vi.hoisted(() => ({ db: undefined as unknown }));
 
 vi.mock("electron-log", () => {
-  const scoped = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+  const scoped = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+  };
   return { default: { scope: () => scoped } };
 });
 vi.mock("@/main/settings", () => ({
@@ -20,6 +26,16 @@ vi.mock("@/db", () => ({
   },
 }));
 
+vi.mock("@/ipc/shared/remote_language_model_catalog", () => ({
+  getBuiltinLanguageModelCatalog: async () => ({
+    source: "test",
+    version: "test",
+    providers: [],
+    modelsByProvider: {},
+  }),
+}));
+
+import { getContextWindow, getMaxTokens } from "@/ipc/utils/token_utils";
 import {
   ALBERT_API_BASE_URL,
   ALBERT_CONTEXT_WINDOW,
@@ -92,5 +108,12 @@ describe("ensureAlbertProvider", () => {
     expect(providers()[0].api_base_url).toBe(ALBERT_API_BASE_URL);
     expect(models()).toHaveLength(1);
     expect(models()[0].max_output_tokens).toBe(8192);
+  });
+
+  it("is what Dyad sends as the output limit for the Albert model", async () => {
+    ensureAlbertProvider();
+    const model = { provider: ALBERT_PROVIDER_ID, name: ALBERT_MODEL_ID };
+    expect(await getMaxTokens(model)).toBe(8192);
+    expect(await getContextWindow(model)).toBe(131072);
   });
 });
