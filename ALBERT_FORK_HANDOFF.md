@@ -98,4 +98,4 @@ extrait du modèle institutionnel (`assets/logo.svg`).
 
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
 - L'URL du lien « Où trouver ma clé ? » (`https://albert.sites.beta.gouv.fr/`) est à confirmer.
-- L'icône de l'exécutable reste celle de Dyad (un `.ico` Cimes reste à générer) ; l'écran de démarrage « Albert — Déploiement Guyane » n'est pas fait.
+- Icône Cimes (lettre « C » du logo CANOPÉ sur fond turquoise) : `assets/icon/logo.ico` (Windows, 7 tailles) et `logo.png` (Linux). `logo.icns` (macOS) est resté celui de Dyad. L'écran de démarrage « Albert — Déploiement Guyane » n'est pas fait.

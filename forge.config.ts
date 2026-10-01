@@ -237,14 +237,14 @@ const config: ForgeConfig = {
             name: "Cimes",
             setupExe: "Cimes-Setup.exe",
             iconUrl:
-              "https://raw.githubusercontent.com/dyad-sh/dyad/main/assets/icon/logo.ico",
+              "https://raw.githubusercontent.com/ArchiShiryo/Cime/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
           }
         : {
             name: "Cimes",
             setupExe: "Cimes-Setup.exe",
             iconUrl:
-              "https://raw.githubusercontent.com/dyad-sh/dyad/main/assets/icon/logo.ico",
+              "https://raw.githubusercontent.com/ArchiShiryo/Cime/main/assets/icon/logo.ico",
             setupIcon: "./assets/icon/logo.ico",
           },
     ),
