@@ -11,3 +11,10 @@ declare module "*.txt?raw" {
 }
 
 declare module "*.css";
+
+// Vite inlines `?inline` image imports as base64 data URIs (used by the splash
+// screen, which must not depend on files outside the packaged bundle).
+declare module "*.webp?inline" {
+  const dataUri: string;
+  export default dataUri;
+}

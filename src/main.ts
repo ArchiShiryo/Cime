@@ -48,6 +48,7 @@ import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
 import { ensureAlbertProvider } from "./ipc/services/albert_service";
 import { AUTO_UPDATE_AVAILABLE } from "./shared/branding";
+import { showSplash } from "./splash/splash_window";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { reconcileOrphanTestBranches } from "./ipc/utils/neon_test_branch";
@@ -887,7 +888,8 @@ function deliverPendingCrashRecovery(target: BrowserWindow): void {
 const createWindow = ({
   windowSessionId = randomUUID() as WindowSessionId,
   visibleEntity,
-}: Partial<WindowSessionDescriptor> = {}): {
+  deferShow = false,
+}: Partial<WindowSessionDescriptor> & { deferShow?: boolean } = {}): {
   windowSessionId: WindowSessionId;
   browserWindow: BrowserWindow;
   rendererLoad: Promise<void>;
@@ -898,6 +900,8 @@ const createWindow = ({
 
   // Create the browser window.
   const browserWindow = new BrowserWindow({
+    // The splash screen reveals the window once the renderer is ready.
+    show: !deferShow,
     width: process.env.NODE_ENV === "development" ? 1280 : 960,
     minWidth: 800,
     height: 700,
@@ -1228,7 +1232,13 @@ async function createFreshStartupWindow(): Promise<void> {
     logger.info("Skipping initial window creation during shutdown");
     return;
   }
-  createWindow({ windowSessionId: PRIMARY_WINDOW_SESSION_ID });
+  // Packaged, non-test builds only: dev and E2E runs keep the direct window.
+  const splash = app.isPackaged && !IS_TEST_BUILD ? showSplash() : null;
+  const { browserWindow: initialWindow } = createWindow({
+    windowSessionId: PRIMARY_WINDOW_SESSION_ID,
+    deferShow: splash !== null,
+  });
+  splash?.revealWhenReady(initialWindow);
   hasCreatedInitialWindow = true;
 }
 
