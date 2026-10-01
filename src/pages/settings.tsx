@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProviderSettingsGrid } from "@/components/ProviderSettings";
 import { AlbertSettings } from "@/components/AlbertSettings";
+import { WebSearchSettings } from "@/components/WebSearchSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -598,6 +599,10 @@ export function AISettings() {
     >
       <div id={SETTING_IDS.maxToolCallSteps}>
         <MaxToolCallStepsSelector />
+      </div>
+
+      <div id={SETTING_IDS.webSearchSearxng}>
+        <WebSearchSettings />
       </div>
 
       <div id={SETTING_IDS.contextCompaction} className="space-y-1.5">

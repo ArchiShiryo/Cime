@@ -7,6 +7,10 @@ import {
   escapeXmlContent,
 } from "./types";
 import { engineFetch } from "./engine_fetch";
+import { wrapUntrustedWebContent } from "./local_web";
+import { formatSearchResults, searchWeb } from "./local_web_search";
+import { readSettings } from "@/main/settings";
+import { LOCAL_WEB_TOOLS_ENABLED } from "@/shared/branding";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("web_search");
@@ -175,18 +179,31 @@ export const webSearchTool: ToolDefinition<z.infer<typeof webSearchSchema>> = {
   name: "web_search",
   description: DESCRIPTION,
   inputSchema: webSearchSchema,
-  defaultConsent: "ask",
-  usesEngineEndpoint: true,
+  // Dyad Pro keeps its per-search confirmation; the local keyless search only
+  // sends the query to a public search engine, so it needs none.
+  defaultConsent: LOCAL_WEB_TOOLS_ENABLED ? "always" : "ask",
+  usesEngineEndpoint: false,
 
-  // Requires Dyad Pro engine API
-  isEnabled: (ctx) => ctx.isDyadPro,
+  // Dyad Pro uses the engine; otherwise a local keyless search is used.
+  isEnabled: (ctx) => ctx.isDyadPro || LOCAL_WEB_TOOLS_ENABLED,
 
   getConsentPreview: (args) => `Search the web: "${args.query}"`,
 
   execute: async (args, ctx: AgentContext) => {
     logger.log(`Executing web search: ${args.query}`);
 
-    const result = await callWebSearchSSE(args.query, ctx);
+    const result = ctx.isDyadPro
+      ? await callWebSearchSSE(args.query, ctx)
+      : wrapUntrustedWebContent(
+          "web search",
+          formatSearchResults(
+            args.query,
+            await searchWeb(args.query, {
+              searxngUrl: readSettings().webSearchSearxngUrl || undefined,
+              signal: ctx.abortSignal,
+            }),
+          ),
+        );
 
     if (!result) {
       throw new DyadError(

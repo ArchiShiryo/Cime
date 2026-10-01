@@ -17,3 +17,7 @@ export const PAID_FEATURES_ENABLED = false;
 // no network calls, every event is dropped, and the consent prompt and
 // telemetry settings are hidden.
 export const TELEMETRY_ENABLED = false;
+
+// The agent reads and searches the web locally (no Dyad engine, no API key):
+// keyless search plus a readable-page fetcher, with private addresses refused.
+export const LOCAL_WEB_TOOLS_ENABLED = true;

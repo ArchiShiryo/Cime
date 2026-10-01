@@ -2,6 +2,8 @@ import { z } from "zod";
 import log from "electron-log";
 import { ToolDefinition, escapeXmlContent, AgentContext } from "./types";
 import { engineFetch } from "./engine_fetch";
+import { fetchPageAsMarkdown, wrapUntrustedWebContent } from "./local_web";
+import { LOCAL_WEB_TOOLS_ENABLED } from "@/shared/branding";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 
 const logger = log.scope("web_fetch");
@@ -86,10 +88,11 @@ export const webFetchTool: ToolDefinition<z.infer<typeof webFetchSchema>> = {
   description: DESCRIPTION,
   inputSchema: webFetchSchema,
   defaultConsent: "always",
-  usesEngineEndpoint: true,
+  // Only the Dyad Pro path calls the engine; the local path never does.
+  usesEngineEndpoint: false,
 
-  // Requires Dyad Pro engine API
-  isEnabled: (ctx) => ctx.isDyadPro,
+  // Dyad Pro uses the engine; otherwise pages are read locally (local_web.ts).
+  isEnabled: (ctx) => ctx.isDyadPro || LOCAL_WEB_TOOLS_ENABLED,
 
   getConsentPreview: (args) => `Fetch URL: "${args.url}"`,
 
@@ -106,6 +109,23 @@ export const webFetchTool: ToolDefinition<z.infer<typeof webFetchSchema>> = {
     validateHttpUrl(args.url);
 
     ctx.onXmlStream(`<dyad-web-fetch>${escapeXmlContent(args.url)}`);
+
+    if (!ctx.isDyadPro) {
+      try {
+        const page = await fetchPageAsMarkdown(args.url, {
+          signal: ctx.abortSignal,
+        });
+        ctx.onXmlComplete(
+          `<dyad-web-fetch>${escapeXmlContent(args.url)}</dyad-web-fetch>`,
+        );
+        return wrapUntrustedWebContent(page.url, page.markdown);
+      } catch (error) {
+        ctx.onXmlComplete(
+          `<dyad-web-fetch>${escapeXmlContent(args.url)}</dyad-web-fetch>`,
+        );
+        throw error;
+      }
+    }
 
     try {
       const result = await callWebFetch(args.url, ctx);

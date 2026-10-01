@@ -5,6 +5,7 @@ import { getModelClient } from "@/ipc/utils/get_model_client";
 import { fastTextOutput } from "@/ipc/utils/stream_text_utils";
 import { extractJson } from "@/ipc/utils/extract_json";
 import type { UserSettings } from "@/lib/schemas";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 
 export const TOOL_REVIEW_TIMEOUT_MS = 8_000;
 // Shell inspection can require several model round trips; MCP remains a single verdict.
@@ -65,10 +66,12 @@ export async function reviewToolAction<D extends "ask" | "block">({
       const { payload, tools } = await prepare(controller.signal);
       controller.signal.throwIfAborted();
       state.phase = "model setup";
-      const { modelClient } = await getModelClient(
-        { name: "gpt-6-luna", provider: "openai" },
-        settings,
-      );
+      // Upstream reviews with a small OpenAI model; Cimes has no OpenAI or
+      // Dyad Pro access, so the review runs on the model the user selected.
+      const reviewModel = PAID_FEATURES_ENABLED
+        ? { name: "gpt-6-luna", provider: "openai" }
+        : settings.selectedModel;
+      const { modelClient } = await getModelClient(reviewModel, settings);
       controller.signal.throwIfAborted();
       state.phase = "generation";
       const stream = streamText({

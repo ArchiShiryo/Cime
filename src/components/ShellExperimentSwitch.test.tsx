@@ -1,6 +1,14 @@
 import { fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ShellExperimentSwitch } from "./ShellExperimentSwitch";
+// Upstream behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
 const mocks = vi.hoisted(() => ({ pro: true, updateSettings: vi.fn() }));
 vi.mock("@/hooks/useSettings", () => ({
   useSettings: () => ({
@@ -17,6 +25,23 @@ afterEach(() => {
   mocks.pro = true;
   mocks.updateSettings.mockClear();
 });
+describe("Shell tool in Cimes", () => {
+  it("is on by default, usable without Pro, and not labelled Pro", () => {
+    branding.paid = false;
+    mocks.pro = false;
+    try {
+      render(<ShellExperimentSwitch />);
+      const toggle = screen.getByRole("switch", { name: "Shell tool" });
+      expect(toggle.getAttribute("aria-checked")).toBe("false");
+      expect(toggle.hasAttribute("disabled")).toBe(false);
+      expect(screen.queryByText(/Pro/)).toBeNull();
+      expect(screen.getByText(/asks for your approval/)).toBeTruthy();
+    } finally {
+      branding.paid = true;
+    }
+  });
+});
+
 describe("Shell experiment", () => {
   it("persists the top-level setting", () => {
     render(<ShellExperimentSwitch />);

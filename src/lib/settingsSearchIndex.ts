@@ -29,6 +29,7 @@ export const SETTING_IDS = {
   chatEventNotification: "setting-chat-event-notification",
   maxToolCallSteps: "setting-max-tool-call-steps",
   contextCompaction: "setting-context-compaction",
+  webSearchSearxng: "setting-web-search-searxng",
   telemetry: "setting-telemetry",
   github: "setting-github",
   vercel: "setting-vercel",
@@ -264,6 +265,23 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
     sectionLabel: "AI",
   },
   {
+    id: SETTING_IDS.webSearchSearxng,
+    label: "Web search server (SearXNG)",
+    description:
+      "Optional SearXNG server the agent uses for web search instead of DuckDuckGo and Bing",
+    keywords: [
+      "web",
+      "search",
+      "searxng",
+      "internet",
+      "duckduckgo",
+      "bing",
+      "agent",
+    ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
     id: SETTING_IDS.contextCompaction,
     label: "Context Compaction",
     description:
@@ -463,16 +481,15 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
   },
   {
     id: SETTING_IDS.enableShellTool,
-    label: "Shell tool (Pro)",
+    label: "Shell tool",
     description:
-      "Allow reviewed Bash or PowerShell commands in Pro Agent mode on the local host",
+      "Allow Bash or PowerShell commands in Agent mode on the local host (each command needs approval)",
     keywords: [
       "shell",
       "bash",
       "powershell",
       "command",
       "terminal",
-      "pro",
       "experiment",
     ],
     sectionId: SECTION_IDS.experiments,

@@ -521,6 +521,8 @@ const BaseUserSettingsFields = {
   enableSupabaseWriteSqlMigration: z.boolean().optional(),
   autoApproveNonSchemaSql: z.boolean().optional(),
   enableShellTool: z.boolean().optional(),
+  /** Optional SearXNG server used by the agent's web search (JSON output enabled). */
+  webSearchSearxngUrl: z.string().url().optional(),
   autoApproveSafeMcpTools: z.boolean().optional(),
   skipPruneEdgeFunctions: z.boolean().optional(),
   acceptedCommunityCode: z.boolean().optional(),
