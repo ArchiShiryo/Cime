@@ -7,6 +7,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useTranslation } from "react-i18next";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { selectAtom } from "jotai/utils";
@@ -102,6 +103,7 @@ export function ChatPanel({
   const { selectedMode, selectedModel, setChatMode } = useChatMode(chatId);
   const { isQuotaExceeded } = useFreeAgentQuota();
   const showFreeAgentQuotaBanner =
+    PAID_FEATURES_ENABLED &&
     settings &&
     !isDyadProEnabled(settings) &&
     selectedMode === "local-agent" &&

@@ -1,4 +1,5 @@
 import { SubscriptionBillingError } from "@/shared/subscription_billing_error";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { modelForChatBackend } from "@/shared/execution_backend";
 import { isDotenvFilePath } from "@/utils/dotenv_redaction";
 import type { ExternalModelAdmission } from "../services/external_model_admission";
@@ -1203,10 +1204,13 @@ export function registerChatStreamHandlers() {
 
       // Reserve quota before redo or attachment persistence. The reservation
       // is converted to a durable message mark only after turn acceptance.
-      let isBasicAgentModeRequest = isBasicAgentMode({
-        ...storedSettings,
-        selectedChatMode,
-      });
+      // Cimes has no paid tier, so the free Basic Agent quota never applies.
+      let isBasicAgentModeRequest =
+        PAID_FEATURES_ENABLED &&
+        isBasicAgentMode({
+          ...storedSettings,
+          selectedChatMode,
+        });
       const isAcceptedReplay = isChatTurnAlreadyAccepted(db, {
         chatId: req.chatId,
         chatTurnIntentId: req.intentId,
@@ -1690,10 +1694,12 @@ ${componentSnippet}
             ({ settings: storedSettings, mode: selectedChatMode } =
               latestResolution);
             assertChatModeCompatibleWithModel(storedSettings, selectedChatMode);
-            isBasicAgentModeRequest = isBasicAgentMode({
-              ...storedSettings,
-              selectedChatMode,
-            });
+            isBasicAgentModeRequest =
+              PAID_FEATURES_ENABLED &&
+              isBasicAgentMode({
+                ...storedSettings,
+                selectedChatMode,
+              });
 
             if (
               isBasicAgentModeRequest &&
@@ -1831,7 +1837,8 @@ ${componentSnippet}
         ...storedSettings,
         selectedChatMode,
       };
-      isBasicAgentModeRequest = isBasicAgentMode(settings);
+      isBasicAgentModeRequest =
+        PAID_FEATURES_ENABLED && isBasicAgentMode(settings);
       if (
         !isBasicAgentModeRequest &&
         reservedFreeAgentQuotaMessageId !== null

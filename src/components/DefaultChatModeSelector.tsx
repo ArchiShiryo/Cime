@@ -1,4 +1,5 @@
 import { useSettings } from "@/hooks/useSettings";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useFreeAgentQuota } from "@/hooks/useFreeAgentQuota";
 import { SettingField } from "@/components/settings/SettingField";
 import {
@@ -56,7 +57,7 @@ export function DefaultChatModeSelector() {
       case "build":
         return "Build";
       case "local-agent":
-        return isProEnabled ? "Agent" : "Basic Agent";
+        return isProEnabled || !PAID_FEATURES_ENABLED ? "Agent" : "Basic Agent";
       case "ask":
         return "Ask";
       case "plan":
@@ -87,7 +88,9 @@ export function DefaultChatModeSelector() {
           <SelectItem value="local-agent">
             <div className="flex flex-col items-start">
               <span className="font-medium">
-                {isProEnabled ? "Agent" : "Basic Agent"}
+                {isProEnabled || !PAID_FEATURES_ENABLED
+                  ? "Agent"
+                  : "Basic Agent"}
               </span>
               <span className="text-xs text-muted-foreground">
                 {isProEnabled

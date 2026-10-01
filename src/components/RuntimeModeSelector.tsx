@@ -1,4 +1,5 @@
 import { SettingField } from "@/components/settings/SettingField";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import {
   Select,
   SelectContent,
@@ -54,10 +55,12 @@ export function RuntimeModeSelector() {
   const isDockerMode = settings?.runtimeMode2 === "docker";
   const isCloudMode = settings?.runtimeMode2 === "cloud";
   const hasCloudSandboxAccess = Boolean(userBudget);
-  const showCloudSandboxOption = shouldShowCloudSandboxOption({
-    runtimeMode: settings.runtimeMode2 ?? "host",
-    cloudSandboxExperimentEnabled: !!settings.experiments?.enableCloudSandbox,
-  });
+  const showCloudSandboxOption =
+    PAID_FEATURES_ENABLED &&
+    shouldShowCloudSandboxOption({
+      runtimeMode: settings.runtimeMode2 ?? "host",
+      cloudSandboxExperimentEnabled: !!settings.experiments?.enableCloudSandbox,
+    });
 
   const applyRuntimeModeChange = async (value: RuntimeMode2) => {
     try {

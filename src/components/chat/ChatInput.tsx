@@ -1012,6 +1012,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               }}
             />
           ) : (
+            PAID_FEATURES_ENABLED &&
             selectedComponents.length > 0 && (
               <div className="border-b border-border p-3 bg-muted/30">
                 <Tooltip>
