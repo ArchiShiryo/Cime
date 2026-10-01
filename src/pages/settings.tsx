@@ -2,6 +2,7 @@ import { ShellExperimentSwitch } from "@/components/ShellExperimentSwitch";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProviderSettingsGrid } from "@/components/ProviderSettings";
+import { AlbertSettings } from "@/components/AlbertSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -145,6 +146,7 @@ export default function SettingsPage() {
             title="Model Providers"
             description="Connect the AI providers Dyad uses to build and run your apps."
           >
+            <AlbertSettings />
             <ProviderSettingsGrid />
           </SettingsSection>
 

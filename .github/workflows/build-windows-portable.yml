@@ -1,0 +1,52 @@
+name: Build Windows (portable + installer)
+
+# Manual build of the Windows artifacts for this fork. Produces:
+#   - a portable ZIP (unzip and run the .exe, no installation)
+#   - the Squirrel Setup.exe installer
+# Download them from the run's "Artifacts" section.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Initialize environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: v24.13.1
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install npm 11.8.0
+        run: npm install -g npm@11.8.0
+      - name: Install node modules
+        run: bash scripts/npm-ci-retry.sh
+        env:
+          # Required for @vscode/ripgrep to download binaries without hitting GitHub API rate limits
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Windows artifacts
+        uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3.0.2
+        with:
+          timeout_minutes: 40
+          max_attempts: 2
+          command: npm run make
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v6
+        with:
+          name: windows-portable-zip
+          path: out/make/zip/win32/**/*.zip
+          if-no-files-found: error
+      - name: Upload installer
+        uses: actions/upload-artifact@v6
+        with:
+          name: windows-installer
+          path: out/make/squirrel.windows/**/*.exe
+          if-no-files-found: warn
