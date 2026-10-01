@@ -107,4 +107,14 @@ describe("albert_service", () => {
     readSettings.mockReturnValue({ providerSettings: {} });
     expect(service.getAlbertStatus()).toMatchObject({ connected: false });
   });
+
+  it("does not treat an ALBERT_API_KEY environment variable as connected", () => {
+    vi.stubEnv("ALBERT_API_KEY", "sk-from-env");
+    readSettings.mockReturnValue({ providerSettings: {} });
+    expect(service.getAlbertStatus()).toMatchObject({
+      connected: false,
+      fromEnvironment: true,
+    });
+    vi.unstubAllEnvs();
+  });
 });

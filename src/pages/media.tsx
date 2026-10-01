@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useAppMediaFiles } from "@/hooks/useAppMediaFiles";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { Image, ImagePlus, Loader2 } from "lucide-react";
@@ -34,10 +35,12 @@ export default function MediaPage() {
           </h1>
           <div className="flex items-center gap-2">
             <ImageGenerationProgressButton />
-            <Button onClick={() => setImageGeneratorOpen(true)}>
-              <ImagePlus className="mr-2 h-4 w-4" />
-              Generate Image
-            </Button>
+            {PAID_FEATURES_ENABLED && (
+              <Button onClick={() => setImageGeneratorOpen(true)}>
+                <ImagePlus className="mr-2 h-4 w-4" />
+                Generate Image
+              </Button>
+            )}
           </div>
         </div>
 

@@ -1,10 +1,11 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { DeepLinkProvider } from "../contexts/DeepLinkContext";
 import { Toaster } from "sonner";
 import { TitleBar } from "./TitleBar";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useAppOutputSubscription } from "@/hooks/useRunApp";
 import { useAtomValue, useSetAtom } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
@@ -52,7 +53,7 @@ import { PreviewErrorFacadeProvider } from "@/app_wiring/preview_error_facade";
 import { usePreviewErrorFacade } from "@/app_wiring/preview_error_facade";
 import { AlbertOnboarding } from "@/components/AlbertOnboarding";
 import { useAlbert } from "@/hooks/useAlbert";
-import { useLanguageModelProviders } from "@/hooks/useLanguageModelProviders";
+import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -112,18 +113,13 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
     [appRunManager, previewErrors],
   );
   const { settings } = useSettings();
-  const { status: albertStatus } = useAlbert();
-  const { isAnyProviderSetup, isLoading: isLoadingProviders } =
-    useLanguageModelProviders();
-  const [albertOnboardingSkipped, setAlbertOnboardingSkipped] = useState(false);
-  // First launch with nothing configured: ask for the Albert key, nothing else.
-  const showAlbertOnboarding =
-    Boolean(settings) &&
-    !settings?.isTestMode &&
-    albertStatus?.connected === false &&
-    !isLoadingProviders &&
-    !isAnyProviderSetup() &&
-    !albertOnboardingSkipped;
+  const { status: albertStatus, isError: albertStatusError } = useAlbert();
+  const showAlbertOnboarding = shouldShowAlbertOnboarding({
+    settingsLoaded: Boolean(settings),
+    isTestMode: Boolean(settings?.isTestMode),
+    status: albertStatus,
+    statusError: albertStatusError,
+  });
   const setSelectedComponentsPreview = useSetAtom(
     selectedComponentsPreviewAtom,
   );
@@ -214,18 +210,12 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
                 <TitleBar />
                 <AppSidebar />
                 <div className="flex h-screenish min-w-0 flex-1 flex-col overflow-hidden mt-[var(--layout-title-bar-offset)] border-l border-border bg-background">
-                  <SubscriptionStatusBanner />
+                  {PAID_FEATURES_ENABLED && <SubscriptionStatusBanner />}
                   <div
                     id="layout-main-content-container"
                     className="flex min-h-0 w-full flex-1 overflow-x-hidden"
                   >
-                    {showAlbertOnboarding ? (
-                      <AlbertOnboarding
-                        onSkip={() => setAlbertOnboardingSkipped(true)}
-                      />
-                    ) : (
-                      children
-                    )}
+                    {showAlbertOnboarding ? <AlbertOnboarding /> : children}
                   </div>
                 </div>
                 <Toaster

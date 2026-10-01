@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { APP_DISPLAY_NAME, PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -185,7 +186,8 @@ export default function HomePage() {
               What do you want to build?
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-              Describe your idea. Dyad will turn it into a working app.
+              Describe your idea. {APP_DISPLAY_NAME} will turn it into a working
+              app.
             </p>
             <div className="mt-4 flex justify-center gap-3">
               <ImportAppButton
@@ -193,7 +195,7 @@ export default function HomePage() {
                 variant="outline"
                 size="sm"
               />
-              {!hasDyadProApiKey && (
+              {PAID_FEATURES_ENABLED && !hasDyadProApiKey && (
                 <Button
                   size="sm"
                   onClick={() =>
@@ -213,7 +215,8 @@ export default function HomePage() {
             disabled={isCheckingProviders}
           />
 
-          {!isSettingsLoading &&
+          {PAID_FEATURES_ENABLED &&
+            !isSettingsLoading &&
             !isLoadingLanguageModelProviders &&
             !hasDyadProApiKey && (
               <div className="-mt-2 flex justify-end px-4">

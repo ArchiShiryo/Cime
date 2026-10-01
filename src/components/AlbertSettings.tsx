@@ -45,9 +45,11 @@ export function AlbertSettings() {
           )}
           {status ? ` · Modèle : ${status.modelDisplayName}` : ""}
         </div>
-        {status?.fromEnvironment && (
+        {!connected && status?.fromEnvironment && (
           <div className="text-xs text-muted-foreground">
-            Clé fournie par la variable d&apos;environnement ALBERT_API_KEY.
+            Une variable ALBERT_API_KEY existe sur ce poste : enregistrez la clé
+            ici pour lClé fournie par la variable d&apos;environnement
+            ALBERT_API_KEY.apos;utiliser dans Cimes.
           </div>
         )}
       </div>
@@ -112,7 +114,7 @@ export function AlbertSettings() {
           <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
             {connected ? "Modifier la clé" : "Connecter Albert"}
           </Button>
-          {connected && !status?.fromEnvironment && (
+          {connected && (
             <Button
               size="sm"
               variant="outline"

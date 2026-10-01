@@ -1,4 +1,5 @@
 import { SubscriptionLimitBanner } from "@/components/SubscriptionConnectionStatus";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import {
   StopCircleIcon,
   X,
@@ -1117,7 +1118,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                       : t("voiceToText", "Voice to text")}
                 </TooltipContent>
               </Tooltip>
-            ) : (
+            ) : PAID_FEATURES_ENABLED ? (
               <Tooltip>
                 <TooltipTrigger
                   render={
@@ -1137,7 +1138,7 @@ export function ChatInput({ chatId }: { chatId?: number }) {
                   {t("voiceToTextRequiresPro", "Voice to text (requires Pro)")}
                 </TooltipContent>
               </Tooltip>
-            )}
+            ) : null}
 
             {isStreaming ? (
               // Cancelling is not instant — an in-flight tool has to unwind
@@ -1204,7 +1205,9 @@ export function ChatInput({ chatId }: { chatId?: number }) {
               showTokenBar={showTokenBar}
               toggleShowTokenBar={toggleShowTokenBar}
               appId={appId ?? undefined}
-              onGenerateImage={handleOpenImageGenerator}
+              onGenerateImage={
+                PAID_FEATURES_ENABLED ? handleOpenImageGenerator : undefined
+              }
             />
           </div>
           {/* TokenBar is only displayed when showTokenBar is true */}

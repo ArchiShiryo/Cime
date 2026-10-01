@@ -1,4 +1,5 @@
 import { useAtomValue } from "jotai";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useRef, useState } from "react";
@@ -129,6 +130,7 @@ export function shouldShowPromoMessage({
 }) {
   const hasProKey = settings ? hasDyadProKey(settings) : false;
   return (
+    PAID_FEATURES_ENABLED &&
     promoSeed !== null &&
     !settings?.isTestMode &&
     !hasProKey &&

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import {
   ImageIcon,
   Box,
@@ -170,7 +171,7 @@ export function ImageGeneratorDialog({
                   Pro-only feature
                 </p>
               </div>
-              <AiAccessBanner />
+              {PAID_FEATURES_ENABLED && <AiAccessBanner />}
             </div>
           ) : (
             <>

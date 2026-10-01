@@ -8,3 +8,7 @@ export const APP_DISPLAY_NAME = "Cimes";
 // ships through its own GitHub Actions build instead, so the updater stays off
 // until a Cimes feed exists.
 export const AUTO_UPDATE_AVAILABLE = false;
+
+// Cimes runs on Albert (free for the public sector): every Dyad Pro / paid
+// upsell, subscription banner and the paid "Dyad" auto provider stay hidden.
+export const PAID_FEATURES_ENABLED = false;

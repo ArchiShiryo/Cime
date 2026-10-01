@@ -16,7 +16,7 @@ const ALBERT_KEY_HELP_URL = "https://albert.sites.beta.gouv.fr/";
  * The typed value is kept on every error so a network hiccup never costs them
  * their input.
  */
-export function AlbertOnboarding({ onSkip }: { onSkip: () => void }) {
+export function AlbertOnboarding() {
   const { connect } = useAlbert();
   const [apiKey, setApiKey] = useState("");
   const [connected, setConnected] = useState(false);
@@ -96,20 +96,13 @@ export function AlbertOnboarding({ onSkip }: { onSkip: () => void }) {
           Connecter
         </Button>
 
-        <div className="flex justify-between text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           <button
             type="button"
             className="underline hover:text-foreground"
             onClick={() => ipc.system.openExternalUrl(ALBERT_KEY_HELP_URL)}
           >
             Où trouver ma clé ?
-          </button>
-          <button
-            type="button"
-            className="underline hover:text-foreground"
-            onClick={onSkip}
-          >
-            Utiliser un autre fournisseur
           </button>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -330,7 +331,7 @@ export function AIGeneratorTab({
             Pro-only feature
           </p>
         </div>
-        <AiAccessBanner />
+        {PAID_FEATURES_ENABLED && <AiAccessBanner />}
       </div>
     );
   }
