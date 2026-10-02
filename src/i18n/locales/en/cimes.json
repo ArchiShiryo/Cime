@@ -50,8 +50,8 @@
   },
   "documents": {
     "title": "Documents",
-    "intro": "Your documents (PDF, Word, Excel, PowerPoint, text) that the agent can consult to answer.",
-    "settingsIntro": "Add documents (PDF, Word, Excel, PowerPoint, Markdown, text). The agent consults them with the \"search_docs\" tool when your question relates to them. Files stay where they are; Cimes keeps an index on this computer.",
+    "intro": "Your documents (PDF, Word, Excel, PowerPoint, LibreOffice, text) that the agent can consult to answer.",
+    "settingsIntro": "Add documents (PDF, Word, Excel, PowerPoint, LibreOffice, Markdown, text). The agent consults them with the \"search_docs\" tool when your question relates to them. Files stay where they are; Cimes keeps an index on this computer.",
     "semantic": "Search by meaning",
     "modeLocal": "On this computer (recommended)",
     "modeLocalHelp": "A small model shipped with Cimes computes meaning-based search on the processor. Nothing leaves the computer; the first analysis takes a while.",

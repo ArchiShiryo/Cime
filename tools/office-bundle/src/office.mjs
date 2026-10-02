@@ -12,8 +12,17 @@ import PptxGenJS from "pptxgenjs";
 import mammoth from "mammoth";
 import JSZip from "jszip";
 import { extractImages, extractText, getDocumentProxy } from "unpdf";
+import { readOdp, readOds, readOdt } from "./odf.mjs";
+import { markdownToPdf } from "./pdf.mjs";
 
 export { docx, ExcelJS, PptxGenJS, mammoth, JSZip, extractText, getDocumentProxy };
+export { readOdt, readOds, readOdp, markdownToPdf };
+
+/** A Word document as a PDF: its text, headings, lists and tables (images and exact layout are not kept). */
+export async function docxToPdf(file, outFile, options = {}) {
+  const { value } = await mammoth.convertToMarkdown({ path: file });
+  return markdownToPdf(value, outFile, options);
+}
 
 const decodeXml = (text) =>
   text
@@ -650,12 +659,15 @@ export async function jsonToPptx(slides, outFile, options = {}) {
 const HELP = `Cimes Office toolkit (Word, Excel, PowerPoint without Microsoft Office)
 
 Read
-  node office.mjs read <file.docx|xlsx|pptx|pdf>       text (docx: Markdown, others: JSON; pdf: text per page)
+  node office.mjs read <file.docx|xlsx|pptx|pdf|odt|ods|odp>   text (docx/odt: Markdown, others: JSON; pdf: text per page)
 Create
   node office.mjs md2docx <input.md> <output.docx> [title]
   node office.mjs csv2xlsx <input.csv> <output.xlsx>
   node office.mjs xlsx2csv <input.xlsx> <output.csv> [sheet]
   node office.mjs json2pptx <slides.json> <output.pptx>     [{"title","bullets":[],"text","notes","subtitle"}]
+PDF export (offline)
+  node office.mjs md2pdf <input.md> <output.pdf> [title]    Markdown -> PDF (A4, headings, lists, tables, page numbers)
+  node office.mjs docx2pdf <input.docx> <output.pdf> [title]  Word -> PDF with a simplified layout
 OCR (scanned documents, offline)
   node office.mjs ocr <file.pdf|png|jpg|bmp> [pages e.g. 1,2,5]   recognised text (French and English)
 Edit (keeps the formatting)
@@ -674,7 +686,20 @@ async function main(argv) {
       else if (ext === ".pptx")
         console.log(JSON.stringify(await readPptx(file), null, 1));
       else if (ext === ".pdf") console.log(JSON.stringify(await readPdf(file), null, 1));
-      else throw new Error("Readable formats: .docx, .xlsx, .pptx, .pdf");
+      else if (ext === ".odt") console.log(await readOdt(file));
+      else if (ext === ".ods") console.log(JSON.stringify(await readOds(file), null, 1));
+      else if (ext === ".odp") console.log(JSON.stringify(await readOdp(file), null, 1));
+      else throw new Error("Readable formats: .docx, .xlsx, .pptx, .pdf, .odt, .ods, .odp");
+      return;
+    }
+    case "md2pdf": {
+      const pages = await markdownToPdf(fs.readFileSync(args[0], "utf8"), args[1], { title: args[2] });
+      console.log(`Created: ${args[1]} (${pages} page(s))`);
+      return;
+    }
+    case "docx2pdf": {
+      const pages = await docxToPdf(args[0], args[1], { title: args[2] });
+      console.log(`Created: ${args[1]} (${pages} page(s)); simplified layout (text, headings, lists, tables)`);
       return;
     }
     case "ocr": {

@@ -4,6 +4,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import type { AddressInfo } from "node:net";
+import { strToU8, zipSync } from "fflate";
 import {
   afterAll,
   beforeAll,
@@ -327,6 +328,52 @@ describe("pickEmbeddingModel", () => {
       pickEmbeddingModel([{ id: "llm", type: "text-generation" }]),
     ).toBeNull();
   });
+});
+
+describe("LibreOffice documents", () => {
+  beforeEach(async () => {
+    await waitForKnowledgeIdle();
+    closeKnowledgeDb();
+    holder.userData = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-kb-odf-"));
+    holder.mode = "keywords";
+  });
+
+  it("indexes an .odt and an .ods and answers from them", async () => {
+    const ns =
+      'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"';
+    const make = (body: string, mime: string) =>
+      Buffer.from(
+        zipSync({
+          mimetype: [strToU8(mime), { level: 0 }],
+          "content.xml": strToU8(
+            `<office:document-content ${ns}><office:body>${body}</office:body></office:document-content>`,
+          ),
+        }),
+      );
+    const dir = path.join(holder.userData, "odf");
+    fs.mkdirSync(dir);
+    fs.writeFileSync(
+      path.join(dir, "reglement.odt"),
+      make(
+        '<office:text><text:h text:outline-level="1">Règlement</text:h><text:p>Les tablettes sont rangées dans l\'armoire bleue.</text:p></office:text>',
+        "application/vnd.oasis.opendocument.text",
+      ),
+    );
+    fs.writeFileSync(
+      path.join(dir, "stock.ods"),
+      make(
+        '<office:spreadsheet><table:table table:name="Stock"><table:table-row><table:table-cell office:value-type="string"><text:p>Chargeurs</text:p></table:table-cell><table:table-cell office:value-type="float" office:value="12"><text:p>12</text:p></table:table-cell></table:table-row></table:table></office:spreadsheet>',
+        "application/vnd.oasis.opendocument.spreadsheet",
+      ),
+    );
+    await addToKnowledgeBase([dir]);
+    await waitForKnowledgeIdle();
+    expect(listSources().map((s) => s.status)).toEqual(["ready", "ready"]);
+    expect((await searchKnowledge("armoire bleue tablettes"))[0].source).toBe(
+      "reglement.odt",
+    );
+    expect((await searchKnowledge("chargeurs"))[0].source).toBe("stock.ods");
+  }, 60_000);
 });
 
 describe.skipIf(!getOcrDir())("OCR (offline, shipped with Cimes)", () => {

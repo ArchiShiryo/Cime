@@ -17,6 +17,9 @@ export const SUPPORTED_EXTENSIONS = [
   ".docx",
   ".xlsx",
   ".pptx",
+  ".odt",
+  ".ods",
+  ".odp",
   ".md",
   ".txt",
   ".csv",
@@ -41,6 +44,13 @@ type OfficeToolkit = {
     options: { pages?: number[]; maxPages?: number },
   ): Promise<{ page: number; text: string }[]>;
   readDocx(file: string): Promise<string>;
+  readOdt(file: string): Promise<string>;
+  readOds(
+    file: string,
+  ): Promise<{ name: string; rows: { cells: unknown[] }[] }[]>;
+  readOdp(
+    file: string,
+  ): Promise<{ slide: number; text: string[]; notes: string }[]>;
   readXlsx(
     file: string,
   ): Promise<{ name: string; rows: { cells: unknown[] }[] }[]>;
@@ -160,8 +170,15 @@ export async function extractDocument(file: string): Promise<ChunkInput[]> {
     }
     case ".docx":
       return [{ text: await (await loadToolkit()).readDocx(file) }];
-    case ".xlsx": {
-      const sheets = await (await loadToolkit()).readXlsx(file);
+    case ".odt":
+      return [{ text: await (await loadToolkit()).readOdt(file) }];
+    case ".xlsx":
+    case ".ods": {
+      const toolkit = await loadToolkit();
+      const sheets =
+        ext === ".ods"
+          ? await toolkit.readOds(file)
+          : await toolkit.readXlsx(file);
       return sheets.map((sheet) => ({
         location: `sheet ${sheet.name}`,
         text: sheet.rows
@@ -169,8 +186,13 @@ export async function extractDocument(file: string): Promise<ChunkInput[]> {
           .join("\n\n"),
       }));
     }
-    case ".pptx": {
-      const slides = await (await loadToolkit()).readPptx(file);
+    case ".pptx":
+    case ".odp": {
+      const toolkit = await loadToolkit();
+      const slides =
+        ext === ".odp"
+          ? await toolkit.readOdp(file)
+          : await toolkit.readPptx(file);
       return slides.map((slide) => ({
         location: `slide ${slide.slide}`,
         text: [...slide.text, slide.notes].filter(Boolean).join("\n\n"),

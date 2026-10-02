@@ -50,8 +50,8 @@
   },
   "documents": {
     "title": "Documents",
-    "intro": "Vos documents (PDF, Word, Excel, PowerPoint, texte) que l'agent peut consulter pour répondre.",
-    "settingsIntro": "Ajoutez des documents (PDF, Word, Excel, PowerPoint, Markdown, texte). L'agent les consulte avec l'outil « search_docs » quand votre question s'y rapporte. Les fichiers restent là où ils sont ; Cimes en garde un index sur ce poste.",
+    "intro": "Vos documents (PDF, Word, Excel, PowerPoint, LibreOffice, texte) que l'agent peut consulter pour répondre.",
+    "settingsIntro": "Ajoutez des documents (PDF, Word, Excel, PowerPoint, LibreOffice, Markdown, texte). L'agent les consulte avec l'outil « search_docs » quand votre question s'y rapporte. Les fichiers restent là où ils sont ; Cimes en garde un index sur ce poste.",
     "semantic": "Recherche par le sens",
     "modeLocal": "Sur ce poste (recommandé)",
     "modeLocalHelp": "Un petit modèle fourni avec Cimes calcule la recherche par le sens sur le processeur. Rien ne quitte le poste ; première analyse un peu longue.",

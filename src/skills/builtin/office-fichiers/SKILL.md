@@ -11,7 +11,7 @@ Everything goes through a single Node script: `office.mjs`, in this skill's fold
 
 1. **Never overwrite the original**: write to a new file (`name-v2.docx`) and say where it is. The user's files are not in the application folder: ask for the full path if needed.
 2. **Read before modifying** (`read`), then **read the result back** to check it.
-3. Supported formats: `.docx`, `.xlsx`, `.pptx` (read, create, modify) and `.pdf` (read-only). For older `.doc`, `.xls`, `.ppt`: ask the user to "Save as" the recent format.
+3. Supported formats: `.docx`, `.xlsx`, `.pptx` (read, create, modify), `.pdf` and the LibreOffice formats `.odt`, `.ods`, `.odp` (read-only; to change one, create a new `.docx`/`.xlsx`/`.pptx` or ask the user to "Save as" it). For older `.doc`, `.xls`, `.ppt`: ask the user to "Save as" the recent format. To give the user a **PDF**: write the content in Markdown, then `md2pdf` (or create a Word file and `docx2pdf`); say that the PDF layout is simple and that Word or LibreOffice "Export as PDF" keeps an exact layout.
 4. A PDF whose `read` output has empty pages is a scan: use `ocr` on it (optionally with the page numbers). OCR is slow (a few seconds per page) and imperfect: tell the user the text comes from a scan and may contain errors, especially on names, numbers and handwriting (handwriting is not supported).
 5. No visual rendering possible (no preview, no PDF): describe what was produced and invite the user to open the file to check the layout.
 6. Personal data (pupils, trainees): see `donnees-eleves-rgpd`.
@@ -19,12 +19,14 @@ Everything goes through a single Node script: `office.mjs`, in this skill's fold
 ## Commands
 
 ```
-node office.mjs read file.docx|xlsx|pptx|pdf           # docx: Markdown; xlsx/pptx: JSON; pdf: text by page
+node office.mjs read file.docx|xlsx|pptx|pdf|odt|ods|odp           # docx: Markdown; xlsx/pptx: JSON; pdf: text by page
 node office.mjs md2docx input.md output.docx [title]   # Markdown -> Word (headings, lists, bold/italic, tables)
 node office.mjs csv2xlsx input.csv output.xlsx         # CSV -> Excel, bold header, adjusted columns. Write French data with ";" as separator (decimals like 14,5 stay whole)
 node office.mjs xlsx2csv input.xlsx output.csv [sheet]
 node office.mjs json2pptx slides.json output.pptx      # [{"title","subtitle","bullets":[],"text","notes"}]
 node office.mjs replace file replacements.json output  # {"old":"new"}: keeps the formatting
+node office.mjs md2pdf input.md output.pdf [title]       # PDF export from Markdown (A4, headings, lists, tables, page numbers), offline
+node office.mjs docx2pdf input.docx output.pdf [title]  # Word -> PDF, simplified layout (text, headings, lists, tables; no images)
 node office.mjs ocr scan.pdf|png|jpg|bmp [1,2,5]       # OCR for scanned documents and photos of text (French + English), offline
 ```
 
