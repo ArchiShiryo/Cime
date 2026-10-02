@@ -128,5 +128,18 @@
     "clear": "Clear",
     "empty": "No activity recorded yet.",
     "copied": "Copied."
+  },
+  "official": {
+    "title": "Official sources",
+    "intro": "The agent can look up official French public data: open datasets, the public services directory, organisations and companies, addresses and public procurement notices. These need no key.",
+    "legifrance": "Légifrance (law)",
+    "enabled": "enabled",
+    "disabled": "not configured",
+    "legifranceHelp": "Needs a free PISTE application (piste.gouv.fr) subscribed to the Légifrance API. Paste its client ID and secret here.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "save": "Save",
+    "remove": "Remove",
+    "getKeys": "Get keys on PISTE"
   }
 }

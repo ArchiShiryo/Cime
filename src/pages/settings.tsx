@@ -8,6 +8,7 @@ import { WebSearchSettings } from "@/components/WebSearchSettings";
 import { SkillsSettings } from "@/components/SkillsSettings";
 import { KnowledgeSettings } from "@/components/KnowledgeSettings";
 import { ActivityLogSettings } from "@/components/ActivityLogSettings";
+import { OfficialSourcesSettings } from "@/components/OfficialSourcesSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -614,6 +615,10 @@ export function AISettings() {
 
       <div id={SETTING_IDS.skills}>
         <SkillsSettings />
+      </div>
+
+      <div id={SETTING_IDS.officialSources}>
+        <OfficialSourcesSettings />
       </div>
 
       <div id={SETTING_IDS.activityLog}>

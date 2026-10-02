@@ -10,7 +10,11 @@ export interface ProjectTemplate {
 }
 
 export const DOCUMENTATION_FOLDER = "Documentation";
-export const PROJECT_BASE_SKILLS = ["office-fichiers", "recherche-web-sourcee"];
+export const PROJECT_BASE_SKILLS = [
+  "office-fichiers",
+  "recherche-web-sourcee",
+  "sources-officielles",
+];
 
 export const PROJECT_TEMPLATES: readonly ProjectTemplate[] = [
   {

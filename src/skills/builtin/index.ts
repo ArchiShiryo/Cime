@@ -18,6 +18,7 @@ import planifierAvantDeCoder from "./planifier-avant-de-coder/SKILL.md?raw";
 import quizEtJeuxPedagogiques from "./quiz-et-jeux-pedagogiques/SKILL.md?raw";
 import rechercheWebSourcee from "./recherche-web-sourcee/SKILL.md?raw";
 import revueAvantLivraison from "./revue-avant-livraison/SKILL.md?raw";
+import sourcesOfficielles from "./sources-officielles/SKILL.md?raw";
 import securiteApplicationWeb from "./securite-application-web/SKILL.md?raw";
 import tableauDeBordEtGraphiques from "./tableau-de-bord-et-graphiques/SKILL.md?raw";
 import officeToolkit from "../builtin-assets/office.mjs?raw";
@@ -50,6 +51,7 @@ const RAW_BUILTIN_SKILLS: Record<string, string> = {
   "recherche-web-sourcee": rechercheWebSourcee,
   "revue-avant-livraison": revueAvantLivraison,
   "securite-application-web": securiteApplicationWeb,
+  "sources-officielles": sourcesOfficielles,
   "tableau-de-bord-et-graphiques": tableauDeBordEtGraphiques,
 };
 

@@ -404,6 +404,11 @@ export function writeSettings(settings: Partial<UserSettings>): void {
       settingsForWrite.settings,
       settingsForWrite.preserved,
     );
+    if (newSettings.pisteClientSecret) {
+      newSettings.pisteClientSecret = encrypt(
+        newSettings.pisteClientSecret.value,
+      );
+    }
     if (newSettings.githubAccessToken) {
       newSettings.githubAccessToken = encrypt(
         newSettings.githubAccessToken.value,
@@ -663,6 +668,19 @@ function readExistingSettingsFile(
       } else {
         delete neon.accessToken;
       }
+    }
+  }
+  if (combinedSettings.pisteClientSecret) {
+    const resolved = resolveStoredSecret(
+      combinedSettings.pisteClientSecret,
+      "PISTE client secret",
+      ["pisteClientSecret"],
+      ctx,
+    );
+    if (resolved) {
+      combinedSettings.pisteClientSecret = resolved;
+    } else {
+      delete combinedSettings.pisteClientSecret;
     }
   }
   if (combinedSettings.githubAccessToken) {

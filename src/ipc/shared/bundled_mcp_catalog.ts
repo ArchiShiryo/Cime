@@ -39,7 +39,7 @@ export const BUNDLED_MCP_CATALOG: McpCatalogEntry[] = [
   },
   {
     slug: "playwright",
-    name: "Navigateur (Playwright)",
+    name: "Browser (Playwright)",
     description:
       "Drives a real browser to test the generated app (clicks, forms, screenshots). Downloads a browser on first use.",
     category: "Browser",

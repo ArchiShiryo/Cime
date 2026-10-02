@@ -66,6 +66,7 @@ import { exitPlanTool } from "./tools/exit_plan";
 import { readGuideTool } from "./tools/read_guide";
 import { readSkillTool } from "./tools/read_skill";
 import { searchDocsTool } from "./tools/search_docs";
+import { officialDataTool, legifranceTool } from "./tools/official_data";
 import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
@@ -199,6 +200,8 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   readGuideTool,
   readSkillTool,
   searchDocsTool,
+  officialDataTool,
+  legifranceTool,
   executeSandboxScriptTool,
   searchMcpToolsTool,
   getMcpToolSchemaTool,
@@ -497,6 +500,8 @@ export const BUILD_MODE_TOOL_NAMES = [
   "read_guide",
   "read_skill",
   "search_docs",
+  "official_data",
+  "legifrance",
   "planning_questionnaire",
   "write_app_blueprint",
 ] as const satisfies readonly AgentToolName[];

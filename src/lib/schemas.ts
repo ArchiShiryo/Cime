@@ -523,6 +523,9 @@ const BaseUserSettingsFields = {
   enableShellTool: z.boolean().optional(),
   /** Optional SearXNG server used by the agent's web search (JSON output enabled). */
   webSearchSearxngUrl: z.string().url().optional(),
+  // PISTE (api.gouv.fr) application credentials for the Légifrance tool.
+  pisteClientId: z.string().optional(),
+  pisteClientSecret: SecretSchema.optional(),
   /** Names of skills the user turned off in Settings. */
   disabledSkills: z.array(z.string()).optional(),
   /**

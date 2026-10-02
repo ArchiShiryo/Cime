@@ -128,5 +128,18 @@
     "clear": "Effacer",
     "empty": "Aucune activité enregistrée.",
     "copied": "Copié."
+  },
+  "official": {
+    "title": "Sources officielles",
+    "intro": "L'agent peut interroger les données publiques françaises : jeux de données ouverts, annuaire des services publics, organismes et entreprises, adresses et marchés publics. Aucune clé n'est nécessaire.",
+    "legifrance": "Légifrance (droit)",
+    "enabled": "activé",
+    "disabled": "non configuré",
+    "legifranceHelp": "Nécessite une application PISTE gratuite (piste.gouv.fr) abonnée à l'API Légifrance. Collez ici son identifiant client et son secret.",
+    "clientId": "Identifiant client",
+    "clientSecret": "Secret client",
+    "save": "Enregistrer",
+    "remove": "Retirer",
+    "getKeys": "Obtenir des clés sur PISTE"
   }
 }
