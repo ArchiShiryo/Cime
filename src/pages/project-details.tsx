@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { FolderOpen, MessageSquarePlus } from "lucide-react";
@@ -17,21 +18,15 @@ import { showError } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "chats", label: "Conversations" },
-  { id: "docs", label: "Documentation" },
-  { id: "skills", label: "Compétences" },
-  { id: "files", label: "Dossier" },
+  { id: "chats", key: "tabChats" },
+  { id: "docs", key: "tabDocs" },
+  { id: "skills", key: "tabSkills" },
+  { id: "files", key: "tabFolder" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
-const STATUS_LABELS = {
-  pending: "En attente",
-  indexing: "Lecture en cours…",
-  ready: "Prêt",
-  error: "Erreur",
-} as const;
-
 export default function ProjectDetailsPage() {
+  const { t } = useTranslation("cimes");
   const { appId } = useSearch({ from: "/project" });
   const navigate = useNavigate();
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
@@ -45,7 +40,7 @@ export default function ProjectDetailsPage() {
         <BackButton />
         <header>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {project?.name ?? "Projet"}
+            {project?.name ?? t("projects.defaultProject")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {project?.resolvedPath}
@@ -67,19 +62,11 @@ export default function ProjectDetailsPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {item.label}
+              {t(`projects.${item.key}`)}
             </button>
           ))}
         </div>
-        {tab === "chats" && (
-          <ProjectChats
-            appId={appId}
-            onOpened={() => {
-              setSelectedAppId(appId);
-              void navigate({ to: "/chat" });
-            }}
-          />
-        )}
+        {tab === "chats" && <ProjectChats appId={appId} />}
         {tab === "docs" && <ProjectDocs appId={appId} />}
         {tab === "skills" && <ProjectSkills appId={appId} />}
         {tab === "files" && <ProjectFiles appId={appId} />}
@@ -88,7 +75,8 @@ export default function ProjectDetailsPage() {
   );
 }
 
-function ProjectChats({ appId }: { appId: number; onOpened: () => void }) {
+function ProjectChats({ appId }: { appId: number }) {
+  const { t } = useTranslation("cimes");
   const { chats, invalidateChats } = useChats(appId);
   const { selectChat } = useSelectChat();
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
@@ -110,10 +98,10 @@ function ProjectChats({ appId }: { appId: number; onOpened: () => void }) {
   return (
     <div className="space-y-3">
       <Button onClick={create} data-testid="project-new-chat">
-        <MessageSquarePlus className="mr-1 h-4 w-4" /> Nouvelle conversation
+        <MessageSquarePlus className="mr-1 h-4 w-4" /> {t("projects.newChat")}
       </Button>
       {chats.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucune conversation.</p>
+        <p className="text-sm text-muted-foreground">{t("projects.noChats")}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {chats.map((chat) => (
@@ -124,10 +112,10 @@ function ProjectChats({ appId }: { appId: number; onOpened: () => void }) {
                 className="flex w-full items-center justify-between gap-3 p-3 text-left hover:bg-accent"
               >
                 <span className="truncate">
-                  {chat.title || "Nouvelle conversation"}
+                  {chat.title || t("projects.newChat")}
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {new Date(chat.createdAt).toLocaleDateString("fr-FR")}
+                  {new Date(chat.createdAt).toLocaleDateString(undefined)}
                 </span>
               </button>
             </li>
@@ -139,6 +127,7 @@ function ProjectChats({ appId }: { appId: number; onOpened: () => void }) {
 }
 
 function ProjectDocs({ appId }: { appId: number }) {
+  const { t, i18n: _i18n } = useTranslation("cimes");
   const { docs, addDocs, indexDocs, removeSource, openFolder } =
     useProject(appId);
   const ready = docs.filter((d) => d.status === "ready").length;
@@ -152,26 +141,29 @@ function ProjectDocs({ appId }: { appId: number }) {
           disabled={indexDocs.isPending}
           data-testid="project-index-docs"
         >
-          Créer le RAG
+          {t("projects.createRag")}
         </Button>
         <Button variant="outline" onClick={() => addDocs.mutate("files")}>
-          Ajouter des fichiers
+          {t("projects.addFiles")}
         </Button>
         <Button variant="outline" onClick={() => addDocs.mutate("folder")}>
-          Ajouter un dossier
+          {t("projects.addFolder")}
         </Button>
         <Button
           variant="ghost"
           onClick={() => openFolder.mutate("documentation")}
         >
-          <FolderOpen className="mr-1 h-4 w-4" /> Ouvrir le dossier
+          <FolderOpen className="mr-1 h-4 w-4" /> {t("projects.openFolder")}
         </Button>
       </div>
       {docs.length > 0 && (
         <>
           <p className="text-xs text-muted-foreground">
-            {ready} / {docs.length} documents prêts
-            {total > 0 ? ` · ${embedded} / ${total} extraits analysés` : ""}.
+            {t("projects.docsReady", { ready, total: docs.length })}
+            {total > 0
+              ? t("projects.docsAnalysed", { done: embedded, total })
+              : ""}
+            .
           </p>
           <ul className="max-h-96 divide-y overflow-y-auto rounded-md border">
             {docs.map((source) => (
@@ -193,7 +185,7 @@ function ProjectDocs({ appId }: { appId: number }) {
                   >
                     {source.status === "error" && source.error
                       ? source.error
-                      : `${STATUS_LABELS[source.status]}${source.status === "ready" ? ` · ${source.chunkCount} extraits` : ""}`}
+                      : `${t(`documents.${source.status}`)}${source.status === "ready" ? ` · ${t("documents.passages", { count: source.chunkCount })}` : ""}`}
                   </p>
                 </div>
                 <Button
@@ -201,7 +193,7 @@ function ProjectDocs({ appId }: { appId: number }) {
                   size="sm"
                   onClick={() => removeSource.mutate(source.id)}
                 >
-                  Retirer
+                  {t("projects.remove")}
                 </Button>
               </li>
             ))}
@@ -213,6 +205,7 @@ function ProjectDocs({ appId }: { appId: number }) {
 }
 
 function ProjectSkills({ appId }: { appId: number }) {
+  const { t } = useTranslation("cimes");
   const { config, updateConfig } = useProject(appId);
   const { skills } = useSkills();
   const [draft, setDraft] = useState<string | null>(null);
@@ -250,7 +243,7 @@ function ProjectSkills({ appId }: { appId: number }) {
           ))}
       </ul>
       <div className="space-y-2">
-        <h3 className="text-sm font-medium">Consignes du projet</h3>
+        <h3 className="text-sm font-medium">{t("projects.instructions")}</h3>
         <Textarea
           rows={4}
           value={draft ?? config.instructions}
@@ -267,7 +260,7 @@ function ProjectSkills({ appId }: { appId: number }) {
             )
           }
         >
-          Enregistrer les consignes
+          {t("projects.saveInstructions")}
         </Button>
       </div>
     </div>
@@ -275,12 +268,14 @@ function ProjectSkills({ appId }: { appId: number }) {
 }
 
 function ProjectFiles({ appId }: { appId: number }) {
+  const { t } = useTranslation("cimes");
   const { config, openFolder } = useProject(appId);
   const template = config ? getProjectTemplate(config.templateId) : undefined;
   return (
     <div className="space-y-3" data-testid="project-files">
       <Button variant="outline" onClick={() => openFolder.mutate("project")}>
-        <FolderOpen className="mr-1 h-4 w-4" /> Ouvrir le dossier du projet
+        <FolderOpen className="mr-1 h-4 w-4" />{" "}
+        {t("projects.openProjectFolder")}
       </Button>
       {template && (
         <ul className="list-inside list-disc text-sm text-muted-foreground">

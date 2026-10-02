@@ -28,3 +28,6 @@ export const LOCAL_WEB_TOOLS_ENABLED = true;
 // calls remaining are the ones the user triggers (Albert, web tools, MCP
 // servers, GitHub for template downloads, npm).
 export const DYAD_SERVICES_ENABLED = false;
+
+/** Interface language used until the user picks another (French and English are offered). */
+export const DEFAULT_LANGUAGE = "fr" as const;

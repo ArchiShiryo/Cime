@@ -56,6 +56,7 @@ import { useAlbert } from "@/hooks/useAlbert";
 import { ipc } from "@/ipc/types";
 import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { DEFAULT_LANGUAGE } from "@/shared/branding";
 
 let rendererReadySent = false;
 
@@ -200,7 +201,7 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
   // Sync i18n language with persisted user setting
   useEffect(() => {
     const parsed = LanguageSchema.safeParse(settings?.language);
-    const language = parsed.success ? parsed.data : "en";
+    const language = parsed.success ? parsed.data : DEFAULT_LANGUAGE;
     if (i18n.language !== language) {
       i18n.changeLanguage(language);
     }

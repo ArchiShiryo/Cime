@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { CatalogSection } from "@/components/plugins/catalog/CatalogSection";
 import { useDeepLink } from "@/contexts/DeepLinkContext";
 
 const PluginsPage: React.FC = () => {
+  const { t } = useTranslation("cimes");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { lastDeepLink } = useDeepLink();
 
@@ -25,18 +27,15 @@ const PluginsPage: React.FC = () => {
         <header className="mb-8 flex items-start justify-between gap-4">
           <div className="text-left">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Plugins
+              {t("plugins.title")}
             </h1>
             <p className="text-md text-gray-600 dark:text-gray-400">
-              Connectez des plugins (serveurs MCP) pour donner de nouveaux
-              outils à l'agent : documentation à jour, mémoire, navigateur…
-              Chaque appel d'outil demande votre accord. Les serveurs « npx »
-              exigent que Node.js soit installé sur ce poste.
+              {t("plugins.intro")}
             </p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus size={16} />
-            Add Plugin
+            {t("plugins.add")}
           </Button>
         </header>
         <PluginsList

@@ -12,6 +12,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useSidebar } from "@/components/ui/sidebar"; // import useSidebar hook
@@ -54,46 +55,63 @@ const SIDEBAR_COLLAPSE_DELAY_MS = 300;
 const items = [
   {
     title: "Apps",
+    navKey: "apps",
     to: "/",
     icon: Home,
   },
   {
     title: "Projects",
+    navKey: "projects",
     to: "/projects",
     icon: FolderKanban,
   },
   {
     title: "Settings",
+    navKey: "settings",
     to: "/settings",
     icon: Settings,
   },
   {
     title: "Library",
+    navKey: "library",
     to: "/library",
     icon: BookOpen,
   },
   {
     title: "Templates",
+    navKey: "templates",
     to: "/templates",
     icon: Store,
   },
   {
     title: "Documents",
+    navKey: "documents",
     to: "/documents",
     icon: FileSearch,
   },
   {
     title: "Skills",
+    navKey: "skills",
     to: "/skills",
     icon: Sparkles,
   },
   {
     title: "Plugins",
+    navKey: "plugins",
     to: "/plugins",
     icon: Blocks,
   },
 ] satisfies Array<{
   title: AppSidebarItemTitle;
+  navKey:
+    | "apps"
+    | "projects"
+    | "settings"
+    | "library"
+    | "templates"
+    | "documents"
+    | "skills"
+    | "plugins";
   to: string;
   icon: ComponentType<{ className?: string }>;
 }>;
@@ -361,6 +379,7 @@ function AppIcons({
   isExpanded: boolean;
 }) {
   const routerState = useRouterState();
+  const { t } = useTranslation("cimes");
   const pathname = routerState.location.pathname;
 
   const hoverForTitle = (title: AppSidebarItemTitle): AppSidebarHoverState => {
@@ -392,7 +411,7 @@ function AppIcons({
               <SidebarMenuItem key={item.title}>
                 <AppSidebarRailButton
                   icon={item.icon}
-                  label={item.title}
+                  label={t(`nav.${item.navKey}`)}
                   to={item.to}
                   isActive={isActive}
                   isExpanded={isExpanded}
@@ -409,11 +428,12 @@ function AppIcons({
 
 // Light is the Canopé theme, dark the original one.
 function ThemeToggleRailButton({ isExpanded }: { isExpanded: boolean }) {
+  const { t } = useTranslation("cimes");
   const { isDarkMode, setTheme } = useTheme();
   return (
     <AppSidebarRailButton
       icon={isDarkMode ? Sun : Moon}
-      label={isDarkMode ? "Clair" : "Sombre"}
+      label={isDarkMode ? t("nav.themeLight") : t("nav.themeDark")}
       isExpanded={isExpanded}
       onClick={() => setTheme(isDarkMode ? "light" : "dark")}
     />

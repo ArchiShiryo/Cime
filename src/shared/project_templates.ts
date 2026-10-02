@@ -1,6 +1,6 @@
 /** File-organisation templates offered when creating a project (generic, any public service). */
 export interface ProjectTemplate {
-  id: string;
+  id: "libre" | "dossier" | "suivi" | "veille";
   name: string;
   /** Folders created in the project (relative, forward slashes). */
   folders: string[];

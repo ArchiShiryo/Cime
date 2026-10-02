@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSettings } from "@/hooks/useSettings";
@@ -9,6 +10,7 @@ import { useSettings } from "@/hooks/useSettings";
  * a shared school connection; a SearXNG server avoids that.
  */
 export function WebSearchSettings() {
+  const { t } = useTranslation("cimes");
   const { settings, updateSettings } = useSettings();
   const stored = settings?.webSearchSearxngUrl ?? "";
   const [value, setValue] = useState(stored);
@@ -20,9 +22,7 @@ export function WebSearchSettings() {
     const trimmed = value.trim();
     if (trimmed === stored) return;
     if (trimmed && !/^https?:\/\/\S+$/i.test(trimmed)) {
-      setError(
-        "Entrez une adresse complète, par exemple https://search.exemple.fr",
-      );
+      setError(t("webSearch.invalid"));
       return;
     }
     setError(null);
@@ -31,13 +31,11 @@ export function WebSearchSettings() {
 
   return (
     <div className="space-y-1.5" data-testid="web-search-settings">
-      <Label htmlFor="web-search-searxng-url">
-        Serveur de recherche web (SearXNG)
-      </Label>
+      <Label htmlFor="web-search-searxng-url">{t("webSearch.label")}</Label>
       <Input
         id="web-search-searxng-url"
         type="url"
-        placeholder="https://search.exemple.fr (optionnel)"
+        placeholder={t("webSearch.placeholder")}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         onBlur={save}
@@ -46,11 +44,7 @@ export function WebSearchSettings() {
         }}
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <p className="text-sm text-muted-foreground">
-        Laissé vide, l&apos;agent cherche sur DuckDuckGo puis Bing, sans clé. Si
-        votre établissement dispose d&apos;un serveur SearXNG (format JSON
-        activé), indiquez-le ici : les recherches seront plus fiables.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("webSearch.help")}</p>
     </div>
   );
 }

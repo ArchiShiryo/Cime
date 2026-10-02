@@ -1,14 +1,9 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useSkills } from "@/hooks/useSkills";
 import type { ImportedSkillInfo } from "@/ipc/types/skills";
-
-const ORIGIN_LABELS = {
-  builtin: "Intégré",
-  user: "Importé",
-  app: "Dans l'application",
-} as const;
 
 /**
  * Manage Claude-format skills (folders with a SKILL.md): list, enable or
@@ -21,6 +16,7 @@ export function SkillsSettings({
   showHeader?: boolean;
   tall?: boolean;
 }) {
+  const { t } = useTranslation("cimes");
   const { skills, importSkill, setEnabled, remove, openFolder } = useSkills();
   const [imported, setImported] = useState<ImportedSkillInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +36,8 @@ export function SkillsSettings({
     <div className="space-y-3" data-testid="skills-settings">
       {showHeader && (
         <div>
-          <h3 className="text-sm font-medium">Skills</h3>
-          <p className="text-sm text-muted-foreground">
-            Des consignes d&apos;expert que l&apos;agent charge quand votre
-            demande correspond. Compatible avec les skills Claude (dossier avec
-            un fichier SKILL.md). Les scripts d&apos;un skill ne
-            s&apos;exécutent jamais sans votre accord.
-          </p>
+          <h3 className="text-sm font-medium">{t("skills.title")}</h3>
+          <p className="text-sm text-muted-foreground">{t("skills.intro")}</p>
         </div>
       )}
 
@@ -63,11 +54,11 @@ export function SkillsSettings({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{skill.name}</span>
                 <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                  {ORIGIN_LABELS[skill.origin]}
+                  {t(`skills.${skill.origin}`)}
                 </span>
                 {skill.hasScripts && (
                   <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                    contient des scripts
+                    {t("skills.hasScripts")}
                   </span>
                 )}
               </div>
@@ -82,11 +73,11 @@ export function SkillsSettings({
                   size="sm"
                   onClick={() => remove.mutate(skill.name)}
                 >
-                  Supprimer
+                  {t("skills.remove")}
                 </Button>
               )}
               <Switch
-                aria-label={`Activer ${skill.name}`}
+                aria-label={t("skills.enable", { name: skill.name })}
                 checked={skill.enabled}
                 onCheckedChange={(checked) =>
                   setEnabled.mutate({ name: skill.name, enabled: checked })
@@ -103,21 +94,26 @@ export function SkillsSettings({
           size="sm"
           onClick={() => runImport("archive")}
         >
-          Importer un .zip / .skill
+          {t("skills.importArchive")}
         </Button>
         <Button variant="outline" size="sm" onClick={() => runImport("folder")}>
-          Importer un dossier
+          {t("skills.importFolder")}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => openFolder.mutate()}>
-          Ouvrir le dossier des skills
+          {t("skills.openFolder")}
         </Button>
       </div>
 
       {imported && (
         <p className="text-sm" role="status">
-          Skill « {imported.name} » importé ({imported.fileCount} fichiers).
+          {t("skills.imported", {
+            name: imported.name,
+            count: imported.fileCount,
+          })}
           {imported.scripts.length > 0 &&
-            ` Il contient des scripts (${imported.scripts.join(", ")}) : ils ne s'exécuteront qu'avec votre accord.`}
+            t("skills.importedScripts", {
+              scripts: imported.scripts.join(", "),
+            })}
         </p>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}

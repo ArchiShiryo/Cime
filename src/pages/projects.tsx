@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { FolderKanban, Loader2, Plus } from "lucide-react";
@@ -18,6 +19,7 @@ import { showError } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 export default function ProjectsPage() {
+  const { t } = useTranslation("cimes");
   const navigate = useNavigate();
   const { projects, loading, create } = useProjects();
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
@@ -50,11 +52,11 @@ export default function ProjectsPage() {
         <header className="flex items-start justify-between gap-4">
           <div>
             <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-              Projets
+              {t("projects.title")}
             </h1>
           </div>
           <Button onClick={() => setOpen(true)} data-testid="new-project">
-            <Plus className="mr-1 h-4 w-4" /> Nouveau projet
+            <Plus className="mr-1 h-4 w-4" /> {t("projects.new")}
           </Button>
         </header>
 
@@ -62,7 +64,7 @@ export default function ProjectsPage() {
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : projects.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-            Aucun projet.
+            {t("projects.none")}
           </div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -93,11 +95,11 @@ export default function ProjectsPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Nouveau projet</DialogTitle>
+            <DialogTitle>{t("projects.new")}</DialogTitle>
           </DialogHeader>
           <Input
             autoFocus
-            placeholder="Nom du projet"
+            placeholder={t("projects.namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             data-testid="project-name-input"
@@ -116,7 +118,9 @@ export default function ProjectsPage() {
                       : "hover:bg-accent/50",
                   )}
                 >
-                  <span className="block font-medium">{template.name}</span>
+                  <span className="block font-medium">
+                    {t(`projects.templates.${template.id}`)}
+                  </span>
                   <span className="block text-xs text-muted-foreground">
                     {template.folders.slice(1).join(" · ")}
                   </span>
@@ -126,7 +130,7 @@ export default function ProjectsPage() {
           </ul>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Annuler
+              {t("projects.cancel")}
             </Button>
             <Button
               disabled={!name.trim() || create.isPending}
@@ -136,7 +140,7 @@ export default function ProjectsPage() {
               {create.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Créer le projet
+              {t("projects.create")}
             </Button>
           </DialogFooter>
         </DialogContent>

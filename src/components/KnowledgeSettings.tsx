@@ -1,33 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import { useKnowledge } from "@/hooks/useKnowledge";
 import { useSettings } from "@/hooks/useSettings";
 
 const MODES = [
-  {
-    value: "local" as const,
-    title: "Sur ce poste (recommandé)",
-    description:
-      "Un petit modèle fourni avec Cimes calcule la recherche par le sens sur le processeur. Rien ne quitte le poste ; première analyse un peu longue (quelques passages par seconde).",
-  },
-  {
-    value: "albert" as const,
-    title: "Avec Albert",
-    description:
-      "Envoie des extraits de vos documents à Albert pour calculer les vecteurs : plus rapide, nécessite le réseau.",
-  },
-  {
-    value: "keywords" as const,
-    title: "Mots seulement",
-    description: "Recherche par les mots de la question, sans analyse du sens.",
-  },
+  { value: "local" as const, key: "modeLocal" as const },
+  { value: "albert" as const, key: "modeAlbert" as const },
+  { value: "keywords" as const, key: "modeKeywords" as const },
 ];
-
-const STATUS_LABELS = {
-  pending: "En attente",
-  indexing: "Lecture en cours…",
-  ready: "Prêt",
-  error: "Erreur",
-} as const;
 
 /** Documents the agent can search (PDF, Word, Excel, PowerPoint, texte). */
 export function KnowledgeSettings({
@@ -35,6 +15,7 @@ export function KnowledgeSettings({
 }: {
   showHeader?: boolean;
 }) {
+  const { t } = useTranslation("cimes");
   const { sources, status, add, remove, reindex, embedPending, refreshStatus } =
     useKnowledge();
   const { settings, updateSettings } = useSettings();
@@ -46,19 +27,16 @@ export function KnowledgeSettings({
     <div className="space-y-3" data-testid="knowledge-settings">
       {showHeader && (
         <div>
-          <h3 className="text-sm font-medium">Base de documents</h3>
+          <h3 className="text-sm font-medium">{t("documents.title")}</h3>
           <p className="text-sm text-muted-foreground">
-            Ajoutez des documents (PDF, Word, Excel, PowerPoint, Markdown,
-            texte). L&apos;agent les consulte avec l&apos;outil « search_docs »
-            quand votre question s&apos;y rapporte. Les fichiers restent là où
-            ils sont ; Cimes en garde un index sur ce poste.
+            {t("documents.settingsIntro")}
           </p>
         </div>
       )}
 
       <fieldset className="space-y-2 rounded-md border p-3">
         <legend className="px-1 text-sm font-medium">
-          Recherche par le sens
+          {t("documents.semantic")}
         </legend>
         {MODES.map((option) => {
           const unavailable =
@@ -83,11 +61,13 @@ export function KnowledgeSettings({
                 }}
               />
               <span>
-                <span className="font-medium">{option.title}</span>
+                <span className="font-medium">
+                  {t(`documents.${option.key}`)}
+                </span>
                 <span className="block text-muted-foreground">
                   {unavailable
-                    ? "Modèle non installé dans cette version."
-                    : option.description}
+                    ? t("documents.modelMissing")
+                    : t(`documents.${option.key}Help`)}
                 </span>
               </span>
             </label>
@@ -95,7 +75,7 @@ export function KnowledgeSettings({
         })}
         {mode !== "keywords" && total > 0 && (
           <p className="text-xs text-muted-foreground">
-            {embedded} / {total} extraits analysés.
+            {t("documents.analysed", { done: embedded, total })}
           </p>
         )}
       </fieldset>
@@ -121,7 +101,7 @@ export function KnowledgeSettings({
                 >
                   {source.status === "error" && source.error
                     ? source.error
-                    : `${STATUS_LABELS[source.status]}${source.status === "ready" ? ` · ${source.chunkCount} extraits` : ""}`}
+                    : `${t(`documents.${source.status}`)}${source.status === "ready" ? ` · ${t("documents.passages", { count: source.chunkCount })}` : ""}`}
                 </p>
               </div>
               <div className="flex shrink-0 gap-1">
@@ -130,14 +110,14 @@ export function KnowledgeSettings({
                   size="sm"
                   onClick={() => reindex.mutate(source.id)}
                 >
-                  Relire
+                  {t("documents.reread")}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => remove.mutate(source.id)}
                 >
-                  Retirer
+                  {t("documents.remove")}
                 </Button>
               </div>
             </li>
@@ -147,14 +127,14 @@ export function KnowledgeSettings({
 
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={() => add.mutate("files")}>
-          Ajouter des fichiers
+          {t("documents.addFiles")}
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => add.mutate("folder")}
         >
-          Ajouter un dossier
+          {t("documents.addFolder")}
         </Button>
       </div>
     </div>
