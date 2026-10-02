@@ -15,6 +15,7 @@ Légende : ✅ fait · 🔧 en cours · ⬜ à faire · ⏸ reporté volontairem
 - ✅ **Journal d'activité** (tours, outils, OCR, indexation) avec écran de consultation.
 - ✅ Aucun contact avec les serveurs Dyad, aucune télémétrie, aucune offre payante visible.
 - ✅ Interface en français (par défaut) et en anglais ; backend en anglais.
+- ✅ **Personnalisation** : préférences de rédaction et mémoire (personnelle + par projet) ; **Projets** : renommer, supprimer, déplacer ; **Documents** : LibreOffice en lecture, export PDF.
 - ✅ Corrections du rapport QA Windows (build `4859046`) : routes Documents/Skills, effort Ministral, catalogue Albert, Qwen retiré, verrous Office, erreurs 429, DNS `dyad.sh`, options Pro.
 
 ## 2. Avant le pilote (bloquant)
@@ -34,8 +35,8 @@ Légende : ✅ fait · 🔧 en cours · ⬜ à faire · ⏸ reporté volontairem
 
 Nouvelle section **Personnalisation** dans les Paramètres.
 
-1. ⬜ **Préférences de rédaction** (rapide, à faire en premier) : tutoiement ou vouvoiement, registre (administratif, pédagogique, courant), longueur des réponses, langue de rédaction des documents, formule de politesse et signature, service et fonction. Injectées dans les consignes de chaque conversation.
-2. ⬜ **Mémoire** (≈ 1 journée) :
+1. ✅ **Préférences de rédaction** : tutoiement ou vouvoiement, registre (administratif, pédagogique, courant), longueur des réponses, langue de rédaction des documents, formule de politesse et signature, service et fonction. Injectées dans les consignes de chaque conversation.
+2. ✅ **Mémoire** :
    - mémoire **personnelle** (partagée entre projets) et mémoire de **projet** (dans le dossier du projet, elle le suit) ;
    - un fichier Markdown par souvenir + un index court chargé au début des conversations ;
    - outils pour l'agent : enregistrer, lire, oublier ;
@@ -55,8 +56,8 @@ Prérequis : un canal « nightly » distinct (build, nom, dossier de données, m
 
 ## 4. Ensuite
 
-- ⬜ Projets : renommer, supprimer avec confirmation, déplacer une conversation vers un projet.
-- ⬜ Formats LibreOffice (.odt, .ods, .odp) et export PDF d'un document produit.
+- ✅ Projets : renommer, supprimer avec confirmation, déplacer une conversation vers un projet.
+- ✅ Formats LibreOffice (.odt, .ods, .odp) en lecture et export PDF (md2pdf, docx2pdf).
 - ⬜ Lecture de mails (.eml, .msg) et d'images en entrée (si le modèle les accepte).
 - ⬜ Partage : export/import d'un projet en un fichier, bibliothèque de skills sur un dossier réseau.
 - ⬜ Connecteurs supplémentaires : Tchap, La Suite numérique (Docs, Grist).
