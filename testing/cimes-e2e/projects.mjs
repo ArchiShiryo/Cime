@@ -31,15 +31,23 @@ fs.writeFileSync(
 fs.writeFileSync(path.join(src, "references", "a.md"), "A");
 
 const launch = () =>
-  spawn(exe, ["--no-sandbox", "--remote-debugging-port=9334"], {
-    env: {
-      ...process.env,
-      HOME: home,
-      XDG_CONFIG_HOME: path.join(home, ".config"),
-      ALBERT_API_KEY: "",
+  spawn(
+    exe,
+    [
+      "--no-sandbox",
+      "--remote-debugging-port=9334",
+      ...(process.env.APP_EXTRA_ARGS || "").split(" ").filter(Boolean),
+    ],
+    {
+      env: {
+        ...process.env,
+        HOME: home,
+        XDG_CONFIG_HOME: path.join(home, ".config"),
+        ALBERT_API_KEY: "",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
     },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  );
 // First run creates the default settings; then seed a fake key (no network
 // needed, the onboarding only checks that a key is stored) and relaunch.
 {
@@ -118,7 +126,7 @@ log(
 await main.waitForSelector("[data-testid=project-page]", { timeout: 30000 });
 log("project page url:", main.url());
 
-const root = path.join(userData, "dyad-apps");
+const root = path.join(home, "dyad-apps");
 const dirs = fs.existsSync(root) ? fs.readdirSync(root) : [];
 log("apps dir entries:", dirs.join(","));
 const projectDir = path.join(root, dirs.find((d) => /qualiopi/i.test(d)) ?? "");
