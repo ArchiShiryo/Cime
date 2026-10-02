@@ -44,6 +44,10 @@ const ATTRS = new Set([
   "caption",
   "content",
   "message",
+  "enableLabel",
+  "disableLabel",
+  "actionLabel",
+  "buttonLabel",
 ]);
 const PROPS = new Set([
   "title",

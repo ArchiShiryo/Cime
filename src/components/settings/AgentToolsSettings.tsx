@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { translateUi } from "@/i18n/ui_translate";
 import {
   Select,
   SelectContent,
@@ -116,7 +117,8 @@ function ToolConsentRow({
         <div className="min-w-0 flex-1">
           <div className="font-mono text-sm">{name}</div>
           <div className="text-xs text-muted-foreground truncate">
-            {description?.slice(0, 100)} {description?.length > 100 && "..."}
+            {translateUi(description ?? "").slice(0, 100)}{" "}
+            {translateUi(description ?? "").length > 100 && "..."}
           </div>
         </div>
         <Select

@@ -58,6 +58,7 @@ import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
 import { DEFAULT_LANGUAGE } from "@/shared/branding";
 import { startDomTranslation } from "@/i18n/dom_translator";
+import { getUiDictionary, setUiLanguage } from "@/i18n/ui_translate";
 
 let rendererReadySent = false;
 
@@ -213,21 +214,11 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
   const uiLanguage = LanguageSchema.safeParse(settings?.language).success
     ? settings?.language
     : DEFAULT_LANGUAGE;
+  // Children read the language while rendering, so set it before they do.
+  setUiLanguage(uiLanguage === "fr" ? "fr" : "en");
   useEffect(() => {
     if (uiLanguage !== "fr") return;
-    let cancelled = false;
-    let stop: (() => void) | undefined;
-    void import("@/i18n/ui_fr.json").then((module) => {
-      if (!cancelled) {
-        stop = startDomTranslation(
-          module.default as Record<string, string>,
-        ).stop;
-      }
-    });
-    return () => {
-      cancelled = true;
-      stop?.();
-    };
+    return startDomTranslation(getUiDictionary()).stop;
   }, [uiLanguage]);
 
   useEffect(() => {
