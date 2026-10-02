@@ -152,7 +152,7 @@ function ProjectDocs({ appId }: { appId: number }) {
           disabled={indexDocs.isPending}
           data-testid="project-index-docs"
         >
-          Indexer
+          Créer le RAG
         </Button>
         <Button variant="outline" onClick={() => addDocs.mutate("files")}>
           Ajouter des fichiers
@@ -201,7 +201,7 @@ function ProjectDocs({ appId }: { appId: number }) {
                   size="sm"
                   onClick={() => removeSource.mutate(source.id)}
                 >
-                  Retirer de l&apos;index
+                  Retirer
                 </Button>
               </li>
             ))}
