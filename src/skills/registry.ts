@@ -3,6 +3,7 @@ import path from "node:path";
 import log from "electron-log";
 import { getUserDataPath } from "@/paths/paths";
 import { readProjectConfig } from "@/projects/config";
+import { getOcrDir } from "@/knowledge/ocr_paths";
 import { BUILTIN_SKILLS, type BuiltinSkill } from "./builtin";
 import {
   MAX_SKILL_FILE_BYTES,
@@ -44,6 +45,17 @@ async function materializeBuiltinSkill(
       if (current?.isFile() && current.size === bytes) continue;
       await fs.promises.mkdir(path.dirname(target), { recursive: true });
       await fs.promises.writeFile(target, content, "utf8");
+    }
+    // Tells the Office toolkit where the offline OCR runtime lives on this install.
+    if (skill.name === "office-fichiers") {
+      const ocrDir = getOcrDir();
+      if (ocrDir) {
+        await fs.promises.writeFile(
+          path.join(dir, "scripts", "ocr-dir.txt"),
+          ocrDir,
+          "utf8",
+        );
+      }
     }
     return dir;
   } catch (error) {

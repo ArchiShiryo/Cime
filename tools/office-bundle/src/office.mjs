@@ -3,13 +3,15 @@
 // library (`import { docx, ExcelJS, PptxGenJS, mammoth, JSZip, extractText, getDocumentProxy } from "./office.mjs"`).
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { createRequire } from "node:module";
+import zlib from "node:zlib";
 import * as docx from "docx";
 import ExcelJS from "exceljs";
 import PptxGenJS from "pptxgenjs";
 import mammoth from "mammoth";
 import JSZip from "jszip";
-import { extractText, getDocumentProxy } from "unpdf";
+import { extractImages, extractText, getDocumentProxy } from "unpdf";
 
 export { docx, ExcelJS, PptxGenJS, mammoth, JSZip, extractText, getDocumentProxy };
 
@@ -110,6 +112,125 @@ export async function readPdf(file) {
   const pdf = await getDocumentProxy(new Uint8Array(fs.readFileSync(file)));
   const { text } = await extractText(pdf, { mergePages: false });
   return text.map((pageText, index) => ({ page: index + 1, text: pageText.trim() }));
+}
+
+// ---------------------------------------------------------------- OCR
+
+/** Folder holding tesseract.js and the French/English data shipped with Cimes. */
+function findOcrDir() {
+  const candidates = [process.env.CIMES_OCR_DIR];
+  try {
+    const hint = path.join(path.dirname(fileURLToPath(import.meta.url)), "ocr-dir.txt");
+    candidates.push(fs.readFileSync(hint, "utf8").trim());
+  } catch {}
+  if (process.resourcesPath) candidates.push(path.join(process.resourcesPath, "ocr"));
+  return candidates.find(
+    (dir) => dir && fs.existsSync(path.join(dir, "node_modules", "tesseract.js", "package.json")),
+  );
+}
+
+export function ocrAvailable() {
+  return Boolean(findOcrDir());
+}
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+function crc32(buf) {
+  let crc = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) crc = CRC_TABLE[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+function pngChunk(type, data) {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const body = Buffer.concat([Buffer.from(type), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(body));
+  return Buffer.concat([length, body, crc]);
+}
+/** Encodes raw 8-bit pixels (1, 3 or 4 channels) as a PNG, which tesseract.js reads. */
+export function encodePng(width, height, channels, data) {
+  const stride = width * channels;
+  const raw = Buffer.alloc((stride + 1) * height);
+  for (let y = 0; y < height; y++) {
+    Buffer.from(data.buffer, data.byteOffset + y * stride, stride).copy(raw, y * (stride + 1) + 1);
+  }
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8;
+  header[9] = channels === 1 ? 0 : channels === 3 ? 2 : 6;
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", zlib.deflateSync(raw)),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+async function withOcrWorker(lang, run) {
+  const dir = findOcrDir();
+  if (!dir) {
+    throw new Error("OCR indisponible : le module de reconnaissance de texte n'est pas installé avec cette version.");
+  }
+  const req = createRequire(path.join(dir, "package.json"));
+  const { createWorker } = req("tesseract.js");
+  const worker = await createWorker(lang, 1, {
+    langPath: path.join(dir, "lang"),
+    corePath: path.join(dir, "node_modules", "tesseract.js-core"),
+    workerPath: req.resolve("tesseract.js/src/worker-script/node/index.js"),
+    gzip: true,
+    cacheMethod: "none",
+    logger: () => {},
+  });
+  try {
+    return await run(worker);
+  } finally {
+    await worker.terminate();
+  }
+}
+
+/** Text of an image file (png, jpg, bmp). */
+export async function ocrImage(file, { lang = "fra+eng" } = {}) {
+  return withOcrWorker(lang, async (worker) => {
+    const { data } = await worker.recognize(fs.readFileSync(file));
+    return data.text.trim();
+  });
+}
+
+/**
+ * Text of scanned PDF pages: the page images are extracted and read.
+ * `pages` limits the work (1-based); `maxPages` bounds it when omitted.
+ */
+export async function ocrPdf(file, { pages, lang = "fra+eng", maxPages = 60, onPage } = {}) {
+  const pdf = await getDocumentProxy(new Uint8Array(fs.readFileSync(file)));
+  const wanted = (pages ?? Array.from({ length: pdf.numPages }, (_, i) => i + 1)).slice(0, maxPages);
+  return withOcrWorker(lang, async (worker) => {
+    const results = [];
+    for (const page of wanted) {
+      const images = (await extractImages(pdf, page))
+        .filter((image) => image.width * image.height >= 90000)
+        .sort((a, b) => b.width * b.height - a.width * a.height)
+        .slice(0, 3);
+      let text = "";
+      for (const image of images) {
+        const { data } = await worker.recognize(
+          encodePng(image.width, image.height, image.channels, image.data),
+        );
+        text += (text ? "\n" : "") + data.text.trim();
+      }
+      results.push({ page, text: text.trim() });
+      onPage?.(page, wanted.length);
+    }
+    return results;
+  });
 }
 
 // ---------------------------------------------------------------- editing
@@ -516,6 +637,8 @@ Créer
   node office.mjs csv2xlsx <entree.csv> <sortie.xlsx>
   node office.mjs xlsx2csv <entree.xlsx> <sortie.csv> [feuille]
   node office.mjs json2pptx <diapos.json> <sortie.pptx>     [{"title","bullets":[],"text","notes","subtitle"}]
+OCR (documents scannés, hors ligne)
+  node office.mjs ocr <fichier.pdf|png|jpg|bmp> [pages ex. 1,2,5]   texte reconnu (français et anglais)
 Modifier (garde la mise en forme)
   node office.mjs replace <fichier> <remplacements.json> <sortie>   {"ancien":"nouveau"}
 Bibliothèque : import { docx, ExcelJS, PptxGenJS, mammoth, JSZip } from "<chemin>/office.mjs"`;
@@ -533,6 +656,17 @@ async function main(argv) {
         console.log(JSON.stringify(await readPptx(file), null, 1));
       else if (ext === ".pdf") console.log(JSON.stringify(await readPdf(file), null, 1));
       else throw new Error("Formats lus : .docx, .xlsx, .pptx, .pdf");
+      return;
+    }
+    case "ocr": {
+      const file = args[0];
+      const ext = extOf(file);
+      if (ext === ".pdf") {
+        const pages = args[1] ? args[1].split(",").map(Number).filter(Boolean) : undefined;
+        console.log(JSON.stringify(await ocrPdf(file, { pages }), null, 1));
+      } else if ([".png", ".jpg", ".jpeg", ".bmp"].includes(ext)) {
+        console.log(await ocrImage(file));
+      } else throw new Error("Formats OCR : .pdf, .png, .jpg, .jpeg, .bmp");
       return;
     }
     case "md2docx":

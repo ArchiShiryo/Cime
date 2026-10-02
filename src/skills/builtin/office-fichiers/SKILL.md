@@ -12,8 +12,9 @@ Everything goes through a single Node script: `office.mjs`, in this skill's fold
 1. **Never overwrite the original**: write to a new file (`name-v2.docx`) and say where it is. The user's files are not in the application folder: ask for the full path if needed.
 2. **Read before modifying** (`read`), then **read the result back** to check it.
 3. Supported formats: `.docx`, `.xlsx`, `.pptx` (read, create, modify) and `.pdf` (read-only). For older `.doc`, `.xls`, `.ppt`: ask the user to "Save as" the recent format.
-4. No visual rendering possible (no preview, no PDF): describe what was produced and invite the user to open the file to check the layout.
-5. Personal data (pupils, trainees): see `donnees-eleves-rgpd`.
+4. A PDF whose `read` output has empty pages is a scan: use `ocr` on it (optionally with the page numbers). OCR is slow (a few seconds per page) and imperfect: tell the user the text comes from a scan and may contain errors, especially on names, numbers and handwriting (handwriting is not supported).
+5. No visual rendering possible (no preview, no PDF): describe what was produced and invite the user to open the file to check the layout.
+6. Personal data (pupils, trainees): see `donnees-eleves-rgpd`.
 
 ## Commands
 
@@ -24,6 +25,7 @@ node office.mjs csv2xlsx input.csv output.xlsx         # CSV (; or ,) -> Excel, 
 node office.mjs xlsx2csv input.xlsx output.csv [sheet]
 node office.mjs json2pptx slides.json output.pptx      # [{"title","subtitle","bullets":[],"text","notes"}]
 node office.mjs replace file replacements.json output  # {"old":"new"}: keeps the formatting
+node office.mjs ocr scan.pdf|png|jpg|bmp [1,2,5]       # OCR for scanned documents and photos of text (French + English), offline
 ```
 
 `replace` works on .docx (body, headers, footers), .pptx (slides and notes) and .xlsx (text). Ideal for **filling in a template**: keep the template file, replace markers such as `{{NOM}}`.

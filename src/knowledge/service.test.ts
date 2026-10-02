@@ -48,6 +48,7 @@ import {
   waitForKnowledgeIdle,
 } from "./service";
 import { pickEmbeddingModel } from "./embeddings";
+import { getOcrDir } from "./ocr_paths";
 import {
   isLocalEmbeddingAvailable,
   stopLocalEmbeddingWorker,
@@ -124,7 +125,7 @@ describe("knowledge base", () => {
       path.join(docs, "sous-dossier", "cuisine.txt"),
       "Recette du gâteau au chocolat : farine, œufs, sucre et cacao.",
     );
-    fs.writeFileSync(path.join(docs, "image.png"), "not supported");
+    fs.writeFileSync(path.join(docs, "image.gif"), "not supported");
   });
 
   it("keeps a project's documentation apart from the global base", async () => {
@@ -246,7 +247,7 @@ describe("knowledge base", () => {
     );
     expect((await searchKnowledge("lave cratère"))[0]).toMatchObject({
       source: "expose.pptx",
-      location: "diapo 2",
+      location: "slide 2",
     });
   }, 60_000);
 });
@@ -326,4 +327,28 @@ describe("pickEmbeddingModel", () => {
       pickEmbeddingModel([{ id: "llm", type: "text-generation" }]),
     ).toBeNull();
   });
+});
+
+describe.skipIf(!getOcrDir())("OCR (offline, shipped with Cimes)", () => {
+  beforeEach(async () => {
+    await waitForKnowledgeIdle();
+    closeKnowledgeDb();
+    holder.userData = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-kb-ocr-"));
+    holder.mode = "keywords";
+  });
+
+  it("finds the text of a scanned PDF and of an image, and answers searches", async () => {
+    const fixtures = path.join(__dirname, "fixtures");
+    await addToKnowledgeBase([
+      path.join(fixtures, "scanned-note.pdf"),
+      path.join(fixtures, "scanned-note.png"),
+    ]);
+    await waitForKnowledgeIdle();
+    const sources = listSources();
+    expect(sources.map((s) => s.status)).toEqual(["ready", "ready"]);
+    const hits = await searchKnowledge("code secret", 4);
+    expect(hits.some((hit) => /ZEBRE-4471/.test(hit.text))).toBe(true);
+    const pdfHit = hits.find((hit) => hit.source === "scanned-note.pdf");
+    expect(pdfHit?.location).toBe("p. 1");
+  }, 90_000);
 });

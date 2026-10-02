@@ -143,7 +143,7 @@ async function indexSource(id: number): Promise<void> {
       setSourceStatus(
         id,
         "error",
-        "No readable text (scanned PDF or empty file?). A scanned PDF needs OCR.",
+        "No readable text found (empty file, or the scan is too unclear to read).",
       );
       return;
     }
