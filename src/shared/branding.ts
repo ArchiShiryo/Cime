@@ -21,3 +21,10 @@ export const TELEMETRY_ENABLED = false;
 // The agent reads and searches the web locally (no Dyad engine, no API key):
 // keyless search plus a readable-page fetcher, with private addresses refused.
 export const LOCAL_WEB_TOOLS_ENABLED = true;
+
+// Cimes never contacts Dyad's servers (api.dyad.sh, engine.dyad.sh,
+// academy.dyad.sh): the model catalog, templates, desktop config, MCP catalog,
+// pnpm build allow-list and billing checks all use local data only. Network
+// calls remaining are the ones the user triggers (Albert, web tools, MCP
+// servers, GitHub for template downloads, npm).
+export const DYAD_SERVICES_ENABLED = false;
