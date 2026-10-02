@@ -1,4 +1,5 @@
 import { assistantAttribution } from "@/shared/execution_backend";
+import { useLoadApps } from "@/hooks/useLoadApps";
 import { type Message } from "@/ipc/types";
 import {
   DyadMarkdownParser,
@@ -117,6 +118,9 @@ const ChatMessage = ({
   const { isStreaming } = useStreamChat();
   const appId = useAtomValue(selectedAppIdAtom);
   const { versions: liveVersions } = useVersions(appId);
+  const { apps } = useLoadApps();
+  // Projects show the modified files but no version numbers.
+  const isProject = apps.some((app) => app.id === appId && app.isProject);
   const {
     state: previewState,
     projection: previewProjection,
@@ -481,22 +485,25 @@ const ChatMessage = ({
               <Clock className="h-3 w-3" />
               <span>{formatTimestamp(message.createdAt)}</span>
             </div>
-            {messageVersion && messageVersion.message && versionNumber && (
-              <div className="flex items-center space-x-1">
-                <GitCommit className="h-3 w-3" />
-                <span className="font-medium">{`Version ${versionNumber}:`}</span>
-                <span
-                  className="max-w-50 truncate"
-                  title={messageVersion.message}
-                >
-                  {
-                    messageVersion.message
-                      .replace(/^\[dyad\]\s*/i, "")
-                      .split("\n")[0]
-                  }
-                </span>
-              </div>
-            )}
+            {!isProject &&
+              messageVersion &&
+              messageVersion.message &&
+              versionNumber && (
+                <div className="flex items-center space-x-1">
+                  <GitCommit className="h-3 w-3" />
+                  <span className="font-medium">{`Version ${versionNumber}:`}</span>
+                  <span
+                    className="max-w-50 truncate"
+                    title={messageVersion.message}
+                  >
+                    {
+                      messageVersion.message
+                        .replace(/^\[dyad\]\s*/i, "")
+                        .split("\n")[0]
+                    }
+                  </span>
+                </div>
+              )}
             {message.requestId && (
               <Tooltip>
                 <TooltipTrigger
