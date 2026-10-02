@@ -66,7 +66,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   selectedThemeId: DEFAULT_THEME_ID,
   isRunning: false,
   lastKnownPerformance: undefined,
-  enableSandboxScriptExecution: true,
+  // Cimes: DeepSeek handles directly registered MCP tools more reliably than
+  // scripts in the MustardScript sandbox.
+  enableSandboxScriptExecution: false,
   enableMcpToolSearch: true,
   enableCodeExplorer: true,
   runTypeScriptForWholeProject: false,
