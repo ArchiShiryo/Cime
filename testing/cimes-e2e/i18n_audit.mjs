@@ -239,6 +239,67 @@ await click("[data-testid=project-new-chat]").catch(() => {});
 await sleep(3000);
 await visit("chat", null);
 
+// Interactive states: model picker, mode selector, an agent turn with a consent card.
+const snapshot = async (name) => {
+  const texts = await collect();
+  report[name] = { total: texts.length, english: texts.filter(looksEnglish) };
+  screen(`i18n-${name}`);
+  log(
+    `${name}: ${texts.length} texts, ${report[name].english.length} look English`,
+  );
+};
+for (const [name, sel] of [
+  ["model-picker", "[data-testid=model-picker]"],
+  ["chat-mode", "[data-testid=chat-mode-selector]"],
+]) {
+  await main
+    .locator(sel)
+    .first()
+    .click({ timeout: 5000 })
+    .catch(() => {});
+  await sleep(1200);
+  await snapshot(name);
+  await main.keyboard.press("Escape");
+  await sleep(500);
+}
+const editor = main.locator('[contenteditable="true"]').first();
+await editor.click().catch(() => {});
+await main.keyboard.type(
+  "Exécute node -v dans le shell et donne le résultat.",
+  { delay: 4 },
+);
+await main.keyboard.press("Enter");
+for (let i = 0; i < 40; i++) {
+  await sleep(2500);
+  if (
+    await main
+      .locator(
+        'button:has-text("Allow once"), button:has-text("Autoriser une fois"), button:has-text("Allow")',
+      )
+      .count()
+      .catch(() => 0)
+  )
+    break;
+}
+await snapshot("consent-card");
+await main
+  .locator(
+    'button:has-text("Allow once"), button:has-text("Autoriser une fois")',
+  )
+  .first()
+  .click({ timeout: 5000 })
+  .catch(() => {});
+for (let i = 0; i < 40; i++) {
+  await sleep(2500);
+  const body =
+    (await main
+      .locator("body")
+      .innerText()
+      .catch(() => "")) || "";
+  if (/v\d+\.\d+\.\d+/.test(body) && /Retry|Réessayer/.test(body)) break;
+}
+await snapshot("after-turn");
+
 const out = process.env.AUDIT_OUT || "/tmp/i18n-audit.json";
 fs.writeFileSync(out, JSON.stringify(report, null, 2));
 const all = [...new Set(Object.values(report).flatMap((r) => r.english))];
