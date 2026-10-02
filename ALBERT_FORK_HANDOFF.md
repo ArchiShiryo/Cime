@@ -171,3 +171,10 @@ Dans Dyad, la recherche web, la lecture de pages et le shell passent par le serv
 ## Vérifié sur l'application empaquetée (Linux, DeepSeek réel)
 
 Via `testing/cimes-e2e/agent.mjs` contre l'API DeepSeek (variables de test `CIMES_E2E*`, voir README du dossier) : réponse + création d'un fichier ; recherche web + lecture de page + `node -v` dans le shell avec validation ; chargement d'un skill intégré par le modèle ; appel d'un serveur MCP (Mémoire) enregistrant puis relisant des données. `skills.mjs` : liste des skills, bascule, import, catalogue de plugins. **Non vérifié** : Windows (PowerShell, proxy réel, npx), prévisualisation d'une app complète (le pnpm du bac à sable est trop lent), modèle Albert réel (nom `deepseek-v4-flash-0731`).
+
+## Modèles Albert
+
+- Modèles préconfigurés dès le premier lancement (identifiants du guide Albert) : `deepseek-v4-flash-0731` (par défaut), `gpt-oss-120b`, `mistral-medium-2508`, `mistral-small-3-2-24b-instruct-2506`, `ministral-3-8b-instruct-2512`, `qwen3-coder-30b-a3b-instruct` (`src/shared/albert.ts`).
+- À la connexion de la clé et au bouton « Tester », Cimes lit `GET /v1/models` et ajoute tous les modèles de génération de texte que la clé peut utiliser, avec leur fenêtre de contexte (`src/shared/albert_models.ts`). Les modèles qui disparaissent de la liste ne sont pas supprimés.
+- Sélecteur de modèles : seuls Albert et les fournisseurs dont l'utilisateur a saisi une clé sont proposés ; plus de lignes d'abonnement Claude/ChatGPT ni de modèles verrouillés.
+- **Non vérifié** : le comportement des modèles autres que DeepSeek avec les outils de l'agent (appel d'outils, shell, MCP). À tester avec une vraie clé, en commençant par GPT-OSS et Mistral Medium.

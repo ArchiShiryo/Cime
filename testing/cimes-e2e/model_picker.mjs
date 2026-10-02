@@ -107,6 +107,9 @@ await panel
   .catch(() => {});
 await sleep(600);
 screen("m2-picker-scrolled");
+await main.locator("text=Albert - DINUM").first().click();
+await sleep(1200);
+screen("m3-albert");
 let text = await main
   .locator("[role=menu], [role=dialog], [data-slot=popover-content]")
   .first()
