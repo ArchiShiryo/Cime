@@ -1,6 +1,6 @@
 // Cimes Office toolkit: read, create and edit Word, Excel and PowerPoint files
 // without Microsoft Office. Usable as a CLI (`node office.mjs help`) or as a
-// library (`import { docx, ExcelJS, PptxGenJS, mammoth, JSZip } from "./office.mjs"`).
+// library (`import { docx, ExcelJS, PptxGenJS, mammoth, JSZip, extractText, getDocumentProxy } from "./office.mjs"`).
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,8 +9,9 @@ import ExcelJS from "exceljs";
 import PptxGenJS from "pptxgenjs";
 import mammoth from "mammoth";
 import JSZip from "jszip";
+import { extractText, getDocumentProxy } from "unpdf";
 
-export { docx, ExcelJS, PptxGenJS, mammoth, JSZip };
+export { docx, ExcelJS, PptxGenJS, mammoth, JSZip, extractText, getDocumentProxy };
 
 const decodeXml = (text) =>
   text
@@ -102,6 +103,13 @@ export async function readPptx(file) {
     });
   }
   return slides;
+}
+
+/** Text of a PDF, page by page (scanned PDFs without a text layer return nothing). */
+export async function readPdf(file) {
+  const pdf = await getDocumentProxy(new Uint8Array(fs.readFileSync(file)));
+  const { text } = await extractText(pdf, { mergePages: false });
+  return text.map((pageText, index) => ({ page: index + 1, text: pageText.trim() }));
 }
 
 // ---------------------------------------------------------------- editing
@@ -502,7 +510,7 @@ export async function jsonToPptx(slides, outFile, options = {}) {
 const HELP = `Cimes Office toolkit (Word, Excel, PowerPoint sans Microsoft Office)
 
 Lire
-  node office.mjs read <fichier.docx|xlsx|pptx>        texte (docx: Markdown, xlsx/pptx: JSON)
+  node office.mjs read <fichier.docx|xlsx|pptx|pdf>    texte (docx: Markdown, autres: JSON ; pdf: texte par page)
 Créer
   node office.mjs md2docx <entree.md> <sortie.docx> [titre]
   node office.mjs csv2xlsx <entree.csv> <sortie.xlsx>
@@ -523,7 +531,8 @@ async function main(argv) {
         console.log(JSON.stringify(await readXlsx(file), null, 1));
       else if (ext === ".pptx")
         console.log(JSON.stringify(await readPptx(file), null, 1));
-      else throw new Error("Formats lus : .docx, .xlsx, .pptx");
+      else if (ext === ".pdf") console.log(JSON.stringify(await readPdf(file), null, 1));
+      else throw new Error("Formats lus : .docx, .xlsx, .pptx, .pdf");
       return;
     }
     case "md2docx":

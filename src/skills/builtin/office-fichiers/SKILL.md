@@ -1,6 +1,6 @@
 ---
 name: office-fichiers
-description: Lire, créer et modifier des fichiers Word (.docx), Excel (.xlsx) et PowerPoint (.pptx) sans Microsoft Office, avec une boîte à outils Node fournie (aucune installation, fonctionne hors ligne sur un PC verrouillé). À utiliser dès que l'utilisateur mentionne un fichier Word, Excel, PowerPoint, un tableau, un compte rendu, un diaporama, un publipostage ou veut modifier un document existant.
+description: Lire, créer et modifier des fichiers Word (.docx), Excel (.xlsx) et PowerPoint (.pptx), et lire le texte des PDF sans Microsoft Office, avec une boîte à outils Node fournie (aucune installation, fonctionne hors ligne sur un PC verrouillé). À utiliser dès que l'utilisateur mentionne un fichier Word, Excel, PowerPoint, un tableau, un compte rendu, un diaporama, un publipostage ou veut modifier un document existant.
 ---
 
 # Fichiers Word, Excel et PowerPoint
@@ -11,14 +11,14 @@ Tout passe par un seul script Node : `office.mjs`, dans le dossier de ce skill (
 
 1. **Ne jamais écraser l'original** : écrire dans un nouveau fichier (`nom-v2.docx`) et dire où il se trouve. Les fichiers de l'utilisateur ne sont pas dans le dossier de l'application : demander le chemin complet si besoin.
 2. **Lire avant de modifier** (`read`), puis **relire le résultat** pour vérifier.
-3. Formats pris en charge : `.docx`, `.xlsx`, `.pptx`. Les anciens `.doc`, `.xls`, `.ppt` : demander à l'utilisateur de les « Enregistrer sous » au format récent.
+3. Formats pris en charge : `.docx`, `.xlsx`, `.pptx` (lecture, création, modification) et `.pdf` (lecture seule). Les anciens `.doc`, `.xls`, `.ppt` : demander à l'utilisateur de les « Enregistrer sous » au format récent.
 4. Pas de rendu visuel possible (pas d'aperçu, pas de PDF) : décrire ce qui a été produit et inviter l'utilisateur à ouvrir le fichier pour vérifier la mise en page.
 5. Données de personnes (élèves, stagiaires) : voir `donnees-eleves-rgpd`.
 
 ## Commandes
 
 ```
-node office.mjs read fichier.docx|xlsx|pptx            # docx : Markdown ; xlsx/pptx : JSON (feuilles, diapos, notes)
+node office.mjs read fichier.docx|xlsx|pptx|pdf        # docx : Markdown ; xlsx/pptx : JSON ; pdf : texte par page
 node office.mjs md2docx entree.md sortie.docx [titre]  # Markdown -> Word (titres, listes, gras/italique, tableaux)
 node office.mjs csv2xlsx entree.csv sortie.xlsx        # CSV (; ou ,) -> Excel, en-tête en gras, colonnes ajustées
 node office.mjs xlsx2csv entree.xlsx sortie.csv [feuille]
@@ -52,6 +52,8 @@ import {
 Fond `#F4EFED`, turquoise `#005A5B` (titres, en-têtes), sauge `#94A088` (accents), texte `#222222`. Police Calibri/Arial (Marianne n'est souvent pas installée sur les postes). Détails : skill `charte-canope`. Pour une présentation institutionnelle exacte (masques officiels), partir du modèle .potx de l'utilisateur et utiliser `replace`.
 
 ## Pièges connus
+
+- **PDF** : seul le texte est lu (pas la mise en page, ni les images). Un PDF scanné n'a pas de texte : la lecture ne renvoie rien, le dire à l'utilisateur. Impossible de créer un PDF : produire un .docx et demander à l'utilisateur de l'enregistrer en PDF depuis Word.
 
 - Une cellule Excel avec formule n'a pas de valeur calculée tant que le fichier n'est pas ouvert dans Excel : ne pas annoncer de résultats chiffrés issus d'une formule sans les avoir calculés soi-même.
 - Les macros (.xlsm, .docm), commentaires de révision, suivi des modifications et graphiques Excel existants peuvent être perdus si le fichier est réécrit avec `ExcelJS` : le dire à l'utilisateur et travailler sur une copie.
