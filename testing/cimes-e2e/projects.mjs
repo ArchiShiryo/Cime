@@ -67,7 +67,7 @@ const launch = () =>
   };
   settings.selectedModel = {
     provider: "custom::albert",
-    name: "deepseek-v4-flash-0731",
+    name: process.env.CIMES_E2E_MODEL || "deepseek-v4-flash-0731",
   };
   fs.writeFileSync(settingsFile, JSON.stringify(settings));
   for (const f of ["SingletonLock", "SingletonSocket", "SingletonCookie"]) {
