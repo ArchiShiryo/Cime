@@ -121,8 +121,7 @@ L'animation affichée par Squirrel pendant l'installation est remplacée par `as
   (fonctions Pro), et **pas de quota de 20 messages/jour** sur le mode Agent.
 - `TELEMETRY_ENABLED = false` : PostHog est initialisé désactivé (aucun appel réseau, aucun script
   externe), tout événement est jeté ; bannière de consentement et section Télémétrie masquées. Les
-  rapports de plantage restent locaux. Restent des téléchargements de catalogues/modèles depuis
-  api.dyad.sh, sans donnée d'usage.
+  rapports de plantage restent locaux. (Les catalogues distants de Dyad ont ensuite été supprimés : voir plus bas.)
 
 ## Onboarding Albert
 
