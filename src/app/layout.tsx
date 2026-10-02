@@ -57,6 +57,7 @@ import { ipc } from "@/ipc/types";
 import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
 import { DEFAULT_LANGUAGE } from "@/shared/branding";
+import { startDomTranslation } from "@/i18n/dom_translator";
 
 let rendererReadySent = false;
 
@@ -206,6 +207,28 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
       i18n.changeLanguage(language);
     }
   }, [settings?.language]);
+
+  // The interface strings that live inside Dyad's components are translated at
+  // display time (see i18n/dom_translator.ts); English needs nothing.
+  const uiLanguage = LanguageSchema.safeParse(settings?.language).success
+    ? settings?.language
+    : DEFAULT_LANGUAGE;
+  useEffect(() => {
+    if (uiLanguage !== "fr") return;
+    let cancelled = false;
+    let stop: (() => void) | undefined;
+    void import("@/i18n/ui_fr.json").then((module) => {
+      if (!cancelled) {
+        stop = startDomTranslation(
+          module.default as Record<string, string>,
+        ).stop;
+      }
+    });
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, [uiLanguage]);
 
   useEffect(() => {
     setSelectedComponentsPreview([]);

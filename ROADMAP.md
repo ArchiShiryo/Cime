@@ -19,16 +19,16 @@ Légende : ✅ fait · 🔧 en cours · ⬜ à faire · ⏸ reporté volontairem
 
 ## 2. Avant le pilote (bloquant)
 
-| # | Point | Détail |
-|---|---|---|
-| 1 | ⬜ **Interface : anglais restant** | Accueil, chat (« Thought », « Questionnaire », « Undo », « Retry »), aperçu, en-tête (« No app selected »). Chaînes de Dyad codées en dur : lot de traduction dédié aux écrans que voient les agents. |
-| 2 | ⬜ **Build Windows + nouvelle passe QA (Codex)** | Sur le dernier commit. À valider : routes, effort des modèles, verrous Office, DNS, OCR et lot sous Windows. |
-| 3 | ⬜ **Cas jamais testés** | Réseau verrouillé / proxy institutionnel, hors ligne complet, import de skills (zip-slip), commande shell longue et annulation, Légifrance avec de vraies clés PISTE, débit d'Albert sur un lot de 100 fichiers. |
-| 4 | ⬜ **Clé Albert provisoire** | À révoquer (elle a circulé dans des conversations). |
-| 5 | ⬜ **Fusion de la PR puis build propre depuis `main`** | Fait par le mainteneur. |
-| 6 | ⬜ **Installateur** | Vérifier l'alerte SmartScreen (signature) et l'installation sans droits administrateur. |
-| 7 | ⬜ **Canal de mise à jour Cimes** | Les mises à jour sont désactivées : prévoir un canal avant de déployer sur 15 postes. |
-| 8 | ⬜ **Décision Undo / Retry dans les projets** | Boutons qui s'appuient sur git : les garder ou les masquer comme le versioning. |
+| #   | Point                                                  | Détail                                                                                                                                                                                                           |
+| --- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ⬜ **Interface : anglais restant**                     | Accueil, chat (« Thought », « Questionnaire », « Undo », « Retry »), aperçu, en-tête (« No app selected »). Chaînes de Dyad codées en dur : lot de traduction dédié aux écrans que voient les agents.            |
+| 2   | ⬜ **Build Windows + nouvelle passe QA (Codex)**       | Sur le dernier commit. À valider : routes, effort des modèles, verrous Office, DNS, OCR et lot sous Windows.                                                                                                     |
+| 3   | ⬜ **Cas jamais testés**                               | Réseau verrouillé / proxy institutionnel, hors ligne complet, import de skills (zip-slip), commande shell longue et annulation, Légifrance avec de vraies clés PISTE, débit d'Albert sur un lot de 100 fichiers. |
+| 4   | ⬜ **Clé Albert provisoire**                           | À révoquer (elle a circulé dans des conversations).                                                                                                                                                              |
+| 5   | ⬜ **Fusion de la PR puis build propre depuis `main`** | Fait par le mainteneur.                                                                                                                                                                                          |
+| 6   | ⬜ **Installateur**                                    | Vérifier l'alerte SmartScreen (signature) et l'installation sans droits administrateur.                                                                                                                          |
+| 7   | ⬜ **Canal de mise à jour Cimes**                      | Les mises à jour sont désactivées : prévoir un canal avant de déployer sur 15 postes.                                                                                                                            |
+| 8   | ⬜ **Décision Undo / Retry dans les projets**          | Boutons qui s'appuient sur git : les garder ou les masquer comme le versioning.                                                                                                                                  |
 
 ## 3. Prochain chantier : Personnalisation
 
