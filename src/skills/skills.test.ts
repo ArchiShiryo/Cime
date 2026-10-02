@@ -385,8 +385,12 @@ describe("office-fichiers built-in skill", () => {
 
 describe("office toolkit safeguards", () => {
   it("keeps French decimal commas together when a CSV is comma-separated", async () => {
-    const office = await import("./builtin-assets/office.mjs");
-    const rows = office.repairDecimalCommas?.([
+    // A variable path keeps the 3 MB bundle out of the type-checker.
+    const bundle = "./builtin-assets/office.mjs";
+    const office = (await import(/* @vite-ignore */ bundle)) as {
+      repairDecimalCommas: (rows: string[][]) => string[][];
+    };
+    const rows = office.repairDecimalCommas([
       ["Nom", "Note"],
       ["Lea", "14", "5"],
       ["Paul", "12"],
