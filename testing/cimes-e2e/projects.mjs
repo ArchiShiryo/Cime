@@ -109,6 +109,12 @@ await main.fill("[data-testid=project-name-input]", "Session Qualiopi");
 await click("[data-testid=project-template-formation]");
 screen("p2-dialog");
 await click("[data-testid=create-project]");
+await sleep(4000);
+screen("p2b-after-create");
+log(
+  "body:",
+  (await main.locator("body").innerText()).replace(/\s+/g, " ").slice(0, 400),
+);
 await main.waitForSelector("[data-testid=project-page]", { timeout: 30000 });
 log("project page url:", main.url());
 
