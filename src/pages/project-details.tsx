@@ -8,6 +8,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { MemoryPanel } from "@/components/MemoryPanel";
+import { MoveChatDialog, ProjectActions } from "@/components/ProjectActions";
 import { useChats } from "@/hooks/useChats";
 import { useProject } from "@/hooks/useProjects";
 import { useSkills } from "@/hooks/useSkills";
@@ -40,13 +41,22 @@ export default function ProjectDetailsPage() {
     <div className="w-full min-h-screen px-8 py-4" data-testid="project-page">
       <div className="max-w-4xl space-y-5 pb-12">
         <BackButton />
-        <header>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {project?.name ?? t("projects.defaultProject")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {project?.resolvedPath}
-          </p>
+        <header className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {project?.name ?? t("projects.defaultProject")}
+            </h1>
+            <p className="truncate text-sm text-muted-foreground">
+              {project?.resolvedPath}
+            </p>
+          </div>
+          {project && (
+            <ProjectActions
+              appId={appId}
+              name={project.name}
+              path={project.path}
+            />
+          )}
         </header>
         <div className="flex gap-1 border-b" role="tablist">
           {TABS.map((item) => (
@@ -84,6 +94,8 @@ function ProjectChats({ appId }: { appId: number }) {
   const { selectChat } = useSelectChat();
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
 
+  const [moving, setMoving] = useState<number | null>(null);
+
   const open = (chatId: number) => {
     setSelectedAppId(appId);
     selectChat({ chatId, appId });
@@ -103,16 +115,23 @@ function ProjectChats({ appId }: { appId: number }) {
       <Button onClick={create} data-testid="project-new-chat">
         <MessageSquarePlus className="mr-1 h-4 w-4" /> {t("projects.newChat")}
       </Button>
+      <MoveChatDialog
+        chatId={moving}
+        fromAppId={appId}
+        open={moving !== null}
+        onClose={() => setMoving(null)}
+        onMoved={invalidateChats}
+      />
       {chats.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("projects.noChats")}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {chats.map((chat) => (
-            <li key={chat.id}>
+            <li key={chat.id} className="flex items-center">
               <button
                 type="button"
                 onClick={() => open(chat.id)}
-                className="flex w-full items-center justify-between gap-3 p-3 text-left hover:bg-accent"
+                className="flex min-w-0 flex-1 items-center justify-between gap-3 p-3 text-left hover:bg-accent"
               >
                 <span className="truncate">
                   {chat.title || t("projects.newChat")}
@@ -121,6 +140,14 @@ function ProjectChats({ appId }: { appId: number }) {
                   {new Date(chat.createdAt).toLocaleDateString(undefined)}
                 </span>
               </button>
+              <Button
+                variant="ghost"
+                size="sm"
+                data-testid={`move-chat-${chat.id}`}
+                onClick={() => setMoving(chat.id)}
+              >
+                {t("projects.move")}
+              </Button>
             </li>
           ))}
         </ul>

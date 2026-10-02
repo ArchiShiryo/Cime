@@ -117,7 +117,19 @@
       "suivi": "Suivi de projet",
       "veille": "Veille et étude"
     },
-    "tabMemory": "Mémoire"
+    "tabMemory": "Mémoire",
+    "rename": "Renommer",
+    "delete": "Supprimer",
+    "renameTitle": "Renommer le projet",
+    "renameHint": "Le dossier sur le disque garde son nom.",
+    "deleteTitle": "Supprimer le projet « {{name}} » ?",
+    "deleteWarning": "Le projet, ses conversations et tous les fichiers de son dossier seront supprimés. Cette action est irréversible.",
+    "deleteUnderstood": "Je comprends que les fichiers de ce projet seront définitivement supprimés.",
+    "deleteConfirm": "Supprimer le projet",
+    "move": "Déplacer",
+    "moveTitle": "Déplacer la conversation vers un autre projet",
+    "moveNone": "Il n'y a pas d'autre projet. Créez-en un d'abord.",
+    "moveHint": "Les fichiers modifiés par cette conversation restent dans le projet actuel, et son historique de versions ne la suit pas."
   },
   "activity": {
     "title": "Journal d'activité",

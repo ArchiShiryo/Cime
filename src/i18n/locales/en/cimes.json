@@ -117,7 +117,19 @@
       "suivi": "Project tracking",
       "veille": "Research and watch"
     },
-    "tabMemory": "Memory"
+    "tabMemory": "Memory",
+    "rename": "Rename",
+    "delete": "Delete",
+    "renameTitle": "Rename the project",
+    "renameHint": "The folder on disk keeps its name.",
+    "deleteTitle": "Delete the project \"{{name}}\"?",
+    "deleteWarning": "The project, its conversations and every file in its folder will be deleted. This cannot be undone.",
+    "deleteUnderstood": "I understand that the files of this project will be permanently deleted.",
+    "deleteConfirm": "Delete the project",
+    "move": "Move",
+    "moveTitle": "Move the conversation to another project",
+    "moveNone": "There is no other project. Create one first.",
+    "moveHint": "The files this conversation changed stay in the current project, and its version history does not follow it."
   },
   "activity": {
     "title": "Activity log",
