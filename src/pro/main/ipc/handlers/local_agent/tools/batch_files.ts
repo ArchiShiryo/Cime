@@ -63,7 +63,9 @@ function documentText(pages: { text: string; location?: string }[]): {
 
 export const batchFilesTool: ToolDefinition<z.infer<typeof batchSchema>> = {
   name: "batch_files",
-  description: `Apply the same instruction to every file of a folder (up to ${MAX_BATCH_FILES}), one separate model call per file, and write one Markdown result per file plus a summary.csv in a NEW folder of the project. The original files are never modified. It reads PDF (scans are read with OCR), Word, Excel, PowerPoint, text and images. Resumable: calling it again with the same output folder and instruction only processes what is missing or failed. It can take a long time and uses many model calls, so describe the plan to the user first, and for a first try run it on a small folder. Very long documents are cut to the first ${MAX_DOC_CHARS} characters (noted in the summary).`,
+  // A plain string (not a template) so the interface can translate it.
+  description:
+    "Apply the same instruction to every file of a folder (up to 200), one separate model call per file, and write one Markdown result per file plus a summary.csv in a NEW folder of the project. The original files are never modified. It reads PDF (scans are read with OCR), Word, Excel, PowerPoint, text and images. Resumable: calling it again with the same output folder and instruction only processes what is missing or failed. It can take a long time and uses many model calls, so describe the plan to the user first, and for a first try run it on a small folder. Very long documents are cut to the first 30000 characters (noted in the summary).",
   inputSchema: batchSchema,
   defaultConsent: "ask",
   modifiesState: true,

@@ -111,14 +111,20 @@ function ToolConsentRow({
   onConsentChange: (consent: AgentToolConsent) => void;
 }) {
   const { t } = useTranslation("settings");
+  // Long, platform-specific descriptions are shown by their first sentence when
+  // the whole text has no translation.
+  const full = translateUi(description ?? "");
+  const shown =
+    full !== description
+      ? full
+      : translateUi((description ?? "").split(/(?<=\.)\s/)[0] ?? "");
   return (
     <div className="border rounded p-3">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="font-mono text-sm">{name}</div>
           <div className="text-xs text-muted-foreground truncate">
-            {translateUi(description ?? "").slice(0, 100)}{" "}
-            {translateUi(description ?? "").length > 100 && "..."}
+            {shown.slice(0, 100)} {shown.length > 100 && "..."}
           </div>
         </div>
         <Select
