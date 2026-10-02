@@ -6,6 +6,7 @@ import { ProviderSettingsGrid } from "@/components/ProviderSettings";
 import { AlbertSettings } from "@/components/AlbertSettings";
 import { WebSearchSettings } from "@/components/WebSearchSettings";
 import { SkillsSettings } from "@/components/SkillsSettings";
+import { KnowledgeSettings } from "@/components/KnowledgeSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -604,6 +605,10 @@ export function AISettings() {
 
       <div id={SETTING_IDS.webSearchSearxng}>
         <WebSearchSettings />
+      </div>
+
+      <div id={SETTING_IDS.knowledge}>
+        <KnowledgeSettings />
       </div>
 
       <div id={SETTING_IDS.skills}>

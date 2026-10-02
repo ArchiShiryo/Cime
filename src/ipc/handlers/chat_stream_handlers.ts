@@ -194,7 +194,10 @@ import {
 import { getAiMessagesJsonIfWithinLimit } from "../utils/ai_messages_utils";
 import { readSettings, setSentinelActiveChat } from "@/main/settings";
 import { discoverSkills } from "@/skills/registry";
-import { getSkillsPromptBlock } from "@/skills/service";
+import {
+  getKnowledgePromptBlock,
+  getSkillsPromptBlock,
+} from "@/skills/service";
 import { expandSkillInvocation } from "@/skills/prompt";
 import { recordAppSizeForSession } from "@/main/last_session_store";
 import {
@@ -2376,6 +2379,7 @@ ${componentSnippet}
         systemPrompt += await getSkillsPromptBlock(
           getDyadAppPath(updatedChat.app.path),
         );
+        systemPrompt += getKnowledgePromptBlock();
 
         // Add information for any legacy caller that still injects full
         // referenced-app codebases.
@@ -2811,6 +2815,7 @@ This conversation includes one or more image attachments. When the user uploads 
           readOnlySystemPrompt += await getSkillsPromptBlock(
             getDyadAppPath(updatedChat.app.path),
           );
+          readOnlySystemPrompt += getKnowledgePromptBlock();
           if (rootDatabasePromptState === "supabase-disconnected") {
             readOnlySystemPrompt +=
               "\n\n" + SUPABASE_DISCONNECTED_SYSTEM_PROMPT;

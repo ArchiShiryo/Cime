@@ -45,6 +45,7 @@ import { registerFreeAgentQuotaHandlers } from "./handlers/free_agent_quota_hand
 import { registerFreeModelQuotaHandlers } from "./handlers/free_model_quota_handlers";
 import { registerAlbertHandlers } from "./handlers/albert_handlers";
 import { registerSkillsHandlers } from "./handlers/skills_handlers";
+import { registerKnowledgeHandlers } from "./handlers/knowledge_handlers";
 import { registerSplashHandlers } from "./handlers/splash_handlers";
 import { registerPlanHandlers } from "./handlers/plan_handlers";
 import { registerMediaHandlers } from "./handlers/media_handlers";
@@ -94,6 +95,7 @@ export function registerIpcHandlers() {
   registerLanguageModelHandlers();
   registerAlbertHandlers();
   registerSkillsHandlers();
+  registerKnowledgeHandlers();
   registerSplashHandlers();
   registerReleaseNoteHandlers();
   registerImportHandlers();

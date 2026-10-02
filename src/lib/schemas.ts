@@ -525,6 +525,8 @@ const BaseUserSettingsFields = {
   webSearchSearxngUrl: z.string().url().optional(),
   /** Names of skills the user turned off in Settings. */
   disabledSkills: z.array(z.string()).optional(),
+  /** Use Albert embeddings to improve knowledge-base search (passages are sent to Albert). */
+  knowledgeUseEmbeddings: z.boolean().optional(),
   autoApproveSafeMcpTools: z.boolean().optional(),
   skipPruneEdgeFunctions: z.boolean().optional(),
   acceptedCommunityCode: z.boolean().optional(),

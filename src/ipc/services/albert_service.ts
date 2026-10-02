@@ -317,3 +317,12 @@ export function disconnectAlbert(): AlbertStatus {
   });
   return getAlbertStatus();
 }
+
+/** Base URL and key for other Albert endpoints (embeddings…), or null when not connected. */
+export function getAlbertConnection(): {
+  baseUrl: string;
+  apiKey: string;
+} | null {
+  const apiKey = getStoredKey();
+  return apiKey ? { baseUrl: getAlbertBaseUrl(), apiKey } : null;
+}

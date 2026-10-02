@@ -292,6 +292,10 @@ export const queryKeys = {
     all: ["skills"] as const,
   },
 
+  knowledge: {
+    all: ["knowledge"] as const,
+  },
+
   albert: {
     status: ["albert", "status"] as const,
   },
@@ -571,6 +575,7 @@ export type AppQueryKey =
     >
   | QueryKeyOf<(typeof queryKeys.albert)[keyof typeof queryKeys.albert]>
   | QueryKeyOf<(typeof queryKeys.skills)[keyof typeof queryKeys.skills]>
+  | QueryKeyOf<(typeof queryKeys.knowledge)[keyof typeof queryKeys.knowledge]>
   | QueryKeyOf<(typeof queryKeys.userBudget)[keyof typeof queryKeys.userBudget]>
   | QueryKeyOf<
       (typeof queryKeys.cloudSandboxes)[keyof typeof queryKeys.cloudSandboxes]
