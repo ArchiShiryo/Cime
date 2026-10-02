@@ -44,6 +44,15 @@ Nouvelle section **Personnalisation** dans les Paramètres.
    - garde-fou : aucune donnée personnelle d'usager ou d'élève dans un souvenir ;
    - remplace le plugin « Memory » (qui dépend de `npx`).
 
+## 3 bis. Version nightly (expérimental, jamais dans la version stable)
+
+Prérequis : un canal « nightly » distinct (build, nom, dossier de données, mise à jour) et un bandeau visible « version expérimentale ».
+
+- ⬜ **OpenRouter pour les sous-agents** : nouveau fournisseur réservé à la nightly, choisi par sous-agent (jamais pour l'agent principal par défaut). Avertissement permanent : les données quittent le circuit Albert ; activation explicite par projet.
+- ⬜ **Pilotage à distance par un ChatGPT ou un Claude en ligne** : l'employé continue à travailler en déplacement depuis son assistant (application web ou mobile) qui pilote Cimes sur son poste. Piste : serveur MCP distant exposé par Cimes (tunnel sortant, jamais de port ouvert), authentification forte, périmètre limité à un projet, consentement pour chaque action sensible, aucun shell à distance par défaut, journal de tout ce qui est demandé.
+- ⬜ **Orchestrateur + sous-agents Albert** : un modèle « cerveau » planifie, plusieurs sous-agents Albert exécutent (lecture, extraction, rédaction, lot). Variante 100 % souveraine d'abord (grand modèle Albert en orchestrateur, petits modèles Albert en exécutants) ; variante avec modèle frontier ensuite.
+- ⬜ **Garde-fou de données (condition de tout ce qui précède)** : niveau de sensibilité par projet (le niveau « confidentiel » interdit tout modèle hors Albert), pseudonymisation locale avant tout envoi hors Albert, le modèle externe ne reçoit que des instructions et des résultats synthétiques (jamais les documents), journal de ce qui est sorti du poste.
+
 ## 4. Ensuite
 
 - ⬜ Projets : renommer, supprimer avec confirmation, déplacer une conversation vers un projet.
