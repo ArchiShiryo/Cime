@@ -109,7 +109,7 @@ export async function getEmbeddingEngine(
   };
 
   return {
-    model: chosen,
+    model: `albert:${chosen}`,
     async embedPassages(texts, signalArg) {
       const vectors: Float32Array[] = [];
       for (let i = 0; i < texts.length; i += BATCH_SIZE) {

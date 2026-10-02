@@ -105,7 +105,10 @@ const names = await main.$$eval("[data-testid^=skill-]", (els) =>
   els.map((e) => e.getAttribute("data-testid")),
 );
 log("skills listed:", names.length, names.slice(0, 4).join(","));
-log("knowledge settings present:", !!(await main.$("[data-testid=knowledge-settings]")));
+log(
+  "knowledge settings present:",
+  !!(await main.$("[data-testid=knowledge-settings]")),
+);
 await main.locator("[data-testid=knowledge-settings]").scrollIntoViewIfNeeded();
 await sleep(400);
 screen("s2b-knowledge");

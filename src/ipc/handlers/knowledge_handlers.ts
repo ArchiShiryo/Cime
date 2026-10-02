@@ -4,14 +4,22 @@ import { knowledgeContracts } from "../types/knowledge";
 import {
   addToKnowledgeBase,
   deleteSource,
-  listSources,
+  embedPending,
+  getEmbeddingMode,
+  isLocalModelInstalled,
+  listSourcesWithProgress,
   reindexSource,
 } from "@/knowledge/service";
 import { SUPPORTED_EXTENSIONS } from "@/knowledge/extract";
 
 export function registerKnowledgeHandlers() {
+  // Catch up on vectors that are missing (new mode, earlier failure, upgrade).
+  // A no-op when everything is analysed; the worker only starts if needed.
+  const catchUp = setTimeout(() => void embedPending(), 20_000);
+  catchUp.unref?.();
+
   createTypedHandler(knowledgeContracts.list, async () =>
-    listSources().map((source) => ({
+    listSourcesWithProgress().map((source) => ({
       id: source.id,
       path: source.path,
       name: source.name,
@@ -39,6 +47,14 @@ export function registerKnowledgeHandlers() {
     });
     if (result.canceled || result.filePaths.length === 0) return null;
     return addToKnowledgeBase(result.filePaths);
+  });
+
+  createTypedHandler(knowledgeContracts.status, async () => ({
+    mode: getEmbeddingMode(),
+    localModelInstalled: isLocalModelInstalled(),
+  }));
+  createTypedHandler(knowledgeContracts.embedPending, async () => {
+    void embedPending();
   });
 
   createTypedHandler(knowledgeContracts.remove, async (_event, { id }) => {

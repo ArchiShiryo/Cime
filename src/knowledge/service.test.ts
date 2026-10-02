@@ -17,7 +17,7 @@ import {
 const holder = vi.hoisted(() => ({
   userData: "",
   connection: null as null | { baseUrl: string; apiKey: string },
-  useEmbeddings: true,
+  mode: "albert" as "local" | "albert" | "keywords",
 }));
 
 vi.mock("electron-log", () => {
@@ -31,7 +31,7 @@ vi.mock("electron-log", () => {
 });
 vi.mock("@/paths/paths", () => ({ getUserDataPath: () => holder.userData }));
 vi.mock("@/main/settings", () => ({
-  readSettings: () => ({ knowledgeUseEmbeddings: holder.useEmbeddings }),
+  readSettings: () => ({ knowledgeEmbeddingMode: holder.mode }),
 }));
 vi.mock("@/ipc/services/albert_service", () => ({
   getAlbertConnection: () => holder.connection,
@@ -42,11 +42,16 @@ import {
   addToKnowledgeBase,
   collectFiles,
   deleteSource,
+  embedPending,
   getKnowledgeStats,
   searchKnowledge,
   waitForKnowledgeIdle,
 } from "./service";
 import { pickEmbeddingModel } from "./embeddings";
+import {
+  isLocalEmbeddingAvailable,
+  stopLocalEmbeddingWorker,
+} from "./local_embeddings";
 
 // A tiny fake Albert: one embedding model; vectors group "animal" vs "cuisine" words.
 let server: http.Server;
@@ -92,7 +97,10 @@ beforeAll(async () => {
   });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
 });
-afterAll(() => server.close());
+afterAll(() => {
+  server.close();
+  stopLocalEmbeddingWorker();
+});
 
 const OFFICE_PATH = "../skills/builtin-assets/office.mjs";
 const waitForIdle = () => waitForKnowledgeIdle();
@@ -104,7 +112,7 @@ describe("knowledge base", () => {
     closeKnowledgeDb();
     holder.userData = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-kb-"));
     holder.connection = null;
-    holder.useEmbeddings = true;
+    holder.mode = "albert";
     embeddingCalls = 0;
     docs = path.join(holder.userData, "docs");
     fs.mkdirSync(path.join(docs, "sous-dossier"), { recursive: true });
@@ -156,7 +164,7 @@ describe("knowledge base", () => {
   it("does not send anything to Albert when embeddings are switched off", async () => {
     const { port } = server.address() as AddressInfo;
     holder.connection = { baseUrl: `http://127.0.0.1:${port}/v1`, apiKey: "k" };
-    holder.useEmbeddings = false;
+    holder.mode = "keywords";
     await addToKnowledgeBase([docs]);
     await waitForIdle();
     expect(embeddingCalls).toBe(0);
@@ -215,6 +223,65 @@ describe("knowledge base", () => {
     });
   }, 60_000);
 });
+
+describe.skipIf(!isLocalEmbeddingAvailable())(
+  "local embeddings (model shipped with Cimes)",
+  () => {
+    let docs: string;
+    beforeEach(async () => {
+      await waitForKnowledgeIdle();
+      closeKnowledgeDb();
+      holder.userData = fs.mkdtempSync(
+        path.join(os.tmpdir(), "cimes-kb-local-"),
+      );
+      holder.connection = null;
+      holder.mode = "local";
+      docs = path.join(holder.userData, "docs");
+      fs.mkdirSync(docs, { recursive: true });
+      fs.writeFileSync(
+        path.join(docs, "animaux.md"),
+        "Le chat est un félin domestique. Le chien est un compagnon fidèle pour la famille.",
+      );
+      fs.writeFileSync(
+        path.join(docs, "cuisine.txt"),
+        "Recette du gâteau au chocolat : mélanger la farine, les œufs, le sucre et le cacao, puis cuire au four.",
+      );
+      fs.writeFileSync(
+        path.join(docs, "tablettes.txt"),
+        "Les tablettes numériques doivent être rendues avant seize heures trente dans le casier.",
+      );
+    });
+
+    it("finds passages by meaning with no word in common, with nothing sent to Albert", async () => {
+      await addToKnowledgeBase([docs]);
+      await waitForIdle();
+      const sources = listSources();
+      expect(
+        sources.every(
+          (s) => s.chunkCount > 0 && s.embeddedCount === s.chunkCount,
+        ),
+      ).toBe(true);
+      const hits = await searchKnowledge("quel animal de compagnie adopter ?");
+      expect(hits[0].source).toBe("animaux.md");
+      const cooking = await searchKnowledge(
+        "comment préparer un dessert sucré",
+      );
+      expect(cooking[0].source).toBe("cuisine.txt");
+    }, 180_000);
+
+    it("re-embeds with the new engine when the mode changes", async () => {
+      holder.mode = "keywords";
+      await addToKnowledgeBase([docs]);
+      await waitForIdle();
+      expect(listSources().every((s) => s.embeddedCount === 0)).toBe(true);
+      holder.mode = "local";
+      await embedPending();
+      expect(listSources().every((s) => s.embeddedCount === s.chunkCount)).toBe(
+        true,
+      );
+    }, 180_000);
+  },
+);
 
 describe("pickEmbeddingModel", () => {
   it("prefers typed embedding models and ignores vision-language ones when others exist", () => {

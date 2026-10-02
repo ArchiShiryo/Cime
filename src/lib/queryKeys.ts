@@ -294,6 +294,7 @@ export const queryKeys = {
 
   knowledge: {
     all: ["knowledge"] as const,
+    status: ["knowledge", "status"] as const,
   },
 
   albert: {

@@ -36,6 +36,20 @@ export const knowledgeContracts = {
     input: z.object({ id: z.number() }),
     output: z.void(),
   }),
+  status: defineContract({
+    channel: "knowledge:status",
+    input: z.void(),
+    output: z.object({
+      mode: z.enum(["local", "albert", "keywords"]),
+      localModelInstalled: z.boolean(),
+    }),
+  }),
+  // Computes missing vectors (after the user changes the search mode).
+  embedPending: defineContract({
+    channel: "knowledge:embed-pending",
+    input: z.void(),
+    output: z.void(),
+  }),
 } as const;
 
 export const knowledgeClient = createClient(knowledgeContracts);

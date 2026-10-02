@@ -7,15 +7,25 @@ export function useKnowledge() {
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.all });
 
+  const statusQuery = useQuery({
+    queryKey: queryKeys.knowledge.status,
+    queryFn: () => ipc.knowledge.status(),
+  });
+  const mode = statusQuery.data?.mode;
   const listQuery = useQuery({
     queryKey: queryKeys.knowledge.all,
     queryFn: () => ipc.knowledge.list(),
     // Indexing runs in the background: poll while something is in progress.
     refetchInterval: (query) =>
       query.state.data?.some(
-        (source) => source.status === "pending" || source.status === "indexing",
+        (source) =>
+          source.status === "pending" ||
+          source.status === "indexing" ||
+          (mode !== "keywords" &&
+            source.status === "ready" &&
+            source.embeddedCount < source.chunkCount),
       )
-        ? 1500
+        ? 3000
         : false,
   });
   const add = useMutation({
@@ -30,5 +40,18 @@ export function useKnowledge() {
     mutationFn: (id: number) => ipc.knowledge.reindex({ id }),
     onSuccess: refresh,
   });
-  return { sources: listQuery.data ?? [], add, remove, reindex };
+  const embedPending = useMutation({
+    mutationFn: () => ipc.knowledge.embedPending(),
+    onSuccess: refresh,
+  });
+  return {
+    sources: listQuery.data ?? [],
+    status: statusQuery.data,
+    add,
+    remove,
+    reindex,
+    embedPending,
+    refreshStatus: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.status }),
+  };
 }

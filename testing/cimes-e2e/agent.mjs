@@ -102,9 +102,15 @@ if (process.env.KB_SEED_TEXT) {
   // Optional: put a ready document straight into the knowledge base (no file dialog in e2e).
   const { DatabaseSync } = await import("node:sqlite");
   const kb = new DatabaseSync(path.join(userData, "knowledge.db"));
-  kb.exec("CREATE TABLE IF NOT EXISTS sources (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL UNIQUE, name TEXT NOT NULL, size INTEGER NOT NULL DEFAULT 0, mtime INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', error TEXT, updated_at INTEGER NOT NULL DEFAULT 0); CREATE TABLE IF NOT EXISTS chunks (id INTEGER PRIMARY KEY AUTOINCREMENT, source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE, ordinal INTEGER NOT NULL, location TEXT, text TEXT NOT NULL, embedding BLOB);");
-  kb.prepare("INSERT INTO sources (path, name, status) VALUES (?, ?, 'ready')").run("/seed/reglement-atelier.txt", "reglement-atelier.txt");
-  kb.prepare("INSERT INTO chunks (source_id, ordinal, location, text) VALUES (1, 0, 'p. 2', ?)").run(process.env.KB_SEED_TEXT);
+  kb.exec(
+    "CREATE TABLE IF NOT EXISTS sources (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL UNIQUE, name TEXT NOT NULL, size INTEGER NOT NULL DEFAULT 0, mtime INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', error TEXT, updated_at INTEGER NOT NULL DEFAULT 0); CREATE TABLE IF NOT EXISTS chunks (id INTEGER PRIMARY KEY AUTOINCREMENT, source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE, ordinal INTEGER NOT NULL, location TEXT, text TEXT NOT NULL, embedding BLOB);",
+  );
+  kb.prepare(
+    "INSERT INTO sources (path, name, status) VALUES (?, ?, 'ready')",
+  ).run("/seed/reglement-atelier.txt", "reglement-atelier.txt");
+  kb.prepare(
+    "INSERT INTO chunks (source_id, ordinal, location, text) VALUES (1, 0, 'p. 2', ?)",
+  ).run(process.env.KB_SEED_TEXT);
   kb.close();
   log("knowledge base seeded");
 }

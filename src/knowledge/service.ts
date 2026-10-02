@@ -4,6 +4,10 @@ import log from "electron-log";
 import { readSettings } from "@/main/settings";
 import { chunkText } from "./chunker";
 import { getEmbeddingEngine, type EmbeddingEngine } from "./embeddings";
+import {
+  getLocalEmbeddingEngine,
+  isLocalEmbeddingAvailable,
+} from "./local_embeddings";
 import { extractDocument, SUPPORTED_EXTENSIONS } from "./extract";
 import {
   bm25Scores,
@@ -101,8 +105,24 @@ export function deleteSource(id: number): void {
   removeSource(id);
 }
 
-function useEmbeddings(): boolean {
-  return readSettings().knowledgeUseEmbeddings !== false;
+export type EmbeddingMode = "local" | "albert" | "keywords";
+
+export function isLocalModelInstalled(): boolean {
+  return isLocalEmbeddingAvailable();
+}
+
+export function getEmbeddingMode(): EmbeddingMode {
+  return readSettings().knowledgeEmbeddingMode ?? "local";
+}
+
+/** The engine for the selected mode, or null (keywords only, or engine unavailable). */
+async function resolveEngine(
+  signal?: AbortSignal,
+): Promise<EmbeddingEngine | null> {
+  const mode = getEmbeddingMode();
+  if (mode === "keywords") return null;
+  if (mode === "local") return getLocalEmbeddingEngine();
+  return getEmbeddingEngine(signal);
 }
 
 async function indexSource(id: number): Promise<void> {
@@ -124,7 +144,7 @@ async function indexSource(id: number): Promise<void> {
     }
     replaceChunks(id, chunks);
     setSourceStatus(id, "ready");
-    if (useEmbeddings()) await embedPending();
+    await embedPending();
   } catch (error) {
     logger.warn(`Indexing failed for ${source.name}:`, error);
     setSourceStatus(
@@ -137,18 +157,17 @@ async function indexSource(id: number): Promise<void> {
 
 /** Computes embeddings for passages that lack one. Silent when Albert is unavailable. */
 export async function embedPending(): Promise<void> {
-  let engine: EmbeddingEngine | null = null;
   try {
-    engine = await getEmbeddingEngine();
+    const engine = await resolveEngine();
     if (!engine) return;
     for (;;) {
-      const batch = loadUnembeddedChunks(64);
+      const batch = loadUnembeddedChunks(engine.model, 64);
       if (batch.length === 0) return;
       const vectors = await engine.embedPassages(
         batch.map((chunk) => chunk.text),
       );
       batch.forEach((chunk, index) =>
-        setChunkEmbedding(chunk.id, vectors[index]),
+        setChunkEmbedding(chunk.id, vectors[index], engine.model),
       );
     }
   } catch (error) {
@@ -167,6 +186,15 @@ export function getKnowledgeStats(): {
     ready: sources.filter((source) => source.status === "ready").length,
     chunks: sources.reduce((sum, source) => sum + source.chunkCount, 0),
   };
+}
+
+/** Sources with the number of passages already analysed by the current engine. */
+export function listSourcesWithProgress(): KnowledgeSource[] {
+  const mode = getEmbeddingMode();
+  if (mode === "keywords") {
+    return listSources().map((source) => ({ ...source, embeddedCount: 0 }));
+  }
+  return listSources(mode === "local" ? "local:" : "albert:");
 }
 
 export { listSources };
@@ -188,20 +216,23 @@ export async function searchKnowledge(
     })),
   );
   const rankings = [rankIds(keyword)];
-  const embedded = chunks.filter((chunk) => chunk.embedding);
-  if (embedded.length > 0 && useEmbeddings()) {
-    try {
-      const engine = await getEmbeddingEngine(signal);
-      if (engine) {
-        const queryVector = await engine.embedQuery(query, signal);
-        const semantic = new Map<number, number>();
-        for (const chunk of embedded)
-          semantic.set(chunk.id, dot(queryVector, chunk.embedding!));
-        rankings.push(rankIds(semantic).slice(0, 50));
-      }
-    } catch (error) {
-      logger.warn("Semantic search unavailable, using keywords only:", error);
+  try {
+    const engine = await resolveEngine(signal);
+    // Only vectors from the same engine as the query are comparable.
+    const embedded = engine
+      ? chunks.filter(
+          (chunk) => chunk.embedding && chunk.embedder === engine.model,
+        )
+      : [];
+    if (engine && embedded.length > 0) {
+      const queryVector = await engine.embedQuery(query, signal);
+      const semantic = new Map<number, number>();
+      for (const chunk of embedded)
+        semantic.set(chunk.id, dot(queryVector, chunk.embedding!));
+      rankings.push(rankIds(semantic).slice(0, 50));
     }
+  } catch (error) {
+    logger.warn("Semantic search unavailable, using keywords only:", error);
   }
   const fused = fuseRankings(rankings);
   const byId = new Map(chunks.map((chunk) => [chunk.id, chunk]));

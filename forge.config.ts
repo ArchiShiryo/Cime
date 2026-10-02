@@ -226,7 +226,13 @@ const config: ForgeConfig = {
         "{node_modules/dyad-keychain-reader,node_modules/node-pty,node_modules/mustardscript,node_modules/@mustardscript}",
     },
     ignore,
-    extraResource: ["node_modules/dugite/git", "node_modules/@vscode"],
+    extraResource: [
+      "node_modules/dugite/git",
+      "node_modules/@vscode",
+      // Local embeddings: model and worker (prepared by scripts/prepare-embedding.mjs).
+      "resources/models",
+      "resources/embedding",
+    ],
     // ignore: [/node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/],
   },
   rebuildConfig: shouldSkipNativeRebuild

@@ -24,6 +24,8 @@ export interface StoredChunk {
   location: string | null;
   text: string;
   embedding: Float32Array | null;
+  /** Which engine produced `embedding` (vectors of different engines are not comparable). */
+  embedder: string | null;
 }
 
 let database: Database.Database | null = null;
@@ -60,6 +62,12 @@ export function getKnowledgeDb(file?: string): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS chunks_source ON chunks(source_id);
   `);
+  const columns = database.prepare("PRAGMA table_info(chunks)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "embedder")) {
+    database.exec("ALTER TABLE chunks ADD COLUMN embedder TEXT");
+  }
   return database;
 }
 
@@ -136,25 +144,28 @@ export function replaceChunks(
 export function setChunkEmbedding(
   chunkId: number,
   embedding: Float32Array,
+  embedder: string,
 ): void {
   getKnowledgeDb()
-    .prepare("UPDATE chunks SET embedding = ? WHERE id = ?")
+    .prepare("UPDATE chunks SET embedding = ?, embedder = ? WHERE id = ?")
     .run(
       Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength),
+      embedder,
       chunkId,
     );
 }
 
-export function listSources(): KnowledgeSource[] {
-  const rows = getKnowledgeDb()
+/** Sources with passage counts; `embeddedCount` counts vectors whose embedder starts with `embedderPrefix` (any when omitted). */
+export function listSources(embedderPrefix?: string | null): KnowledgeSource[] {
+  return getKnowledgeDb()
     .prepare(
       `SELECT s.id, s.path, s.name, s.size, s.mtime, s.status, s.error,
-              COUNT(c.id) AS chunkCount, COUNT(c.embedding) AS embeddedCount
+              COUNT(c.id) AS chunkCount,
+              COUNT(CASE WHEN c.embedding IS NOT NULL AND (? IS NULL OR c.embedder LIKE ? || '%') THEN 1 END) AS embeddedCount
        FROM sources s LEFT JOIN chunks c ON c.source_id = s.id
        GROUP BY s.id ORDER BY s.name COLLATE NOCASE`,
     )
-    .all() as KnowledgeSource[];
-  return rows;
+    .all(embedderPrefix ?? null, embedderPrefix ?? null) as KnowledgeSource[];
 }
 
 export function getSource(id: number): KnowledgeSource | undefined {
@@ -175,7 +186,7 @@ function toVector(blob: Buffer | null): Float32Array | null {
 export function loadReadyChunks(): (StoredChunk & { sourceName: string })[] {
   const rows = getKnowledgeDb()
     .prepare(
-      `SELECT c.id, c.source_id AS sourceId, c.ordinal, c.location, c.text, c.embedding, s.name AS sourceName
+      `SELECT c.id, c.source_id AS sourceId, c.ordinal, c.location, c.text, c.embedding, c.embedder, s.name AS sourceName
        FROM chunks c JOIN sources s ON s.id = c.source_id WHERE s.status = 'ready'`,
     )
     .all() as (Omit<StoredChunk, "embedding"> & {
@@ -185,12 +196,14 @@ export function loadReadyChunks(): (StoredChunk & { sourceName: string })[] {
   return rows.map((row) => ({ ...row, embedding: toVector(row.embedding) }));
 }
 
+/** Passages with no vector from `embedder` (never embedded, or embedded by another engine). */
 export function loadUnembeddedChunks(
+  embedder: string,
   limit: number,
 ): { id: number; text: string }[] {
   return getKnowledgeDb()
     .prepare(
-      "SELECT id, text FROM chunks WHERE embedding IS NULL ORDER BY id LIMIT ?",
+      "SELECT id, text FROM chunks WHERE embedding IS NULL OR embedder IS NOT ? ORDER BY id LIMIT ?",
     )
-    .all(limit) as { id: number; text: string }[];
+    .all(embedder, limit) as { id: number; text: string }[];
 }

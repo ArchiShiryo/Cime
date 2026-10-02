@@ -1,7 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { useKnowledge } from "@/hooks/useKnowledge";
 import { useSettings } from "@/hooks/useSettings";
+
+const MODES = [
+  {
+    value: "local" as const,
+    title: "Sur ce poste (recommandé)",
+    description:
+      "Un petit modèle fourni avec Cimes calcule la recherche par le sens sur le processeur. Rien ne quitte le poste ; première analyse un peu longue (quelques passages par seconde).",
+  },
+  {
+    value: "albert" as const,
+    title: "Avec Albert",
+    description:
+      "Envoie des extraits de vos documents à Albert pour calculer les vecteurs : plus rapide, nécessite le réseau.",
+  },
+  {
+    value: "keywords" as const,
+    title: "Mots seulement",
+    description: "Recherche par les mots de la question, sans analyse du sens.",
+  },
+];
 
 const STATUS_LABELS = {
   pending: "En attente",
@@ -12,9 +31,10 @@ const STATUS_LABELS = {
 
 /** Documents the agent can search (PDF, Word, Excel, PowerPoint, texte). */
 export function KnowledgeSettings() {
-  const { sources, add, remove, reindex } = useKnowledge();
+  const { sources, status, add, remove, reindex, embedPending, refreshStatus } =
+    useKnowledge();
   const { settings, updateSettings } = useSettings();
-  const useEmbeddings = settings?.knowledgeUseEmbeddings !== false;
+  const mode = settings?.knowledgeEmbeddingMode ?? "local";
   const embedded = sources.reduce((sum, s) => sum + s.embeddedCount, 0);
   const total = sources.reduce((sum, s) => sum + s.chunkCount, 0);
 
@@ -30,31 +50,49 @@ export function KnowledgeSettings() {
         </p>
       </div>
 
-      <div className="flex items-start justify-between gap-3 rounded-md border p-3">
-        <div>
-          <div className="text-sm font-medium">
-            Recherche par le sens (Albert)
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Envoie des extraits de vos documents à Albert pour calculer des
-            vecteurs de recherche, ce qui trouve aussi les passages qui
-            n&apos;ont pas les mêmes mots que la question. Désactivé : recherche
-            par mots seulement, rien ne quitte ce poste.
+      <fieldset className="space-y-2 rounded-md border p-3">
+        <legend className="px-1 text-sm font-medium">
+          Recherche par le sens
+        </legend>
+        {MODES.map((option) => {
+          const unavailable =
+            option.value === "local" && status?.localModelInstalled === false;
+          return (
+            <label
+              key={option.value}
+              className={`flex items-start gap-2 text-sm ${unavailable ? "opacity-60" : "cursor-pointer"}`}
+            >
+              <input
+                type="radio"
+                name="knowledge-mode"
+                className="mt-1"
+                checked={mode === option.value}
+                disabled={unavailable}
+                onChange={async () => {
+                  await updateSettings({
+                    knowledgeEmbeddingMode: option.value,
+                  });
+                  refreshStatus();
+                  embedPending.mutate();
+                }}
+              />
+              <span>
+                <span className="font-medium">{option.title}</span>
+                <span className="block text-muted-foreground">
+                  {unavailable
+                    ? "Modèle non installé dans cette version."
+                    : option.description}
+                </span>
+              </span>
+            </label>
+          );
+        })}
+        {mode !== "keywords" && total > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {embedded} / {total} extraits analysés.
           </p>
-          {useEmbeddings && total > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {embedded} / {total} extraits analysés.
-            </p>
-          )}
-        </div>
-        <Switch
-          aria-label="Recherche par le sens avec Albert"
-          checked={useEmbeddings}
-          onCheckedChange={(checked) =>
-            updateSettings({ knowledgeUseEmbeddings: checked })
-          }
-        />
-      </div>
+        )}
+      </fieldset>
 
       {sources.length > 0 && (
         <ul className="max-h-80 divide-y overflow-y-auto rounded-md border">
