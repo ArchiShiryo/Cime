@@ -896,7 +896,10 @@ export function registerAppHandlers() {
         .values({
           name: appName,
           path: appPath,
-          needsAppBlueprint: settings.enableAppBlueprint,
+          // Projects are document workspaces: no app blueprint step.
+          needsAppBlueprint: params.projectTemplateId
+            ? false
+            : settings.enableAppBlueprint,
           // Opt newly created apps into E2E testing when the user has enabled
           // the "testing for new apps" setting. Otherwise fall back to the
           // column default (off).
