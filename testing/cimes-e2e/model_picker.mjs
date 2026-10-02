@@ -87,13 +87,26 @@ for (let i = 0; i < 80 && !main; i++) {
 }
 await sleep(6000);
 // Open the model picker from the chat input and list the Albert models.
-const trigger = main.locator("button:has-text(\"Albert\")").first();
+const trigger = main.locator('button:has-text("Albert")').first();
 await trigger.click({ timeout: 20000 });
 await sleep(1500);
+await main.locator("text=All models").first().click();
+await sleep(1500);
 screen("m1-picker");
-let text = await main.locator("[role=menu], [role=dialog], [data-slot=popover-content]").first().innerText().catch(() => "");
+let text = await main
+  .locator("[role=menu], [role=dialog], [data-slot=popover-content]")
+  .first()
+  .innerText()
+  .catch(() => "");
 if (!/GPT-OSS/.test(text)) text = await main.locator("body").innerText();
-for (const name of ["GPT-OSS 120B", "Mistral Medium", "Mistral Small", "Ministral", "Qwen3 Coder", "DeepSeek V4 Flash"]) {
+for (const name of [
+  "GPT-OSS 120B",
+  "Mistral Medium",
+  "Mistral Small",
+  "Ministral",
+  "Qwen3 Coder",
+  "DeepSeek V4 Flash",
+]) {
   log(name, "visible:", text.includes(name));
 }
 await browser.close().catch(() => {});

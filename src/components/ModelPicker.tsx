@@ -1506,6 +1506,12 @@ export function ModelPicker() {
     tier,
     entries: primaryModelEntries
       .filter((entry) => tierFor(entry.model.dollarSigns) === tier)
+      // Cimes: models that need a paid plan or a missing key are not offered.
+      .filter(
+        (entry) =>
+          PAID_FEATURES_ENABLED ||
+          !isModelLocked(entry.providerId, entry.model),
+      )
       .sort(
         (a, b) =>
           (a.providerId === "openai" ? 0 : 1) -
@@ -1586,39 +1592,44 @@ export function ModelPicker() {
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent className={MODEL_MENU_WIDTH_CLASS} align="start">
-          <ClaudeCodeSubscriptionMenu
-            enabled={
-              !!settings.enableClaudeCodeSubscription &&
-              settings.proModelUsage !== "pro"
-            }
-            onEnabledChange={(enabled) =>
-              updateSettings({
-                enableClaudeCodeSubscription: enabled,
-                ...(enabled ? { proModelUsage: "subscription" as const } : {}),
-              })
-            }
-            connected={
-              !!claudeStatus.data?.connected && !!claudeStatus.data?.compatible
-            }
-            detail={
-              claudeStatus.data?.detail ?? "Checking Claude Code connection…"
-            }
-            onRefresh={() => {
-              void queryClient
-                .fetchQuery({
-                  queryKey: queryKeys.system.claudeCodeStatus,
-                  queryFn: () => ipc.chat.claudeCodeStatus({ force: true }),
-                  staleTime: 0,
+          {PAID_FEATURES_ENABLED && (
+            <ClaudeCodeSubscriptionMenu
+              enabled={
+                !!settings.enableClaudeCodeSubscription &&
+                settings.proModelUsage !== "pro"
+              }
+              onEnabledChange={(enabled) =>
+                updateSettings({
+                  enableClaudeCodeSubscription: enabled,
+                  ...(enabled
+                    ? { proModelUsage: "subscription" as const }
+                    : {}),
                 })
-                .catch((error) => showError(error));
-              void claudeModels.refetch();
-            }}
-            catalogMessage={
-              claudeModels.isError
-                ? "Could not load Claude Code suggestions. Try refreshing."
-                : undefined
-            }
-          />
+              }
+              connected={
+                !!claudeStatus.data?.connected &&
+                !!claudeStatus.data?.compatible
+              }
+              detail={
+                claudeStatus.data?.detail ?? "Checking Claude Code connection…"
+              }
+              onRefresh={() => {
+                void queryClient
+                  .fetchQuery({
+                    queryKey: queryKeys.system.claudeCodeStatus,
+                    queryFn: () => ipc.chat.claudeCodeStatus({ force: true }),
+                    staleTime: 0,
+                  })
+                  .catch((error) => showError(error));
+                void claudeModels.refetch();
+              }}
+              catalogMessage={
+                claudeModels.isError
+                  ? "Could not load Claude Code suggestions. Try refreshing."
+                  : undefined
+              }
+            />
+          )}
           <SubscriptionModelMenu>
             <DropdownMenuSeparator />
             {/* Trial user upgrade banner */}
