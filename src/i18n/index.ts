@@ -7,6 +7,16 @@ import enSettings from "./locales/en/settings.json";
 import enChat from "./locales/en/chat.json";
 import enHome from "./locales/en/home.json";
 import enErrors from "./locales/en/errors.json";
+import enCimes from "./locales/en/cimes.json";
+
+// French (default language of Cimes)
+import frCommon from "./locales/fr/common.json";
+import frSettings from "./locales/fr/settings.json";
+import frChat from "./locales/fr/chat.json";
+import frHome from "./locales/fr/home.json";
+import frErrors from "./locales/fr/errors.json";
+import frCimes from "./locales/fr/cimes.json";
+import { DEFAULT_LANGUAGE } from "@/shared/branding";
 
 // Chinese Simplified
 import zhCNCommon from "./locales/zh-CN/common.json";
@@ -50,6 +60,15 @@ const resources = {
     chat: enChat,
     home: enHome,
     errors: enErrors,
+    cimes: enCimes,
+  },
+  fr: {
+    common: frCommon,
+    settings: frSettings,
+    chat: frChat,
+    home: frHome,
+    errors: frErrors,
+    cimes: frCimes,
   },
   "zh-CN": {
     common: zhCNCommon,
@@ -90,10 +109,10 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: "en", // Default; overridden by user setting on startup
+  lng: DEFAULT_LANGUAGE, // Overridden by the user setting on startup
   fallbackLng: "en",
   defaultNS: "common",
-  ns: ["common", "settings", "chat", "home", "errors"],
+  ns: ["common", "settings", "chat", "home", "errors", "cimes"],
   interpolation: {
     escapeValue: false, // React already escapes rendered output
   },

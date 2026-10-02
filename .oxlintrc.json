@@ -2,7 +2,10 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "ignorePatterns": [
     "e2e-tests/fixtures/**/*",
-    "src/__tests__/evals/fixtures/**/*"
+    "src/__tests__/evals/fixtures/**/*",
+    "src/skills/builtin-assets/**",
+    "tools/office-bundle/**",
+    "resources/**"
   ],
   "categories": {
     "correctness": "warn"

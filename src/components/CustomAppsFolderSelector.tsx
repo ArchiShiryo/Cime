@@ -114,7 +114,7 @@ export function CustomAppsFolderSelector() {
         <div className="text-sm text-gray-500 dark:text-gray-400">
           <p>
             {isPathAvailable
-              ? "This is the top-level folder that Dyad will store new applications in."
+              ? "This is the top-level folder that Cimes will store new applications in."
               : "Your apps folder is inaccessible. Make sure that the folder exists and has write permissions, or change it."}
           </p>
         </div>

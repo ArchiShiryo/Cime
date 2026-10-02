@@ -283,7 +283,7 @@ export function CoolifyServerSetup({
                   }
                   data-testid="coolify-setup-accept-insecure"
                 />
-                <span>Keep Dyad connected to this address anyway</span>
+                <span>Keep Cimes connected to this address anyway</span>
               </label>
             )}
           </div>
@@ -291,8 +291,8 @@ export function CoolifyServerSetup({
         {result.tokenStored && (
           <p className="text-sm text-muted-foreground">
             {result.secure
-              ? "Dyad created its own API token, so you can pick a server and project next."
-              : "Dyad created an API token for this server. It is not kept unless you say so above, because this address is not encrypted."}
+              ? "Cimes created its own API token, so you can pick a server and project next."
+              : "Cimes created an API token for this server. It is not kept unless you say so above, because this address is not encrypted."}
           </p>
         )}
         {(!result.tokenStored ||
@@ -308,9 +308,9 @@ export function CoolifyServerSetup({
             <p className="font-medium">One step left, in Coolify</p>
             <p className="text-muted-foreground">
               {result.tokenStored
-                ? "Unless you tick the box above, Dyad forgets the token it made."
+                ? "Unless you tick the box above, Cimes forgets the token it made."
                 : (result.tokenUnavailableReason ??
-                  "Dyad could not create an API token automatically.")}{" "}
+                  "Cimes could not create an API token automatically.")}{" "}
               Open {result.dashboardUrl}, sign in with the details above,{" "}
               {/* Dyad turns the API on before it mints, so this stays done
                   even when the mint is what failed. */}
@@ -554,7 +554,7 @@ export function CoolifyServerSetup({
           className="text-sm text-amber-600 dark:text-amber-400"
           data-testid="coolify-setup-snapshot-error"
         >
-          Could not read what Dyad is doing with servers right now.{" "}
+          Could not read what Cimes is doing with servers right now.{" "}
           <button
             type="button"
             className="underline underline-offset-4"

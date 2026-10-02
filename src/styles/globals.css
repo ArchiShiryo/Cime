@@ -95,7 +95,7 @@ body[data-scroll-locked] .app-region-drag {
      panel both end above it rather than being covered by it. */
   --layout-bottom-bar-height: 0px;
   --docs-bg: #f5f5f5;
-  --default-font-family: "Geist", sans-serif;
+  --default-font-family: "Ariane", "Geist", sans-serif;
   --default-mono-font-family: "Geist Mono", monospace;
   /* --background: oklch(1 0 0); */
   --background-lightest: #fff;
@@ -172,10 +172,10 @@ body[data-scroll-locked] .app-region-drag {
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
   --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-1: oklch(0.7 0.09 196);
+  --chart-2: oklch(0.75 0.05 129);
   --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-4: oklch(0.6 0.08 227);
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
@@ -185,6 +185,67 @@ body[data-scroll-locked] .app-region-drag {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* Cimes: no violet. Tailwind's violet, purple, indigo, fuchsia and blue ramps are
+   remapped to the Canopé turquoise, so every class that used them (badges,
+   banners, cards, toolbars) follows the brand without touching each component. */
+@theme {
+  --color-violet-50: oklch(0.975 0.012 196);
+  --color-violet-100: oklch(0.95 0.022 196);
+  --color-violet-200: oklch(0.9 0.04 196);
+  --color-violet-300: oklch(0.82 0.06 196);
+  --color-violet-400: oklch(0.72 0.08 196);
+  --color-violet-500: oklch(0.6 0.085 196);
+  --color-violet-600: oklch(0.5 0.08 196);
+  --color-violet-700: oklch(0.424 0.072 196);
+  --color-violet-800: oklch(0.36 0.06 196);
+  --color-violet-900: oklch(0.3 0.048 196);
+  --color-violet-950: oklch(0.22 0.035 196);
+  --color-purple-50: oklch(0.975 0.012 196);
+  --color-purple-100: oklch(0.95 0.022 196);
+  --color-purple-200: oklch(0.9 0.04 196);
+  --color-purple-300: oklch(0.82 0.06 196);
+  --color-purple-400: oklch(0.72 0.08 196);
+  --color-purple-500: oklch(0.6 0.085 196);
+  --color-purple-600: oklch(0.5 0.08 196);
+  --color-purple-700: oklch(0.424 0.072 196);
+  --color-purple-800: oklch(0.36 0.06 196);
+  --color-purple-900: oklch(0.3 0.048 196);
+  --color-purple-950: oklch(0.22 0.035 196);
+  --color-indigo-50: oklch(0.975 0.012 196);
+  --color-indigo-100: oklch(0.95 0.022 196);
+  --color-indigo-200: oklch(0.9 0.04 196);
+  --color-indigo-300: oklch(0.82 0.06 196);
+  --color-indigo-400: oklch(0.72 0.08 196);
+  --color-indigo-500: oklch(0.6 0.085 196);
+  --color-indigo-600: oklch(0.5 0.08 196);
+  --color-indigo-700: oklch(0.424 0.072 196);
+  --color-indigo-800: oklch(0.36 0.06 196);
+  --color-indigo-900: oklch(0.3 0.048 196);
+  --color-indigo-950: oklch(0.22 0.035 196);
+  --color-fuchsia-50: oklch(0.975 0.012 196);
+  --color-fuchsia-100: oklch(0.95 0.022 196);
+  --color-fuchsia-200: oklch(0.9 0.04 196);
+  --color-fuchsia-300: oklch(0.82 0.06 196);
+  --color-fuchsia-400: oklch(0.72 0.08 196);
+  --color-fuchsia-500: oklch(0.6 0.085 196);
+  --color-fuchsia-600: oklch(0.5 0.08 196);
+  --color-fuchsia-700: oklch(0.424 0.072 196);
+  --color-fuchsia-800: oklch(0.36 0.06 196);
+  --color-fuchsia-900: oklch(0.3 0.048 196);
+  --color-fuchsia-950: oklch(0.22 0.035 196);
+  --color-blue-50: oklch(0.975 0.012 196);
+  --color-blue-100: oklch(0.95 0.022 196);
+  --color-blue-200: oklch(0.9 0.04 196);
+  --color-blue-300: oklch(0.82 0.06 196);
+  --color-blue-400: oklch(0.72 0.08 196);
+  --color-blue-500: oklch(0.6 0.085 196);
+  --color-blue-600: oklch(0.5 0.08 196);
+  --color-blue-700: oklch(0.424 0.072 196);
+  --color-blue-800: oklch(0.36 0.06 196);
+  --color-blue-900: oklch(0.3 0.048 196);
+  --color-blue-950: oklch(0.22 0.035 196);
 }
 
 @theme inline {
@@ -373,7 +434,7 @@ body[data-scroll-locked] .app-region-drag {
 
 @keyframes settings-highlight {
   0% {
-    background-color: oklch(0.85 0.1 290);
+    background-color: oklch(0.88 0.06 196);
   }
   100% {
     background-color: transparent;
@@ -391,7 +452,7 @@ body[data-scroll-locked] .app-region-drag {
 
 @keyframes settings-highlight-dark {
   0% {
-    background-color: oklch(0.35 0.1 290);
+    background-color: oklch(0.35 0.06 196);
   }
   100% {
     background-color: transparent;

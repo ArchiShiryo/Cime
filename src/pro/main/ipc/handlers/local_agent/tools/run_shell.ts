@@ -1,5 +1,6 @@
 import { runningApps } from "@/ipc/utils/process_manager";
 import { z } from "zod";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { readSettings } from "@/main/settings";
 import { isDyadProEnabled } from "@/lib/schemas";
 import {
@@ -48,8 +49,10 @@ export const runShellTool: ToolDefinition<z.infer<typeof schema>> = {
   inputSchema: schema,
   modifiesState: true,
   mutationTracking: "internal",
-  usesEngineEndpoint: true,
-  defaultConsent: "always",
+  usesEngineEndpoint: false,
+  // Cimes asks before every command (the user sees the exact command and the
+  // reviewer's verdict); upstream Pro lets reviewed-safe commands run unprompted.
+  defaultConsent: PAID_FEATURES_ENABLED ? "always" : "ask",
   isEnabled: (ctx) =>
     isShellExperimentAvailable({
       settings: ctx.inferenceSettings ?? readSettings(),
@@ -90,7 +93,9 @@ export const runShellTool: ToolDefinition<z.infer<typeof schema>> = {
       });
     };
     if (!available())
-      return blocked("The shell experiment or Pro Host access is disabled.");
+      return blocked(
+        "The shell tool is disabled in Settings, or the app is not running on the local host.",
+      );
     if (ctx.abortSignal?.aborted)
       return JSON.stringify({ status: "cancelled" });
     present("reviewing", "Checking command safety…");

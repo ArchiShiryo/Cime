@@ -1,0 +1,21 @@
+{
+  "name": "cimes-office-bundle",
+  "private": true,
+  "type": "module",
+  "description": "Builds the dependency-free Office toolkit shipped with the Cimes office skills (output: ../../src/skills/builtin-assets).",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "docx": "9.8.1",
+    "exceljs": "4.4.0",
+    "jszip": "3.10.2",
+    "mammoth": "1.13.0",
+    "pdf-lib": "1.17.1",
+    "pptxgenjs": "4.0.1",
+    "unpdf": "1.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

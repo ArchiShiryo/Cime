@@ -1,3 +1,4 @@
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import { Readable } from "node:stream";
 import fetch from "node-fetch";
 import { z } from "zod";
@@ -21,6 +22,7 @@ export async function fetchUserInfo(
   apiKey: string,
   signal?: AbortSignal,
 ): Promise<UserInfoResponse> {
+  if (!DYAD_SERVICES_ENABLED) throw new UserInfoApiError(0);
   const timeout = AbortSignal.timeout(10_000);
   const response = await fetch(
     process.env.DYAD_USER_INFO_URL ?? "https://api.dyad.sh/v1/user/info",

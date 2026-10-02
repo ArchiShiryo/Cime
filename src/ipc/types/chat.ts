@@ -490,6 +490,14 @@ export const chatContracts = {
     invalidates: () => [{ family: "chats" }],
   }),
 
+  // Moves a conversation to another project (projects only: both folders are documents workspaces).
+  moveChat: defineContract({
+    channel: "move-chat",
+    input: z.object({ chatId: z.number(), targetAppId: z.number() }),
+    output: z.void(),
+    invalidates: () => [{ family: "chats" }],
+  }),
+
   deleteMessages: defineContract({
     channel: "delete-messages",
     input: z.number(), // chatId

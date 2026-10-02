@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cimes-control": {
+      "command": "node",
+      "args": ["tools/cimes-control/server.mjs"]
+    }
+  }
+}

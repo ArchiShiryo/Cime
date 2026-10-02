@@ -8,6 +8,21 @@ import {
 } from "@/components/app-sidebar-state";
 
 describe("app sidebar state", () => {
+  it("highlights the Documents and Skills entries on their pages only", () => {
+    expect(
+      isSidebarItemActive({ title: "Documents", pathname: "/documents" }),
+    ).toBe(true);
+    expect(isSidebarItemActive({ title: "Skills", pathname: "/skills" })).toBe(
+      true,
+    );
+    expect(
+      isSidebarItemActive({ title: "Skills", pathname: "/documents" }),
+    ).toBe(false);
+    expect(isSidebarItemActive({ title: "Plugins", pathname: "/skills" })).toBe(
+      false,
+    );
+  });
+
   it("folds chat routes into the Apps panel", () => {
     expect(getRouteSidebarPanel("/chat")).toBe("Apps");
     expect(isSidebarItemActive({ title: "Apps", pathname: "/chat" })).toBe(
