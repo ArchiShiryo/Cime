@@ -71,7 +71,7 @@ export function KnowledgeSettings({
               <input
                 type="radio"
                 name="knowledge-mode"
-                className="mt-1"
+                className="mt-1 accent-primary"
                 checked={mode === option.value}
                 disabled={unavailable}
                 onChange={async () => {
