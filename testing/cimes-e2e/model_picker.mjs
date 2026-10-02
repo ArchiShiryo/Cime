@@ -93,6 +93,20 @@ await sleep(1500);
 await main.locator("text=All models").first().click();
 await sleep(1500);
 screen("m1-picker");
+const panel = main.locator("[data-slot=dropdown-menu-sub-content]").last();
+console.log(
+  "PANEL:",
+  ((await panel.innerText().catch(() => "")) || "")
+    .replace(/\n+/g, " | ")
+    .slice(0, 900),
+);
+await panel
+  .evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  })
+  .catch(() => {});
+await sleep(600);
+screen("m2-picker-scrolled");
 let text = await main
   .locator("[role=menu], [role=dialog], [data-slot=popover-content]")
   .first()

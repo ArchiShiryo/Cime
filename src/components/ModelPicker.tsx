@@ -804,6 +804,10 @@ export function ModelPicker() {
   const onModelSelect = (params: ModelSelectParams) =>
     performModelSelect({ ...params, recentModels: normalizedRecentModels });
 
+  const isCustomProvider = (providerId: string) =>
+    providers?.find((candidate) => candidate.id === providerId)?.type ===
+    "custom";
+
   const getProviderDisplayName = (providerId: string) => {
     const provider = providers?.find((p) => p.id === providerId);
     return provider?.name ?? providerId;
@@ -1842,9 +1846,23 @@ export function ModelPicker() {
                         >
                           Cloud providers
                         </div>
-                        {otherProviderEntries.map(([providerId, models]) =>
-                          renderProviderSubmenu(providerId, models),
-                        )}
+                        {otherProviderEntries
+                          // Cimes: show Albert and any provider the user set up with
+                          // their own key; custom providers (Albert) come first.
+                          .filter(
+                            ([providerId]) =>
+                              PAID_FEATURES_ENABLED ||
+                              isCustomProvider(providerId) ||
+                              isProviderSetup(providerId),
+                          )
+                          .sort(
+                            (a, b) =>
+                              Number(isCustomProvider(b[0])) -
+                              Number(isCustomProvider(a[0])),
+                          )
+                          .map(([providerId, models]) =>
+                            renderProviderSubmenu(providerId, models),
+                          )}
                       </>
                     )}
                   </DropdownMenuSubContent>
