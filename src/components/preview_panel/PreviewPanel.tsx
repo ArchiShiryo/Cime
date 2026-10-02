@@ -463,7 +463,7 @@ function PreviewNodeRequirement({
       if (isManagedNodeInstallCancelError(error)) {
         return;
       }
-      showError(error.message ?? "Failed to install Dyad-managed Node.js");
+      showError(error.message ?? "Failed to install Cimes-managed Node.js");
     } finally {
       setIsInstallingManagedNode(false);
     }

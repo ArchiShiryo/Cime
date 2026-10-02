@@ -23,15 +23,23 @@ const screen = (name) => {
 const userData = path.join(home, ".config", "Cimes");
 
 function launch() {
-  const proc = spawn(exe, ["--no-sandbox", "--remote-debugging-port=9334"], {
-    env: {
-      ...process.env,
-      HOME: home,
-      XDG_CONFIG_HOME: path.join(home, ".config"),
-      ALBERT_API_KEY: "",
+  const proc = spawn(
+    exe,
+    [
+      "--no-sandbox",
+      "--remote-debugging-port=9334",
+      ...(process.env.APP_EXTRA_ARGS || "").split(" ").filter(Boolean),
+    ],
+    {
+      env: {
+        ...process.env,
+        HOME: home,
+        XDG_CONFIG_HOME: path.join(home, ".config"),
+        ALBERT_API_KEY: "",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
     },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  );
   proc.stdout.on("data", (d) => {
     const s = d.toString();
     if (/web_|run_shell|local_web|shell|agent|untrusted|Error|error/i.test(s))

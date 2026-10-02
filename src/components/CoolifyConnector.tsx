@@ -472,7 +472,7 @@ export function CoolifyConnector({ appId }: { appId: number | null }) {
               className="rounded-md border p-3 text-sm"
               data-testid="coolify-already-has-server"
             >
-              <p className="font-medium">Dyad already set up a server</p>
+              <p className="font-medium">Cimes already set up a server</p>
               <p className="text-muted-foreground">
                 Its details are below. Finish connecting to it, or sign out to
                 set up a different one — signing out forgets these.
@@ -635,7 +635,7 @@ export function CoolifyConnector({ appId }: { appId: number | null }) {
                   did set up. Offering to set one up "yet" over the top of it
                   describes somebody else's situation. */}
               {status.serverUrl
-                ? "Dyad set up a server here and the run has something to say about it. "
+                ? "Cimes set up a server here and the run has something to say about it. "
                 : "No Coolify server yet? "}
               <button
                 type="button"

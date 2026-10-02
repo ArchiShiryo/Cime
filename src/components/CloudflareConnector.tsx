@@ -355,7 +355,7 @@ function ConnectedAccount({ appId }: { appId: number }) {
               className={warningClass}
               data-testid="cloudflare-config-missing"
             >
-              Dyad cannot find a Wrangler config for {folder.label} on{" "}
+              Cimes cannot find a Wrangler config for {folder.label} on{" "}
               {status.data.branch}. If the config is gone, Cloudflare cannot
               build it either, but its deploy rule is still there: restore the
               config, or disconnect {folder.label} to remove the rule.
@@ -448,7 +448,7 @@ function ConnectedAccount({ appId }: { appId: number }) {
   );
 }
 
-/** A folder shown in the tab. `target` is null when Dyad cannot find its Wrangler config. */
+/** A folder shown in the tab. `target` is null when Cimes cannot find its Wrangler config. */
 interface DeployFolder {
   rootDirectory: string;
   label: string;

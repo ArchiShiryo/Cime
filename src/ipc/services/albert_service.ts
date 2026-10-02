@@ -128,8 +128,10 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
     });
-  } catch {
-    logger.warn("/v1/models -> unreachable");
+  } catch (error) {
+    logger.warn(
+      `/v1/models -> unreachable (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)})`,
+    );
     throw new DyadError(
       "Impossible de joindre Albert.\nVérifiez votre connexion réseau puis réessayez.",
       DyadErrorKind.Precondition,
