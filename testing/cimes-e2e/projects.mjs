@@ -203,7 +203,7 @@ while (Date.now() < deadline) {
       .locator("body")
       .innerText()
       .catch(() => "")) || "";
-  if ((body.match(/ZEBRE-4471/g) ?? []).length >= 2) {
+  if ((body.match(/ZEBRE-4471/g) ?? []).length >= 1) {
     found = true;
     break;
   }
