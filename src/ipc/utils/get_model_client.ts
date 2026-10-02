@@ -44,6 +44,7 @@ import { getOllamaApiUrl } from "../handlers/local_model_ollama_handler";
 import { createFallback } from "./fallback_ai_model";
 import { getDyadEngineBaseUrl } from "./dyad_engine_url";
 import { getTestFetchOption } from "./test_fetch_override";
+import { systemFetch } from "./system_fetch";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   findInvalidProviderApiKeyCharacter,
@@ -957,7 +958,8 @@ function getRegularModelClient(
           includeUsage,
           baseURL: providerConfig.apiBaseUrl,
           apiKey,
-          ...getModelClientFetchOption(),
+          // System proxy and certificates (school networks, Windows).
+          fetch: getModelClientFetchOption().fetch ?? systemFetch,
         });
         return {
           modelClient: {

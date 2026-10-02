@@ -9,6 +9,7 @@ import {
   normalizeProviderApiKeyInput,
 } from "@/lib/providerApiKey";
 import { readSettings, writeSettings } from "@/main/settings";
+import { systemFetch } from "@/ipc/utils/system_fetch";
 import {
   ALBERT_API_BASE_URL,
   ALBERT_CONTEXT_WINDOW,
@@ -108,7 +109,7 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
   logger.info("validating API key");
   let response: Response;
   try {
-    response = await fetch(`${ALBERT_API_BASE_URL}/models`, {
+    response = await systemFetch(`${ALBERT_API_BASE_URL}/models`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
     });
