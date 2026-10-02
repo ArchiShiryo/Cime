@@ -187,7 +187,7 @@ body[data-scroll-locked] .app-region-drag {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* Cimes: no violet. Tailwind's violet, purple, indigo and fuchsia ramps are
+/* Cimes: no violet. Tailwind's violet, purple, indigo, fuchsia and blue ramps are
    remapped to the Canopé turquoise, so every class that used them (badges,
    banners, cards, toolbars) follows the brand without touching each component. */
 @theme {
@@ -235,6 +235,17 @@ body[data-scroll-locked] .app-region-drag {
   --color-fuchsia-800: oklch(0.36 0.06 196);
   --color-fuchsia-900: oklch(0.3 0.048 196);
   --color-fuchsia-950: oklch(0.22 0.035 196);
+  --color-blue-50: oklch(0.975 0.012 196);
+  --color-blue-100: oklch(0.95 0.022 196);
+  --color-blue-200: oklch(0.9 0.04 196);
+  --color-blue-300: oklch(0.82 0.06 196);
+  --color-blue-400: oklch(0.72 0.08 196);
+  --color-blue-500: oklch(0.6 0.085 196);
+  --color-blue-600: oklch(0.5 0.08 196);
+  --color-blue-700: oklch(0.424 0.072 196);
+  --color-blue-800: oklch(0.36 0.06 196);
+  --color-blue-900: oklch(0.3 0.048 196);
+  --color-blue-950: oklch(0.22 0.035 196);
 }
 
 @theme inline {

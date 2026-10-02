@@ -156,7 +156,7 @@ log(
   /Mémoire/.test(pluginsText),
 );
 screen("s4-plugins");
-for (const route of ["documents", "skills"]) {
+for (const route of ["documents", "skills", "templates", "library"]) {
   await main.evaluate(
     (r) => document.querySelector(`a[href="/${r}"]`)?.click(),
     route,

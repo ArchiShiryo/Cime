@@ -6,6 +6,7 @@ import {
   dialog,
   Menu,
   protocol,
+  session,
   net,
   nativeImage,
   crashReporter,
@@ -422,6 +423,14 @@ if (process.defaultApp) {
 }
 
 export async function onReady() {
+  // No background spell-check dictionary download (Google): switch it off
+  // before any window exists.
+  try {
+    session.defaultSession.setSpellCheckerEnabled(false);
+    session.defaultSession.setSpellCheckerLanguages([]);
+  } catch (error) {
+    logger.warn("Could not disable the spell checker:", error);
+  }
   // Take over the sentinel before any startup work that can crash. Migrations,
   // the keychain and git all run below; if one of them kills us, a sentinel
   // still naming the previous session would report this crash as that one.
