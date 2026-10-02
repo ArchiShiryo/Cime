@@ -3,7 +3,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { markdownToDocx, csvToXlsx, jsonToPptx } from "../../src/skills/builtin-assets/office.mjs";
+import {
+  markdownToDocx,
+  csvToXlsx,
+  jsonToPptx,
+} from "../../src/skills/builtin-assets/office.mjs";
 
 const out = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures");
 fs.mkdirSync(out, { recursive: true });
@@ -21,14 +25,28 @@ Les participants arrivent à 8 h 30. Le café est offert dans la salle commune.
   { title: "Règlement de l'atelier" },
 );
 
-fs.writeFileSync(path.join(out, "notes.csv"), "Prénom;Classe;Note\nAwa;6eB;14,5\nLéo;6eB;9\nMaëlle;5eA;17\nTiago;5eA;12,5\n");
-await csvToXlsx(path.join(out, "notes.csv"), path.join(out, "notes-eleves.xlsx"));
+fs.writeFileSync(
+  path.join(out, "notes.csv"),
+  "Prénom;Classe;Note\nAwa;6eB;14,5\nLéo;6eB;9\nMaëlle;5eA;17\nTiago;5eA;12,5\n",
+);
+await csvToXlsx(
+  path.join(out, "notes.csv"),
+  path.join(out, "notes-eleves.xlsx"),
+);
 fs.rmSync(path.join(out, "notes.csv"));
 
 await jsonToPptx(
   [
     { title: "Les volcans", subtitle: "Exposé de 5e" },
-    { title: "Comment naît un volcan ?", bullets: ["Le magma monte depuis le manteau", "La pression fait éruption par la cheminée", "La lave refroidit et forme un cône"], notes: "Montrer la maquette." },
+    {
+      title: "Comment naît un volcan ?",
+      bullets: [
+        "Le magma monte depuis le manteau",
+        "La pression fait éruption par la cheminée",
+        "La lave refroidit et forme un cône",
+      ],
+      notes: "Montrer la maquette.",
+    },
   ],
   path.join(out, "expose-volcans.pptx"),
 );
