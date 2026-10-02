@@ -43,7 +43,11 @@ type FetchImpl = (
 export function getFetchImpl(): FetchImpl & { managesCookies?: boolean } {
   // In unit tests the "electron" module exports a path string, so both are
   // undefined and the plain fetch below is used.
-  if (electronNet?.fetch && app?.isReady?.()) {
+  if (
+    process.env.CIMES_NODE_FETCH !== "1" &&
+    electronNet?.fetch &&
+    app?.isReady?.()
+  ) {
     const bound = electronNet.fetch.bind(
       electronNet,
     ) as unknown as FetchImpl & {

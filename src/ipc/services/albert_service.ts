@@ -27,6 +27,21 @@ const logger = log.scope("albert");
 
 const VALIDATION_TIMEOUT_MS = 15_000;
 
+// Test-only: the packaged-app e2e scripts (testing/cimes-e2e) point Cimes at
+// another OpenAI-compatible endpoint. Ignored unless CIMES_E2E=1.
+function getAlbertBaseUrl(): string {
+  return (
+    (process.env.CIMES_E2E === "1" && process.env.CIMES_E2E_BASE_URL) ||
+    ALBERT_API_BASE_URL
+  );
+}
+function getAlbertModelId(): string {
+  return (
+    (process.env.CIMES_E2E === "1" && process.env.CIMES_E2E_MODEL) ||
+    ALBERT_MODEL_ID
+  );
+}
+
 /**
  * Idempotently creates or repairs the Albert provider and its default model.
  * Runs at startup and before connecting, so an existing install (with or
@@ -38,14 +53,14 @@ export function ensureAlbertProvider(): void {
     .values({
       id: ALBERT_PROVIDER_ID,
       name: ALBERT_PROVIDER_DISPLAY_NAME,
-      api_base_url: ALBERT_API_BASE_URL,
+      api_base_url: getAlbertBaseUrl(),
       env_var_name: ALBERT_ENV_VAR_NAME,
     })
     .onConflictDoUpdate({
       target: language_model_providers.id,
       set: {
         name: ALBERT_PROVIDER_DISPLAY_NAME,
-        api_base_url: ALBERT_API_BASE_URL,
+        api_base_url: getAlbertBaseUrl(),
         env_var_name: ALBERT_ENV_VAR_NAME,
         updatedAt: new Date(),
       },
@@ -54,7 +69,7 @@ export function ensureAlbertProvider(): void {
 
   const modelValues = {
     displayName: ALBERT_MODEL_DISPLAY_NAME,
-    apiName: ALBERT_MODEL_ID,
+    apiName: getAlbertModelId(),
     customProviderId: ALBERT_PROVIDER_ID,
     max_output_tokens: ALBERT_MAX_OUTPUT_TOKENS,
     context_window: ALBERT_CONTEXT_WINDOW,
@@ -65,7 +80,7 @@ export function ensureAlbertProvider(): void {
     .where(
       and(
         eq(language_models.customProviderId, ALBERT_PROVIDER_ID),
-        eq(language_models.apiName, ALBERT_MODEL_ID),
+        eq(language_models.apiName, getAlbertModelId()),
       ),
     )
     .all();
@@ -109,7 +124,7 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
   logger.info("validating API key");
   let response: Response;
   try {
-    response = await systemFetch(`${ALBERT_API_BASE_URL}/models`, {
+    response = await systemFetch(`${getAlbertBaseUrl()}/models`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
     });
@@ -153,14 +168,14 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
   const data = (body as { data?: unknown } | null)?.data;
   const hasModel =
     Array.isArray(data) &&
-    data.some((m) => (m as { id?: unknown } | null)?.id === ALBERT_MODEL_ID);
+    data.some((m) => (m as { id?: unknown } | null)?.id === getAlbertModelId());
   if (!hasModel) {
     throw new DyadError(
-      `Le modèle ${ALBERT_MODEL_ID} n'est pas disponible avec cette clé Albert.`,
+      `Le modèle ${getAlbertModelId()} n'est pas disponible avec cette clé Albert.`,
       DyadErrorKind.Precondition,
     );
   }
-  logger.info(`${ALBERT_MODEL_ID} available`);
+  logger.info(`${getAlbertModelId()} available`);
 }
 
 function getStoredKey(): string | undefined {
@@ -197,7 +212,7 @@ export async function connectAlbert(rawKey: string): Promise<AlbertStatus> {
         apiKey: { value: apiKey },
       },
     },
-    selectedModel: { provider: ALBERT_PROVIDER_ID, name: ALBERT_MODEL_ID },
+    selectedModel: { provider: ALBERT_PROVIDER_ID, name: getAlbertModelId() },
   });
   logger.info("selected as default provider");
   return getAlbertStatus();

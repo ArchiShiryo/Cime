@@ -10,7 +10,10 @@ import { net } from "electron";
 import type { FetchFunction } from "@ai-sdk/provider-utils";
 
 function getElectronNet(): typeof net | null {
-  if (process.env.VITEST || !process.versions.electron) return null;
+  // CIMES_NODE_FETCH=1 forces Node fetch (e2e sandboxes whose proxy CA is
+  // only known to Node, not to Chromium).
+  if (process.env.VITEST || process.env.CIMES_NODE_FETCH === "1") return null;
+  if (!process.versions.electron) return null;
   return net ?? null;
 }
 
