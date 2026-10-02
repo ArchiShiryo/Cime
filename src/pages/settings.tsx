@@ -8,6 +8,7 @@ import { WebSearchSettings } from "@/components/WebSearchSettings";
 import { SkillsSettings } from "@/components/SkillsSettings";
 import { KnowledgeSettings } from "@/components/KnowledgeSettings";
 import { ActivityLogSettings } from "@/components/ActivityLogSettings";
+import { PersonalizationSettings } from "@/components/PersonalizationSettings";
 import { OfficialSourcesSettings } from "@/components/OfficialSourcesSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
@@ -144,6 +145,15 @@ export default function SettingsPage() {
 
         <div>
           <GeneralSettings appVersion={appVersion} />
+          <SettingsSection
+            id={SECTION_IDS.personalization}
+            title="Personalization"
+            description="How the assistant writes for you."
+          >
+            <div id={SETTING_IDS.personalization}>
+              <PersonalizationSettings />
+            </div>
+          </SettingsSection>
           <WorkflowSettings />
           <AISettings />
 

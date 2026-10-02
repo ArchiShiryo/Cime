@@ -1,6 +1,7 @@
 import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 export const SECTION_IDS = {
   general: "general-settings",
+  personalization: "personalization-settings",
   workflow: "workflow-settings",
   ai: "ai-settings",
   providers: "provider-settings",
@@ -34,6 +35,7 @@ export const SETTING_IDS = {
   skills: "setting-skills",
   activityLog: "setting-activity-log",
   officialSources: "setting-official-sources",
+  personalization: "setting-personalization",
   knowledge: "setting-knowledge",
   telemetry: "setting-telemetry",
   github: "setting-github",
@@ -303,6 +305,25 @@ const ALL_SETTINGS_SEARCH_ITEMS: SearchableSettingItem[] = [
     ],
     sectionId: SECTION_IDS.ai,
     sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.personalization,
+    label: "Writing preferences",
+    description:
+      "How the assistant writes for you: form of address, register, length, signature, your service and role",
+    keywords: [
+      "tone",
+      "ton",
+      "vouvoiement",
+      "tutoiement",
+      "signature",
+      "style",
+      "register",
+      "memory",
+      "personalization",
+    ],
+    sectionId: SECTION_IDS.personalization,
+    sectionLabel: "Personalization",
   },
   {
     id: SETTING_IDS.officialSources,

@@ -3,6 +3,7 @@ import { readSettings } from "@/main/settings";
 import { buildAvailableSkillsPrompt } from "./prompt";
 import { getKnowledgeStats } from "@/knowledge/service";
 import { discoverSkills } from "./registry";
+import { buildPreferencesPrompt } from "@/personalization/prompt";
 import { buildProjectPrompt, readProjectConfig } from "@/projects/config";
 
 const logger = log.scope("skills");
@@ -35,9 +36,21 @@ export function getKnowledgePromptBlock(scope = ""): string {
   }
 }
 
-/** Document base line plus, for a project, the project instructions. */
+/** The user's writing preferences (Settings > Personalization). */
+export function getPersonalizationPromptBlock(): string {
+  try {
+    return buildPreferencesPrompt(readSettings().writingPreferences);
+  } catch (error) {
+    logger.warn("Could not build the preferences prompt:", error);
+    return "";
+  }
+}
+
+/** Document base line, the project instructions for a project, and the user's preferences. */
 export function getProjectPromptBlock(appPath: string, name: string): string {
   const project = readProjectConfig(appPath);
-  if (!project) return getKnowledgePromptBlock();
-  return `\n\n${buildProjectPrompt(project, name)}${getKnowledgePromptBlock(appPath)}`;
+  const base = project
+    ? `\n\n${buildProjectPrompt(project, name)}${getKnowledgePromptBlock(appPath)}`
+    : getKnowledgePromptBlock();
+  return base + getPersonalizationPromptBlock();
 }

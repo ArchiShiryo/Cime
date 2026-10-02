@@ -386,6 +386,18 @@ export type ZoomLevel = z.infer<typeof ZoomLevelSchema>;
 export const ZOOM_LEVELS: readonly ZoomLevel[] = ZoomLevelSchema.options;
 export const DEFAULT_ZOOM_LEVEL: ZoomLevel = "100";
 
+/** How the user wants what Cimes writes for them to read (set in Settings > Personalization). */
+export const WritingPreferencesSchema = z.object({
+  addressForm: z.enum(["formal", "informal"]).optional(),
+  register: z.enum(["administrative", "educational", "plain"]).optional(),
+  length: z.enum(["concise", "standard", "detailed"]).optional(),
+  documentLanguage: z.enum(["auto", "fr", "en"]).optional(),
+  signature: z.string().max(600).optional(),
+  service: z.string().max(200).optional(),
+  role: z.string().max(200).optional(),
+});
+export type WritingPreferences = z.infer<typeof WritingPreferencesSchema>;
+
 export const LanguageSchema = z.enum([
   "en",
   "zh-CN",
@@ -523,6 +535,7 @@ const BaseUserSettingsFields = {
   enableShellTool: z.boolean().optional(),
   /** Optional SearXNG server used by the agent's web search (JSON output enabled). */
   webSearchSearxngUrl: z.string().url().optional(),
+  writingPreferences: WritingPreferencesSchema.optional(),
   // PISTE (api.gouv.fr) application credentials for the Légifrance tool.
   pisteClientId: z.string().optional(),
   pisteClientSecret: SecretSchema.optional(),

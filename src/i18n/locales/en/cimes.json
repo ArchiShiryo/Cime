@@ -141,5 +141,38 @@
     "save": "Save",
     "remove": "Remove",
     "getKeys": "Get keys on PISTE"
+  },
+  "prefs": {
+    "intro": "These preferences apply to every conversation. You can always ask for something different in a message.",
+    "addressForm": {
+      "label": "Form of address",
+      "formal": "Formal (vous)",
+      "informal": "Informal (tu)"
+    },
+    "register": {
+      "label": "Register",
+      "administrative": "Administrative",
+      "educational": "Educational",
+      "plain": "Plain language"
+    },
+    "length": {
+      "label": "Length of answers",
+      "concise": "Short",
+      "standard": "Balanced",
+      "detailed": "Detailed"
+    },
+    "documentLanguage": {
+      "label": "Language of documents",
+      "auto": "Same as my request",
+      "fr": "French",
+      "en": "English"
+    },
+    "service": "Your service",
+    "servicePlaceholder": "e.g. Training department",
+    "role": "Your role",
+    "rolePlaceholder": "e.g. Training manager",
+    "signature": "Signature",
+    "signaturePlaceholder": "Added at the end of letters and emails written for you",
+    "privacy": "Kept on this computer. They are sent to the model with your requests: do not put personal data of other people here."
   }
 }

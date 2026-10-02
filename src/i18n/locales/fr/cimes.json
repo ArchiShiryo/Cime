@@ -141,5 +141,38 @@
     "save": "Enregistrer",
     "remove": "Retirer",
     "getKeys": "Obtenir des clés sur PISTE"
+  },
+  "prefs": {
+    "intro": "Ces préférences s'appliquent à toutes les conversations. Vous pouvez toujours demander autre chose dans un message.",
+    "addressForm": {
+      "label": "Forme d'adresse",
+      "formal": "Vouvoiement",
+      "informal": "Tutoiement"
+    },
+    "register": {
+      "label": "Registre",
+      "administrative": "Administratif",
+      "educational": "Pédagogique",
+      "plain": "Langage courant"
+    },
+    "length": {
+      "label": "Longueur des réponses",
+      "concise": "Courte",
+      "standard": "Équilibrée",
+      "detailed": "Détaillée"
+    },
+    "documentLanguage": {
+      "label": "Langue des documents",
+      "auto": "Celle de ma demande",
+      "fr": "Français",
+      "en": "Anglais"
+    },
+    "service": "Votre service",
+    "servicePlaceholder": "ex. Direction de la formation",
+    "role": "Votre fonction",
+    "rolePlaceholder": "ex. Responsable de formation",
+    "signature": "Signature",
+    "signaturePlaceholder": "Ajoutée à la fin des courriers et messages rédigés pour vous",
+    "privacy": "Conservées sur cet ordinateur. Elles sont envoyées au modèle avec vos demandes : n'y mettez pas de données personnelles d'autres personnes."
   }
 }
