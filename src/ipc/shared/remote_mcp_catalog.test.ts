@@ -1,4 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const branding = vi.hoisted(() => ({ PAID_FEATURES_ENABLED: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.PAID_FEATURES_ENABLED;
+  },
+}));
+
+import { BUNDLED_MCP_CATALOG } from "./bundled_mcp_catalog";
+import { McpCatalogEntrySchema } from "@/ipc/types/mcp_catalog";
 import {
   clearMcpCatalogCacheForTests,
   getRemoteMcpCatalog,
@@ -346,6 +356,29 @@ describe("remote_mcp_catalog", () => {
       expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
+    }
+  });
+});
+
+describe("Cimes bundled catalog", () => {
+  afterEach(() => {
+    branding.PAID_FEATURES_ENABLED = true;
+  });
+
+  it("is served without any network call when paid features are off", async () => {
+    branding.PAID_FEATURES_ENABLED = false;
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    expect(await getRemoteMcpCatalog()).toBe(BUNDLED_MCP_CATALOG);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("only contains valid, pinned npx entries", () => {
+    for (const entry of BUNDLED_MCP_CATALOG) {
+      expect(McpCatalogEntrySchema.safeParse(entry).success).toBe(true);
+      if (entry.transport === "stdio") {
+        expect(entry.args.some((arg) => /@\d/.test(arg))).toBe(true);
+      }
     }
   });
 });

@@ -1,4 +1,6 @@
 import log from "electron-log";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
+import { BUNDLED_MCP_CATALOG } from "./bundled_mcp_catalog";
 import { z } from "zod";
 import {
   McpCatalogEntrySchema,
@@ -88,6 +90,8 @@ async function fetchRemoteMcpCatalog(): Promise<{
  * endpoint not deployed yet).
  */
 export async function getRemoteMcpCatalog(): Promise<McpCatalogEntry[]> {
+  // Cimes never contacts Dyad: it ships its own curated list.
+  if (!PAID_FEATURES_ENABLED) return BUNDLED_MCP_CATALOG;
   if (catalogCache && catalogCache.expiresAt > Date.now()) {
     return catalogCache.entries;
   }
@@ -128,6 +132,7 @@ export async function getRemoteMcpCatalog(): Promise<McpCatalogEntry[]> {
  * whatever the last fetch produced without waiting on the network.
  */
 export function peekRemoteMcpCatalog(): McpCatalogEntry[] | null {
+  if (!PAID_FEATURES_ENABLED) return BUNDLED_MCP_CATALOG;
   if (catalogCache && catalogCache.expiresAt > Date.now()) {
     return catalogCache.entries;
   }

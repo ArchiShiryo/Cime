@@ -70,13 +70,19 @@ describe("parseSkillMd", () => {
 });
 
 describe("builtin skills", () => {
-  it("ships the four Canopé skills", () => {
-    expect(BUILTIN_SKILLS.map((s) => s.name).sort()).toEqual([
-      "accessibilite-rgaa",
-      "app-web-simple",
-      "atelier-pedagogique",
-      "charte-canope",
-    ]);
+  it("ships valid skills whose names match their folders", () => {
+    const dir = path.join(__dirname, "builtin");
+    const folders = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    expect(folders.length).toBeGreaterThanOrEqual(15);
+    expect(BUILTIN_SKILLS.map((skill) => skill.name).sort()).toEqual(folders);
+    for (const skill of BUILTIN_SKILLS) {
+      expect(skill.description.length).toBeGreaterThan(40);
+      expect(skill.body.split("\n").length).toBeLessThan(500);
+    }
   });
 });
 
