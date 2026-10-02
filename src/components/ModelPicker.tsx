@@ -1,4 +1,5 @@
 import { showError } from "@/lib/toast";
+import { translateUi } from "@/i18n/ui_translate";
 import { modelForChatBackend } from "@/shared/execution_backend";
 import { ClaudeCodeSubscriptionMenu } from "./ClaudeCodeSubscriptionMenu";
 import {
@@ -1341,7 +1342,7 @@ export function ModelPicker() {
       <DropdownMenuSub key={`${providerId}-${model.modelName}`}>
         <DropdownMenuSubTrigger
           hideChevron
-          aria-label={`${model.displayName}. Effort: ${effortLabel}. Press Enter to select; press Right Arrow to configure effort.`}
+          aria-label={`${model.displayName}. ${translateUi("Effort:")} ${effortLabel}. ${translateUi("Press Enter to select; press Right Arrow to configure effort.")}`}
           className={cn(
             "relative py-1.5 w-full",
             isSelected &&

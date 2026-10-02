@@ -1,4 +1,5 @@
 import { assistantAttribution } from "@/shared/execution_backend";
+import { translateUi } from "@/i18n/ui_translate";
 import { useLoadApps } from "@/hooks/useLoadApps";
 import { type Message } from "@/ipc/types";
 import {
@@ -551,7 +552,7 @@ const ChatMessage = ({
             {isLastMessage && message.totalTokens && (
               <div
                 className="flex items-center space-x-1 px-1 py-0.5"
-                title={`Max tokens used: ${message.totalTokens.toLocaleString()}`}
+                title={`${translateUi("Max tokens used:")} ${message.totalTokens.toLocaleString()}`}
               >
                 <Info className="h-3 w-3" />
               </div>
