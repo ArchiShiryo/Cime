@@ -36,6 +36,18 @@ export const knowledgeContracts = {
     input: z.object({ id: z.number() }),
     output: z.void(),
   }),
+  search: defineContract({
+    channel: "knowledge:search",
+    input: z.object({ query: z.string() }),
+    output: z.array(
+      z.object({
+        source: z.string(),
+        location: z.string().nullable(),
+        text: z.string(),
+        score: z.number(),
+      }),
+    ),
+  }),
   status: defineContract({
     channel: "knowledge:status",
     input: z.void(),

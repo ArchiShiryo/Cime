@@ -7,6 +7,8 @@ import { providerSettingsRoute } from "./routes/settings/providers/$provider";
 import { appDetailsRoute } from "./routes/app-details";
 import { templatesRoute } from "./routes/templates";
 import { pluginsRoute } from "./routes/plugins";
+import { documentsRoute } from "./routes/documents";
+import { skillsRoute } from "./routes/skills";
 import { pluginDetailRoute } from "./routes/plugin-detail";
 import { libraryRoute } from "./routes/library";
 import { appsRoute } from "./routes/apps";
@@ -18,6 +20,8 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   templatesRoute,
   pluginsRoute,
+  documentsRoute,
+  skillsRoute,
   pluginDetailRoute,
   libraryRoute,
   appsRoute,

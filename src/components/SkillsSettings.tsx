@@ -14,7 +14,13 @@ const ORIGIN_LABELS = {
  * Manage Claude-format skills (folders with a SKILL.md): list, enable or
  * disable, import a folder or .zip/.skill, remove imported ones.
  */
-export function SkillsSettings() {
+export function SkillsSettings({
+  showHeader = true,
+  tall = false,
+}: {
+  showHeader?: boolean;
+  tall?: boolean;
+}) {
   const { skills, importSkill, setEnabled, remove, openFolder } = useSkills();
   const [imported, setImported] = useState<ImportedSkillInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,17 +38,21 @@ export function SkillsSettings() {
 
   return (
     <div className="space-y-3" data-testid="skills-settings">
-      <div>
-        <h3 className="text-sm font-medium">Skills</h3>
-        <p className="text-sm text-muted-foreground">
-          Des consignes d&apos;expert que l&apos;agent charge quand votre
-          demande correspond. Compatible avec les skills Claude (dossier avec un
-          fichier SKILL.md). Les scripts d&apos;un skill ne s&apos;exécutent
-          jamais sans votre accord.
-        </p>
-      </div>
+      {showHeader && (
+        <div>
+          <h3 className="text-sm font-medium">Skills</h3>
+          <p className="text-sm text-muted-foreground">
+            Des consignes d&apos;expert que l&apos;agent charge quand votre
+            demande correspond. Compatible avec les skills Claude (dossier avec
+            un fichier SKILL.md). Les scripts d&apos;un skill ne
+            s&apos;exécutent jamais sans votre accord.
+          </p>
+        </div>
+      )}
 
-      <ul className="max-h-[28rem] divide-y overflow-y-auto rounded-md border">
+      <ul
+        className={`divide-y overflow-y-auto rounded-md border ${tall ? "max-h-[60vh]" : "max-h-[28rem]"}`}
+      >
         {skills.map((skill) => (
           <li
             key={skill.name}

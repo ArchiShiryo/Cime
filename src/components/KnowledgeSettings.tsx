@@ -30,7 +30,11 @@ const STATUS_LABELS = {
 } as const;
 
 /** Documents the agent can search (PDF, Word, Excel, PowerPoint, texte). */
-export function KnowledgeSettings() {
+export function KnowledgeSettings({
+  showHeader = true,
+}: {
+  showHeader?: boolean;
+}) {
   const { sources, status, add, remove, reindex, embedPending, refreshStatus } =
     useKnowledge();
   const { settings, updateSettings } = useSettings();
@@ -40,15 +44,17 @@ export function KnowledgeSettings() {
 
   return (
     <div className="space-y-3" data-testid="knowledge-settings">
-      <div>
-        <h3 className="text-sm font-medium">Base de documents</h3>
-        <p className="text-sm text-muted-foreground">
-          Ajoutez des documents (PDF, Word, Excel, PowerPoint, Markdown, texte).
-          L&apos;agent les consulte avec l&apos;outil « search_docs » quand
-          votre question s&apos;y rapporte. Les fichiers restent là où ils sont
-          ; Cimes en garde un index sur ce poste.
-        </p>
-      </div>
+      {showHeader && (
+        <div>
+          <h3 className="text-sm font-medium">Base de documents</h3>
+          <p className="text-sm text-muted-foreground">
+            Ajoutez des documents (PDF, Word, Excel, PowerPoint, Markdown,
+            texte). L&apos;agent les consulte avec l&apos;outil « search_docs »
+            quand votre question s&apos;y rapporte. Les fichiers restent là où
+            ils sont ; Cimes en garde un index sur ce poste.
+          </p>
+        </div>
+      )}
 
       <fieldset className="space-y-2 rounded-md border p-3">
         <legend className="px-1 text-sm font-medium">

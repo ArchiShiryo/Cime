@@ -6,6 +6,8 @@ import {
   Store,
   BookOpen,
   Blocks,
+  FileSearch,
+  Sparkles,
   Moon,
   Sun,
 } from "lucide-react";
@@ -68,6 +70,16 @@ const items = [
     title: "Templates",
     to: "/templates",
     icon: Store,
+  },
+  {
+    title: "Documents",
+    to: "/documents",
+    icon: FileSearch,
+  },
+  {
+    title: "Skills",
+    to: "/skills",
+    icon: Sparkles,
   },
   {
     title: "Plugins",

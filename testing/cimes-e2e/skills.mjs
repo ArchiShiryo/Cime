@@ -156,6 +156,12 @@ log(
   /Mémoire/.test(pluginsText),
 );
 screen("s4-plugins");
+for (const route of ["documents", "skills"]) {
+  await main.evaluate((r) => document.querySelector(`a[href="/${r}"]`)?.click(), route);
+  await sleep(2500);
+  log(`${route} page:`, main.url(), "| h1:", await main.locator("h1").first().textContent().catch(() => "?"));
+  screen(`s5-${route}`);
+}
 await browser.close().catch(() => {});
 proc.kill();
 process.exit(0);

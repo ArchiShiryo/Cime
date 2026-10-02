@@ -40,6 +40,9 @@ export function useKnowledge() {
     mutationFn: (id: number) => ipc.knowledge.reindex({ id }),
     onSuccess: refresh,
   });
+  const search = useMutation({
+    mutationFn: (query: string) => ipc.knowledge.search({ query }),
+  });
   const embedPending = useMutation({
     mutationFn: () => ipc.knowledge.embedPending(),
     onSuccess: refresh,
@@ -51,6 +54,7 @@ export function useKnowledge() {
     remove,
     reindex,
     embedPending,
+    search,
     refreshStatus: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.knowledge.status }),
   };

@@ -28,7 +28,10 @@ const PluginsPage: React.FC = () => {
               Plugins
             </h1>
             <p className="text-md text-gray-600 dark:text-gray-400">
-              Connect plugins (MCP servers) to give the AI new tools.
+              Connectez des plugins (serveurs MCP) pour donner de nouveaux
+              outils à l'agent : documentation à jour, mémoire, navigateur…
+              Chaque appel d'outil demande votre accord. Les serveurs « npx »
+              exigent que Node.js soit installé sur ce poste.
             </p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)}>

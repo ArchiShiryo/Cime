@@ -9,6 +9,7 @@ import {
   isLocalModelInstalled,
   listSourcesWithProgress,
   reindexSource,
+  searchKnowledge,
 } from "@/knowledge/service";
 import { SUPPORTED_EXTENSIONS } from "@/knowledge/extract";
 
@@ -49,6 +50,9 @@ export function registerKnowledgeHandlers() {
     return addToKnowledgeBase(result.filePaths);
   });
 
+  createTypedHandler(knowledgeContracts.search, async (_event, { query }) =>
+    searchKnowledge(query.trim(), 6),
+  );
   createTypedHandler(knowledgeContracts.status, async () => ({
     mode: getEmbeddingMode(),
     localModelInstalled: isLocalModelInstalled(),
