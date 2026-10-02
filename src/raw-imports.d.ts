@@ -18,3 +18,8 @@ declare module "*.webp?inline" {
   const dataUri: string;
   export default dataUri;
 }
+
+declare module "*.mjs?raw" {
+  const content: string;
+  export default content;
+}

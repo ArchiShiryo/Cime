@@ -276,3 +276,58 @@ describe("skill import", () => {
     expect(result.fileCount).toBe(1);
   });
 });
+
+import { execFileSync } from "node:child_process";
+
+describe("office-fichiers built-in skill", () => {
+  it("writes a runnable toolkit to disk and the script really edits Office files", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-office-"));
+    try {
+      const skills = await discoverSkills({
+        userSkillsDir: path.join(root, "none"),
+        builtinSkillsDir: path.join(root, "builtin"),
+      });
+      const office = skills.find((s) => s.name === "office-fichiers")!;
+      expect(office.origin).toBe("builtin");
+      expect(await listSkillFiles(office)).toEqual(["scripts/office.mjs"]);
+      const script = (await resolveSkillFile(office, "scripts/office.mjs"))!;
+      expect(script).toBeTruthy();
+      expect(await resolveSkillFile(office, "../x")).toBeNull();
+
+      const run = (...args: string[]) =>
+        execFileSync(process.execPath, [script, ...args], {
+          cwd: root,
+          encoding: "utf8",
+        });
+      fs.writeFileSync(
+        path.join(root, "a.md"),
+        "# Titre {{NOM}}\n\nBonjour **{{NOM}}**.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n",
+      );
+      run("md2docx", "a.md", "a.docx");
+      fs.writeFileSync(path.join(root, "r.json"), '{"{{NOM}}":"Awa"}');
+      expect(run("replace", "a.docx", "r.json", "b.docx")).toContain(
+        "2 remplacement",
+      );
+      const text = run("read", "b.docx");
+      expect(text).toContain("Titre Awa");
+      expect(text).not.toContain("{{NOM}}");
+
+      fs.writeFileSync(path.join(root, "n.csv"), "Nom;Note\nAwa;12,5\n");
+      run("csv2xlsx", "n.csv", "n.xlsx");
+      expect(run("read", "n.xlsx")).toContain("12.5");
+
+      fs.writeFileSync(
+        path.join(root, "s.json"),
+        '[{"title":"Atelier"},{"title":"Plan","bullets":["Un","Deux"],"notes":"dire bonjour"}]',
+      );
+      run("json2pptx", "s.json", "s.pptx");
+      const slides = JSON.parse(run("read", "s.pptx"));
+      expect(slides[1]).toMatchObject({
+        text: ["Plan", "Un", "Deux"],
+        notes: "dire bonjour",
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

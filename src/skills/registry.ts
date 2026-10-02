@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import log from "electron-log";
 import { getUserDataPath } from "@/paths/paths";
-import { BUILTIN_SKILLS } from "./builtin";
+import { BUILTIN_SKILLS, type BuiltinSkill } from "./builtin";
 import {
   MAX_SKILL_FILE_BYTES,
   SKILL_FILE_NAME,
@@ -21,6 +21,37 @@ export interface Skill extends ParsedSkill {
   origin: SkillOrigin;
   /** Absolute folder of the skill; undefined for built-in skills. */
   dir?: string;
+}
+
+/** Where built-in skills that ship scripts are written so the shell can run them. */
+export function getBuiltinSkillsDir(): string {
+  return path.join(getUserDataPath(), "builtin-skills");
+}
+
+/** Writes a built-in skill's extra files to disk (only when missing or changed). */
+async function materializeBuiltinSkill(
+  skill: BuiltinSkill,
+  rootDir: string,
+): Promise<string | undefined> {
+  if (!skill.assets) return undefined;
+  const dir = path.join(rootDir, skill.name);
+  try {
+    for (const [relative, content] of Object.entries(skill.assets)) {
+      const target = path.join(dir, ...relative.split("/"));
+      const bytes = Buffer.byteLength(content, "utf8");
+      const current = await fs.promises.stat(target).catch(() => null);
+      if (current?.isFile() && current.size === bytes) continue;
+      await fs.promises.mkdir(path.dirname(target), { recursive: true });
+      await fs.promises.writeFile(target, content, "utf8");
+    }
+    return dir;
+  } catch (error) {
+    logger.warn(
+      `Could not write built-in skill files for ${skill.name}:`,
+      error,
+    );
+    return undefined;
+  }
 }
 
 export function getUserSkillsDir(): string {
@@ -84,6 +115,7 @@ export async function discoverSkills(
     userSkillsDir?: string;
     disabled?: readonly string[];
     includeDisabled?: boolean;
+    builtinSkillsDir?: string;
   } = {},
 ): Promise<Skill[]> {
   const byName = new Map<string, Skill>();
@@ -95,7 +127,19 @@ export async function discoverSkills(
     }
     byName.set(skill.name, skill);
   };
-  for (const skill of BUILTIN_SKILLS) add({ ...skill, origin: "builtin" });
+  const disabledNames = new Set(options.disabled ?? []);
+  for (const skill of BUILTIN_SKILLS) {
+    // Only write a skill's script files when the skill is actually offered.
+    const dir =
+      options.includeDisabled || !disabledNames.has(skill.name)
+        ? await materializeBuiltinSkill(
+            skill,
+            options.builtinSkillsDir ?? getBuiltinSkillsDir(),
+          )
+        : undefined;
+    const { assets: _assets, ...rest } = skill;
+    add({ ...rest, origin: "builtin", dir });
+  }
   for (const skill of await readRoot(
     options.userSkillsDir ?? getUserSkillsDir(),
     "user",
