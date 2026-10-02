@@ -152,17 +152,56 @@ export const customDark: editor.IStandaloneThemeData = {
 const IS_VITEST =
   typeof process !== "undefined" && process.env.VITEST === "true";
 
-if (!IS_VITEST) {
-  loader.init().then((monaco) => {
-    monaco.editor.defineTheme("dyad-light", customLight);
-    monaco.editor.defineTheme("dyad-dark", customDark);
+// Monaco is bundled with the app (editor + language workers inlined) instead of
+// being fetched from cdn.jsdelivr.net: the code view then works offline and on
+// networks that block public CDNs.
+async function loadLocalMonaco() {
+  const [monaco, editorWorker, tsWorker, jsonWorker, cssWorker, htmlWorker] =
+    await Promise.all([
+      import("monaco-editor"),
+      import("monaco-editor/esm/vs/editor/editor.worker?worker&inline"),
+      import("monaco-editor/esm/vs/language/typescript/ts.worker?worker&inline"),
+      import("monaco-editor/esm/vs/language/json/json.worker?worker&inline"),
+      import("monaco-editor/esm/vs/language/css/css.worker?worker&inline"),
+      import("monaco-editor/esm/vs/language/html/html.worker?worker&inline"),
+    ]);
+  (self as unknown as { MonacoEnvironment: unknown }).MonacoEnvironment = {
+    getWorker(_workerId: string, label: string) {
+      switch (label) {
+        case "typescript":
+        case "javascript":
+          return new tsWorker.default();
+        case "json":
+          return new jsonWorker.default();
+        case "css":
+        case "scss":
+        case "less":
+          return new cssWorker.default();
+        case "html":
+        case "handlebars":
+        case "razor":
+          return new htmlWorker.default();
+        default:
+          return new editorWorker.default();
+      }
+    },
+  };
+  loader.config({ monaco });
+}
 
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      jsx: monaco.languages.typescript.JsxEmit.React, // Enable JSX
+if (!IS_VITEST) {
+  loadLocalMonaco()
+    .then(() => loader.init())
+    .then((monaco) => {
+      monaco.editor.defineTheme("dyad-light", customLight);
+      monaco.editor.defineTheme("dyad-dark", customDark);
+
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        jsx: monaco.languages.typescript.JsxEmit.React, // Enable JSX
+      });
+      monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+        // Too noisy because we don't have the full TS environment.
+        noSemanticValidation: true,
+      });
     });
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      // Too noisy because we don't have the full TS environment.
-      noSemanticValidation: true,
-    });
-  });
 }

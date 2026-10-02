@@ -916,6 +916,9 @@ const createWindow = ({
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
+      // Chromium downloads spell-check dictionaries from Google; Cimes makes no
+      // such background request.
+      spellcheck: false,
       // transparent: true,
     },
     icon: path.join(app.getAppPath(), "assets/icon/logo.png"),
