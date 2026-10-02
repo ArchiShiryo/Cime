@@ -67,6 +67,7 @@ import { readGuideTool } from "./tools/read_guide";
 import { readSkillTool } from "./tools/read_skill";
 import { searchDocsTool } from "./tools/search_docs";
 import { officialDataTool, legifranceTool } from "./tools/official_data";
+import { batchFilesTool } from "./tools/batch_files";
 import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
@@ -202,6 +203,7 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   searchDocsTool,
   officialDataTool,
   legifranceTool,
+  batchFilesTool,
   executeSandboxScriptTool,
   searchMcpToolsTool,
   getMcpToolSchemaTool,

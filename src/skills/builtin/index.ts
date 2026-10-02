@@ -20,6 +20,7 @@ import rechercheWebSourcee from "./recherche-web-sourcee/SKILL.md?raw";
 import revueAvantLivraison from "./revue-avant-livraison/SKILL.md?raw";
 import sourcesOfficielles from "./sources-officielles/SKILL.md?raw";
 import securiteApplicationWeb from "./securite-application-web/SKILL.md?raw";
+import traitementParLot from "./traitement-par-lot/SKILL.md?raw";
 import tableauDeBordEtGraphiques from "./tableau-de-bord-et-graphiques/SKILL.md?raw";
 import officeToolkit from "../builtin-assets/office.mjs?raw";
 import { parseSkillMd, type ParsedSkill } from "../parse";
@@ -53,6 +54,7 @@ const RAW_BUILTIN_SKILLS: Record<string, string> = {
   "securite-application-web": securiteApplicationWeb,
   "sources-officielles": sourcesOfficielles,
   "tableau-de-bord-et-graphiques": tableauDeBordEtGraphiques,
+  "traitement-par-lot": traitementParLot,
 };
 
 // Skills that ship scripts: they are materialized under <userData>/builtin-skills.
