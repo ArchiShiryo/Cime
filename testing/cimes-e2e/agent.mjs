@@ -98,19 +98,25 @@ const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
 settings.enableAppBlueprint = false;
 settings.selectedChatMode = "local-agent";
 fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-if (process.env.KB_SEED_TEXT) {
+if (process.env.KB_SEED_TEXT || process.env.KB_SEED_TEXTS) {
   // Optional: put a ready document straight into the knowledge base (no file dialog in e2e).
   const { DatabaseSync } = await import("node:sqlite");
   const kb = new DatabaseSync(path.join(userData, "knowledge.db"));
   kb.exec(
     "CREATE TABLE IF NOT EXISTS sources (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL UNIQUE, name TEXT NOT NULL, size INTEGER NOT NULL DEFAULT 0, mtime INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', error TEXT, updated_at INTEGER NOT NULL DEFAULT 0); CREATE TABLE IF NOT EXISTS chunks (id INTEGER PRIMARY KEY AUTOINCREMENT, source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE, ordinal INTEGER NOT NULL, location TEXT, text TEXT NOT NULL, embedding BLOB);",
   );
-  kb.prepare(
-    "INSERT INTO sources (path, name, status) VALUES (?, ?, 'ready')",
-  ).run("/seed/reglement-atelier.txt", "reglement-atelier.txt");
-  kb.prepare(
-    "INSERT INTO chunks (source_id, ordinal, location, text) VALUES (1, 0, 'p. 2', ?)",
-  ).run(process.env.KB_SEED_TEXT);
+  const texts = process.env.KB_SEED_TEXTS
+    ? JSON.parse(process.env.KB_SEED_TEXTS)
+    : [process.env.KB_SEED_TEXT];
+  texts.forEach((text, index) => {
+    const name = `document-${index + 1}.txt`;
+    kb.prepare(
+      "INSERT INTO sources (path, name, status) VALUES (?, ?, 'ready')",
+    ).run(`/seed/${name}`, name);
+    kb.prepare(
+      "INSERT INTO chunks (source_id, ordinal, location, text) VALUES (?, 0, 'p. 1', ?)",
+    ).run(index + 1, text);
+  });
   kb.close();
   log("knowledge base seeded");
 }
@@ -156,6 +162,7 @@ await page.waitForSelector(
 );
 await sleep(2500);
 screen("1-home");
+await sleep(Number(process.env.AGENT_START_DELAY_S || 0) * 1000);
 const editor = page.locator('[contenteditable="true"]').first();
 await editor.click();
 await page.keyboard.type(prompt, { delay: 5 });
@@ -246,4 +253,23 @@ log("FINAL TEXT (first 2500 chars):\n" + finalText.slice(0, 2500));
 await browser.close().catch(() => {});
 proc.kill();
 await sleep(1500);
+try {
+  if (process.env.KB_SEED_TEXT || process.env.KB_SEED_TEXTS) {
+    const { DatabaseSync } = await import("node:sqlite");
+    const kb = new DatabaseSync(path.join(userData, "knowledge.db"));
+    log(
+      "chunk embedders:",
+      JSON.stringify(
+        kb
+          .prepare(
+            "SELECT embedder, COUNT(*) AS n FROM chunks GROUP BY embedder",
+          )
+          .all(),
+      ),
+    );
+    kb.close();
+  }
+} catch (error) {
+  log("could not read knowledge.db:", error.message);
+}
 log("done; home =", home);
