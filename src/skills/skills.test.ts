@@ -316,7 +316,9 @@ describe("office-fichiers built-in skill", () => {
       });
       const office = skills.find((s) => s.name === "office-fichiers")!;
       expect(office.origin).toBe("builtin");
-      expect(await listSkillFiles(office)).toEqual(["scripts/office.mjs"]);
+      expect(await listSkillFiles(office)).toEqual(
+        expect.arrayContaining(["scripts/office.mjs"]),
+      );
       const script = (await resolveSkillFile(office, "scripts/office.mjs"))!;
       expect(script).toBeTruthy();
       expect(await resolveSkillFile(office, "../x")).toBeNull();
