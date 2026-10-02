@@ -52,6 +52,7 @@ import { miscContracts, miscEvents } from "../types/misc";
 import { freeAgentQuotaContracts } from "../types/free_agent_quota";
 import { freeModelQuotaContracts } from "../types/free_model_quota";
 import { albertContracts } from "../types/albert";
+import { skillsContracts } from "../types/skills";
 import { splashContracts } from "../types/splash";
 import { planEvents, planContracts } from "../types/plan";
 import { audioContracts } from "../types/audio";
@@ -146,6 +147,7 @@ export const VALID_INVOKE_CHANNELS = [
   ...getInvokeChannels(freeAgentQuotaContracts),
   ...getInvokeChannels(freeModelQuotaContracts),
   ...getInvokeChannels(albertContracts),
+  ...getInvokeChannels(skillsContracts),
   ...getInvokeChannels(splashContracts),
   ...getInvokeChannels(planContracts),
   ...getInvokeChannels(audioContracts),

@@ -5,6 +5,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { ProviderSettingsGrid } from "@/components/ProviderSettings";
 import { AlbertSettings } from "@/components/AlbertSettings";
 import { WebSearchSettings } from "@/components/WebSearchSettings";
+import { SkillsSettings } from "@/components/SkillsSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -603,6 +604,10 @@ export function AISettings() {
 
       <div id={SETTING_IDS.webSearchSearxng}>
         <WebSearchSettings />
+      </div>
+
+      <div id={SETTING_IDS.skills}>
+        <SkillsSettings />
       </div>
 
       <div id={SETTING_IDS.contextCompaction} className="space-y-1.5">

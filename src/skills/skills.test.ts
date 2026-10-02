@@ -192,3 +192,81 @@ describe("prompt helpers", () => {
     ).toBe("/d /d");
   });
 });
+
+import { zipSync, strToU8 } from "fflate";
+import {
+  deleteUserSkill,
+  importSkillFromPath,
+  installSkillFiles,
+  normalizeEntryPath,
+  unzipSkillArchive,
+} from "./import";
+
+describe("skill import", () => {
+  let dest: string;
+  beforeEach(() => {
+    dest = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-import-"));
+  });
+  afterEach(() => fs.rmSync(dest, { recursive: true, force: true }));
+
+  it("normalizes entry paths and rejects traversal", () => {
+    expect(normalizeEntryPath("a/b.md")).toBe("a/b.md");
+    expect(normalizeEntryPath("a\\b.md")).toBe("a/b.md");
+    expect(normalizeEntryPath("../x")).toBeNull();
+    expect(normalizeEntryPath("a/../../x")).toBeNull();
+    expect(normalizeEntryPath("/etc/passwd")).toBeNull();
+    expect(normalizeEntryPath("C:/x")).toBeNull();
+  });
+
+  it("imports a zip with a wrapper folder and reports scripts", async () => {
+    const zip = zipSync({
+      "demo-skill/SKILL.md": strToU8(SKILL),
+      "demo-skill/scripts/go.sh": strToU8("echo hi"),
+      "demo-skill/references/a.md": strToU8("A"),
+    });
+    const zipPath = path.join(dest, "demo.skill");
+    fs.writeFileSync(zipPath, zip);
+    const result = await importSkillFromPath(
+      zipPath,
+      path.join(dest, "skills"),
+    );
+    expect(result.name).toBe("demo-skill");
+    expect(result.scripts).toEqual(["scripts/go.sh"]);
+    expect(
+      fs.existsSync(
+        path.join(dest, "skills", "demo-skill", "references", "a.md"),
+      ),
+    ).toBe(true);
+    await deleteUserSkill("demo-skill", path.join(dest, "skills"));
+    expect(fs.existsSync(path.join(dest, "skills", "demo-skill"))).toBe(false);
+  });
+
+  it("refuses zip-slip entries, non-zip files and skills without SKILL.md", async () => {
+    const evil = zipSync({
+      "SKILL.md": strToU8(SKILL),
+      "../escape.txt": strToU8("x"),
+    });
+    expect(() => unzipSkillArchive(evil)).toThrow(/Unsafe path/);
+    expect(() => unzipSkillArchive(new Uint8Array([1, 2, 3]))).toThrow(/zip/);
+    await expect(
+      installSkillFiles(new Map([["readme.md", new Uint8Array([1])]]), dest),
+    ).rejects.toThrow(/SKILL.md/);
+  });
+
+  it("imports a folder and ignores symlinks", async () => {
+    const src = path.join(dest, "src");
+    fs.mkdirSync(src);
+    fs.writeFileSync(path.join(src, "SKILL.md"), SKILL);
+    fs.writeFileSync(path.join(dest, "outside.txt"), "secret");
+    try {
+      fs.symlinkSync(
+        path.join(dest, "outside.txt"),
+        path.join(src, "link.txt"),
+      );
+    } catch {
+      // symlinks may be unavailable
+    }
+    const result = await importSkillFromPath(src, path.join(dest, "skills"));
+    expect(result.fileCount).toBe(1);
+  });
+});

@@ -221,3 +221,16 @@ Dans l'ordre d'utilité pour les ateliers :
 - Aucune exécution de script sans passage par la revue + consentement ; zip-slip et traversée de chemin couverts par des tests.
 - Les skills intégrés fonctionnent dans le paquet Windows (portable et installeur), pas seulement en dev.
 - `AUTO_UPDATE_AVAILABLE`, `PAID_FEATURES_ENABLED`, `TELEMETRY_ENABLED` restent à `false` ; la clé Albert n'apparaît nulle part dans le dépôt ni les logs.
+
+### État d'avancement de la section 7 (mis à jour par Claude)
+
+Codex étant bloqué, **S0 à S5 sont implémentés** (commit sur `claude/dyad-themes-ucuvhn`) :
+
+- S0 : `src/skills/{parse,registry}.ts` (frontmatter YAML tolérant, y compris description avec « : » non quotée ; racines intégré < `<userData>/skills` < `<app>/.claude/skills` < `<app>/.cimes/skills` ; refus des liens symboliques sortants).
+- S1 : bloc `<available_skills>` (noms + descriptions) ajouté au prompt système ; outil `read_skill` (`name`, `file` optionnel, confiné au dossier du skill).
+- S2 : `/nom-du-skill arguments` développé côté main (`$ARGUMENTS`, `${CLAUDE_SKILL_DIR}`/`${CIMES_SKILL_DIR}` remplacés par le dossier du skill). Les `/slug` de la bibliothèque de prompts gardent la priorité. Pas encore d'autocomplétion dans l'éditeur.
+- S3 : les scripts passent par `run_shell` existant (revue + consentement). `allowed-tools` est parsé mais **non appliqué** (aucun pré-approbation) : choix volontairement prudent.
+- S4 : Paramètres > IA > Skills (activer/désactiver, importer dossier ou .zip/.skill avec protection zip-slip et limites 20 Mo / 500 fichiers, supprimer, ouvrir le dossier). L'information « contient des scripts » est affichée après import, pas avant.
+- S5 : quatre skills intégrés dans `src/skills/builtin/` (fichier unique, pas de scripts).
+
+Reste pour Codex : S6 (boucle agent réelle avec DeepSeek, `explore` local, compaction, mémoire, MCP Windows, Stop, proxy, observabilité, évals), autocomplétion `/skill` dans l'éditeur, test dans le paquet Windows. Limites connues : les skills intégrés n'ont qu'un `SKILL.md` ; les tests d'intégration du chat ne tournent pas dans cet environnement (`pty.node` absent, identique sur `main`).

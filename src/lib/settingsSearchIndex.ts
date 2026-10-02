@@ -30,6 +30,7 @@ export const SETTING_IDS = {
   maxToolCallSteps: "setting-max-tool-call-steps",
   contextCompaction: "setting-context-compaction",
   webSearchSearxng: "setting-web-search-searxng",
+  skills: "setting-skills",
   telemetry: "setting-telemetry",
   github: "setting-github",
   vercel: "setting-vercel",
@@ -278,6 +279,15 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
       "bing",
       "agent",
     ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.skills,
+    label: "Skills",
+    description:
+      "Claude-compatible skills (SKILL.md) the agent loads on demand: enable, import or remove",
+    keywords: ["skills", "skill", "claude", "import", "agent", "expert"],
     sectionId: SECTION_IDS.ai,
     sectionLabel: "AI",
   },
