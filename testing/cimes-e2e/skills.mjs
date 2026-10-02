@@ -135,6 +135,11 @@ log(
   !!(await main.$("[data-testid=skill-mon-skill-demo]")),
 );
 screen("s3-after");
+await main.evaluate(() => document.querySelector('a[href="/plugins"]')?.click());
+await sleep(4000);
+const pluginsText = await main.textContent("body");
+log("plugins page url:", main.url(), "| Context7:", /Context7/.test(pluginsText), "| Mémoire:", /Mémoire/.test(pluginsText));
+screen("s4-plugins");
 await browser.close().catch(() => {});
 proc.kill();
 process.exit(0);
