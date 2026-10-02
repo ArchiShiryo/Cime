@@ -116,7 +116,8 @@
       "dossier": "Dossier",
       "suivi": "Suivi de projet",
       "veille": "Veille et étude"
-    }
+    },
+    "tabMemory": "Mémoire"
   },
   "activity": {
     "title": "Journal d'activité",
@@ -174,5 +175,28 @@
     "signature": "Signature",
     "signaturePlaceholder": "Ajoutée à la fin des courriers et messages rédigés pour vous",
     "privacy": "Conservées sur cet ordinateur. Elles sont envoyées au modèle avec vos demandes : n'y mettez pas de données personnelles d'autres personnes."
+  },
+  "memory": {
+    "personalTitle": "Mémoire personnelle",
+    "personalIntro": "Ce que l'assistant retient de vous et de votre façon de travailler, dans tous les projets. Il n'enregistre rien sans votre accord.",
+    "projectTitle": "Mémoire du projet",
+    "projectIntro": "Ce que l'assistant retient de ce projet : décisions, vocabulaire, contexte. Elle reste dans le dossier du projet.",
+    "empty": "Rien de retenu pour l'instant. Demandez à l'assistant de « retenir » quelque chose, ou ajoutez une note vous-même.",
+    "edit": "Modifier",
+    "forget": "Oublier",
+    "confirmForget": "Confirmer",
+    "add": "Ajouter une note",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "titlePlaceholder": "Titre",
+    "descriptionPlaceholder": "Quand est-ce utile ? (une ligne)",
+    "bodyPlaceholder": "Ce qu'il faut retenir",
+    "warning": "Les notes sont envoyées au modèle avec vos demandes. N'y stockez pas de données personnelles d'autres personnes, ni de mots de passe.",
+    "types": {
+      "user": "À mon sujet",
+      "feedback": "Préférence",
+      "project": "Projet",
+      "reference": "Référence"
+    }
   }
 }

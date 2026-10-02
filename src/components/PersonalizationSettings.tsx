@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSettings } from "@/hooks/useSettings";
+import { MemoryPanel } from "@/components/MemoryPanel";
 import type { WritingPreferences } from "@/lib/schemas";
 
 type Key = "addressForm" | "register" | "length" | "documentLanguage";
@@ -106,6 +107,7 @@ export function PersonalizationSettings() {
         />
       </div>
       <p className="text-xs text-muted-foreground">{t("prefs.privacy")}</p>
+      <MemoryPanel scope="personal" />
     </div>
   );
 }

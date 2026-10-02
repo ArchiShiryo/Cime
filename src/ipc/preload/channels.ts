@@ -56,6 +56,7 @@ import { skillsContracts } from "../types/skills";
 import { knowledgeContracts } from "../types/knowledge";
 import { projectsContracts } from "../types/projects";
 import { activityContracts } from "../types/activity";
+import { memoryContracts } from "../types/memory";
 import { splashContracts } from "../types/splash";
 import { planEvents, planContracts } from "../types/plan";
 import { audioContracts } from "../types/audio";
@@ -154,6 +155,7 @@ export const VALID_INVOKE_CHANNELS = [
   ...getInvokeChannels(knowledgeContracts),
   ...getInvokeChannels(projectsContracts),
   ...getInvokeChannels(activityContracts),
+  ...getInvokeChannels(memoryContracts),
   ...getInvokeChannels(splashContracts),
   ...getInvokeChannels(planContracts),
   ...getInvokeChannels(audioContracts),

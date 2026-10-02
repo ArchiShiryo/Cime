@@ -116,7 +116,8 @@
       "dossier": "Case file",
       "suivi": "Project tracking",
       "veille": "Research and watch"
-    }
+    },
+    "tabMemory": "Memory"
   },
   "activity": {
     "title": "Activity log",
@@ -174,5 +175,28 @@
     "signature": "Signature",
     "signaturePlaceholder": "Added at the end of letters and emails written for you",
     "privacy": "Kept on this computer. They are sent to the model with your requests: do not put personal data of other people here."
+  },
+  "memory": {
+    "personalTitle": "Personal memory",
+    "personalIntro": "What the assistant remembers about you and how you work, in every project. It saves something only after you approve it.",
+    "projectTitle": "Project memory",
+    "projectIntro": "What the assistant remembers about this project: decisions, vocabulary, context. It stays in the project folder.",
+    "empty": "Nothing remembered yet. Ask the assistant to \"remember\" something, or add a note yourself.",
+    "edit": "Edit",
+    "forget": "Forget",
+    "confirmForget": "Confirm",
+    "add": "Add a note",
+    "save": "Save",
+    "cancel": "Cancel",
+    "titlePlaceholder": "Title",
+    "descriptionPlaceholder": "When is this useful? (one line)",
+    "bodyPlaceholder": "What should be remembered",
+    "warning": "Notes are sent to the model with your requests. Do not store personal data about other people, or passwords.",
+    "types": {
+      "user": "About me",
+      "feedback": "Preference",
+      "project": "Project",
+      "reference": "Reference"
+    }
   }
 }

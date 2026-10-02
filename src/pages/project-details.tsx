@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLoadApps } from "@/hooks/useLoadApps";
+import { MemoryPanel } from "@/components/MemoryPanel";
 import { useChats } from "@/hooks/useChats";
 import { useProject } from "@/hooks/useProjects";
 import { useSkills } from "@/hooks/useSkills";
@@ -21,6 +22,7 @@ const TABS = [
   { id: "chats", key: "tabChats" },
   { id: "docs", key: "tabDocs" },
   { id: "skills", key: "tabSkills" },
+  { id: "memory", key: "tabMemory" },
   { id: "files", key: "tabFolder" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
@@ -69,6 +71,7 @@ export default function ProjectDetailsPage() {
         {tab === "chats" && <ProjectChats appId={appId} />}
         {tab === "docs" && <ProjectDocs appId={appId} />}
         {tab === "skills" && <ProjectSkills appId={appId} />}
+        {tab === "memory" && <MemoryPanel scope="project" appId={appId} />}
         {tab === "files" && <ProjectFiles appId={appId} />}
       </div>
     </div>

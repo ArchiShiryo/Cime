@@ -69,6 +69,11 @@ import { searchDocsTool } from "./tools/search_docs";
 import { officialDataTool, legifranceTool } from "./tools/official_data";
 import { batchFilesTool } from "./tools/batch_files";
 import {
+  memoryForgetTool,
+  memoryReadTool,
+  memorySaveTool,
+} from "./tools/memory";
+import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
 } from "./tools/execute_sandbox_script";
@@ -204,6 +209,9 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   officialDataTool,
   legifranceTool,
   batchFilesTool,
+  memorySaveTool,
+  memoryReadTool,
+  memoryForgetTool,
   executeSandboxScriptTool,
   searchMcpToolsTool,
   getMcpToolSchemaTool,
@@ -504,6 +512,7 @@ export const BUILD_MODE_TOOL_NAMES = [
   "search_docs",
   "official_data",
   "legifrance",
+  "memory_read",
   "planning_questionnaire",
   "write_app_blueprint",
 ] as const satisfies readonly AgentToolName[];

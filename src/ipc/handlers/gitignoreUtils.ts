@@ -44,5 +44,10 @@ export async function ensureDyadGitignored(appPath: string): Promise<void> {
   // Office and LibreOffice write lock files next to a document while it is
   // open; Windows refuses to read them, which made "git add" (and so every
   // save of the turn) fail.
-  await ensureGitignored(appPath, [".dyad/", "~$*", ".~lock.*#"]);
+  await ensureGitignored(appPath, [
+    ".dyad/",
+    "~$*",
+    ".~lock.*#",
+    ".cimes/memory/",
+  ]);
 }

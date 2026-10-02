@@ -89,6 +89,7 @@ export { skillsContracts } from "./skills";
 export { knowledgeContracts } from "./knowledge";
 export { projectsContracts } from "./projects";
 export { activityContracts } from "./activity";
+export { memoryContracts } from "./memory";
 export { splashContracts } from "./splash";
 export { audioContracts } from "./audio";
 export { mediaContracts } from "./media";
@@ -161,6 +162,7 @@ export { skillsClient } from "./skills";
 export { knowledgeClient } from "./knowledge";
 export { projectsClient } from "./projects";
 export { activityClient } from "./activity";
+export { memoryClient } from "./memory";
 export { splashClient } from "./splash";
 export { audioClient } from "./audio";
 export { mediaClient } from "./media";
@@ -586,6 +588,7 @@ import { skillsClient } from "./skills";
 import { knowledgeClient } from "./knowledge";
 import { projectsClient } from "./projects";
 import { activityClient } from "./activity";
+import { memoryClient } from "./memory";
 import { splashClient } from "./splash";
 import { audioClient } from "./audio";
 import { mediaClient } from "./media";
@@ -679,6 +682,7 @@ export const ipc = {
   knowledge: knowledgeClient,
   projects: projectsClient,
   activity: activityClient,
+  memory: memoryClient,
   splash: splashClient,
   audio: audioClient,
   media: mediaClient,

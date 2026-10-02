@@ -4,7 +4,12 @@ import { buildAvailableSkillsPrompt } from "./prompt";
 import { getKnowledgeStats } from "@/knowledge/service";
 import { discoverSkills } from "./registry";
 import { buildPreferencesPrompt } from "@/personalization/prompt";
-import { buildProjectPrompt, readProjectConfig } from "@/projects/config";
+import { buildMemoryPrompt } from "@/memory/prompt";
+import {
+  buildProjectPrompt,
+  isProjectPath,
+  readProjectConfig,
+} from "@/projects/config";
 
 const logger = log.scope("skills");
 
@@ -37,9 +42,18 @@ export function getKnowledgePromptBlock(scope = ""): string {
 }
 
 /** The user's writing preferences (Settings > Personalization). */
-export function getPersonalizationPromptBlock(): string {
+export function getPersonalizationPromptBlock(appPath?: string): string {
   try {
-    return buildPreferencesPrompt(readSettings().writingPreferences);
+    const settings = readSettings();
+    const memoryOff =
+      settings.agentToolConsents?.["memory_read"] === "never" &&
+      settings.agentToolConsents?.["memory_save"] === "never";
+    return (
+      buildPreferencesPrompt(settings.writingPreferences) +
+      (memoryOff
+        ? ""
+        : buildMemoryPrompt(appPath && isProjectPath(appPath) ? appPath : null))
+    );
   } catch (error) {
     logger.warn("Could not build the preferences prompt:", error);
     return "";
@@ -52,5 +66,5 @@ export function getProjectPromptBlock(appPath: string, name: string): string {
   const base = project
     ? `\n\n${buildProjectPrompt(project, name)}${getKnowledgePromptBlock(appPath)}`
     : getKnowledgePromptBlock();
-  return base + getPersonalizationPromptBlock();
+  return base + getPersonalizationPromptBlock(appPath);
 }
