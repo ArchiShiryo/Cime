@@ -178,3 +178,12 @@ Via `testing/cimes-e2e/agent.mjs` contre l'API DeepSeek (variables de test `CIME
 - À la connexion de la clé et au bouton « Tester », Cimes lit `GET /v1/models` et ajoute tous les modèles de génération de texte que la clé peut utiliser, avec leur fenêtre de contexte (`src/shared/albert_models.ts`). Les modèles qui disparaissent de la liste ne sont pas supprimés.
 - Sélecteur de modèles : seuls Albert et les fournisseurs dont l'utilisateur a saisi une clé sont proposés ; plus de lignes d'abonnement Claude/ChatGPT ni de modèles verrouillés.
 - **Non vérifié** : le comportement des modèles autres que DeepSeek avec les outils de l'agent (appel d'outils, shell, MCP). À tester avec une vraie clé, en commençant par GPT-OSS et Mistral Medium.
+
+## Fichiers Office (Word, Excel, PowerPoint) sur un PC verrouillé
+
+Le skill intégré `office-fichiers` livre un script Node unique (`office.mjs`, ~1,9 Mo, sans dépendance ni installation, hors ligne) écrit dans `<userData>/builtin-skills/office-fichiers/scripts/`. Commandes : `read`, `md2docx`, `csv2xlsx`, `xlsx2csv`, `json2pptx`, `replace` (remplacement qui garde la mise en forme, y compris texte coupé en plusieurs « runs »). Le même fichier est une bibliothèque (`docx`, `ExcelJS`, `PptxGenJS`, `mammoth`, `JSZip`) pour les scripts écrits par l'agent. Les commandes passent par le shell de l'agent (relecture + accord).
+
+- Sources : `tools/office-bundle/` (`npm install && npm run build` régénère `src/skills/builtin-assets/office.mjs`, exclu de fmt et lint).
+- Vérifié : test unitaire qui exécute vraiment le script (création, remplacement, relecture) ; tour d'agent réel sur l'application empaquetée (skill chargé, .docx créé et relu).
+- Limites : pas d'aperçu ni de conversion PDF, pas de .doc/.xls/.ppt anciens, macros et graphiques Excel existants non conservés à la réécriture, pas de lecture de PDF. Les fichiers générés n'ont pas pu être ouverts dans Word/LibreOffice ici (LibreOffice inutilisable dans le bac à sable) : à ouvrir dans Office sur un vrai poste.
+- Prérequis : `node` accessible depuis le shell de l'agent (Cimes utilise son Node géré ou celui du système).
