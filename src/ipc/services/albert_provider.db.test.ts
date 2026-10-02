@@ -43,7 +43,7 @@ import {
   ALBERT_MODEL_ID,
   ALBERT_PROVIDER_ID,
 } from "@/shared/albert";
-import { ensureAlbertProvider } from "./albert_service";
+import { ensureAlbertProvider, syncAlbertModels } from "./albert_service";
 
 describe("ensureAlbertProvider", () => {
   let db: ReturnType<typeof drizzle<typeof schema>>;
@@ -115,5 +115,52 @@ describe("ensureAlbertProvider", () => {
     const model = { provider: ALBERT_PROVIDER_ID, name: ALBERT_MODEL_ID };
     expect(await getMaxTokens(model)).toBe(8192);
     expect(await getContextWindow(model)).toBe(131072);
+  });
+});
+
+describe("syncAlbertModels", () => {
+  let db: ReturnType<typeof drizzle<typeof schema>>;
+
+  beforeEach(() => {
+    const sqlite = new Database(":memory:");
+    db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder: "drizzle" });
+    holder.db = db;
+  });
+
+  const models = () => db.select().from(schema.language_models).all();
+
+  it("adds the other chat models idempotently and keeps the default model limits", () => {
+    ensureAlbertProvider();
+    const listed = [
+      {
+        id: ALBERT_MODEL_ID,
+        displayName: "x",
+        contextWindow: 1_000_000,
+        maxOutputTokens: 99_999,
+      },
+      {
+        id: "llama-x",
+        displayName: "llama-x - Albert",
+        contextWindow: 65_536,
+        maxOutputTokens: 8_192,
+      },
+    ];
+    syncAlbertModels(listed);
+    syncAlbertModels(listed);
+    expect(models()).toHaveLength(2);
+    expect(models().find((m) => m.apiName === "llama-x")).toMatchObject({
+      context_window: 65_536,
+      max_output_tokens: 8_192,
+      customProviderId: ALBERT_PROVIDER_ID,
+    });
+    const main = models().find((m) => m.apiName === ALBERT_MODEL_ID)!;
+    expect(main.context_window).toBe(ALBERT_CONTEXT_WINDOW);
+    expect(main.max_output_tokens).toBe(ALBERT_MAX_OUTPUT_TOKENS);
+    // Models that disappear from the list are left alone, and the startup
+    // repair does not remove synced models.
+    syncAlbertModels([listed[0]]);
+    ensureAlbertProvider();
+    expect(models()).toHaveLength(2);
   });
 });
