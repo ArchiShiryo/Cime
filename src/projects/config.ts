@@ -62,7 +62,7 @@ export function writeProjectConfig(
 
 function readmeFor(template: ProjectTemplate, name: string): string {
   const folders = template.folders.map((folder) => `- ${folder}`).join("\n");
-  return `# ${name}\n\nProjet créé avec le modèle « ${template.name} ».\n\n## Organisation\n\n${folders}\n\nDéposez dans « ${DOCUMENTATION_FOLDER} » les documents de référence : l'assistant peut les consulter une fois la documentation indexée.\n`;
+  return `# ${name}\n\nProject created from the "${template.id}" template.\n\n## Layout\n\n${folders}\n\nPut reference documents in "${DOCUMENTATION_FOLDER}": the assistant can consult them once the RAG is created.\n`;
 }
 
 /** Creates the template's folders, README and project config inside `projectPath`. */
@@ -80,7 +80,7 @@ export function materializeProject(
     });
   }
   fs.writeFileSync(
-    path.join(projectPath, "LISEZMOI.md"),
+    path.join(projectPath, "README.md"),
     readmeFor(template, name),
     "utf8",
   );
@@ -102,7 +102,7 @@ export function buildProjectPrompt(
   const template = getProjectTemplate(config.templateId);
   const folders = template?.folders.map((folder) => `- ${folder}`).join("\n");
   return `<project>
-You are helping with the project "${name}" (type: ${template?.name ?? config.templateId}). The working directory is the project folder: every conversation of this project shares it. This is office and administrative work, not software development: produce documents (Word, Excel, PowerPoint, PDF, Markdown) and keep the folder tidy. Do not build web applications unless explicitly asked.
-${folders ? `Folder organisation:\n${folders}\n` : ""}Reference documents are in "${DOCUMENTATION_FOLDER}"; use \`search_docs\` to consult them, and cite the file.
+You are helping with the project "${name}" (template: ${config.templateId}). The working directory is the project folder: every conversation of this project shares it. This is office and administrative work, not software development: produce documents (Word, Excel, PowerPoint, PDF, Markdown) and keep the folder tidy. Do not build web applications unless explicitly asked. Reply in the language the user writes in.
+${folders ? `Folder layout:\n${folders}\n` : ""}Reference documents are in "${DOCUMENTATION_FOLDER}"; use \`search_docs\` to consult them, and cite the file.
 ${config.instructions ? `Project guidance: ${config.instructions}\n` : ""}</project>`;
 }

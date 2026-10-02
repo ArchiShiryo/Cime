@@ -68,7 +68,7 @@ describe("albert_service", () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 401 }));
     await expect(service.validateAlbertApiKey(KEY)).rejects.toMatchObject({
       kind: DyadErrorKind.Auth,
-      message: expect.stringContaining("n'est pas valide"),
+      message: expect.stringContaining("is not valid"),
     });
   });
 
@@ -76,7 +76,7 @@ describe("albert_service", () => {
     fetchMock.mockRejectedValue(new TypeError("fetch failed"));
     await expect(service.validateAlbertApiKey(KEY)).rejects.toMatchObject({
       kind: DyadErrorKind.Precondition,
-      message: expect.stringContaining("Impossible de joindre Albert"),
+      message: expect.stringContaining("Could not reach Albert"),
     });
   });
 

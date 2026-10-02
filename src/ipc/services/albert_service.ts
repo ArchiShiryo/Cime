@@ -142,13 +142,13 @@ export async function validateAlbertApiKey(
   const apiKey = normalizeProviderApiKeyInput(rawKey);
   if (!apiKey) {
     throw new DyadError(
-      "Entrez votre clé API Albert.",
+      "Enter your Albert API key.",
       DyadErrorKind.Validation,
     );
   }
   if (findInvalidProviderApiKeyCharacter(apiKey)) {
     throw new DyadError(
-      "Cette clé Albert n'est pas valide.\nVérifiez-la puis réessayez.",
+      "This Albert key is not valid.\nCheck it and try again.",
       DyadErrorKind.Validation,
     );
   }
@@ -165,7 +165,7 @@ export async function validateAlbertApiKey(
       `/v1/models -> unreachable (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)})`,
     );
     throw new DyadError(
-      "Impossible de joindre Albert.\nVérifiez votre connexion réseau puis réessayez.",
+      "Could not reach Albert.\nCheck your network connection and try again.",
       DyadErrorKind.Precondition,
     );
   }
@@ -173,19 +173,19 @@ export async function validateAlbertApiKey(
 
   if (response.status === 401 || response.status === 403) {
     throw new DyadError(
-      "Cette clé Albert n'est pas valide.\nVérifiez-la puis réessayez.",
+      "This Albert key is not valid.\nCheck it and try again.",
       DyadErrorKind.Auth,
     );
   }
   if (response.status === 429) {
     throw new DyadError(
-      "Albert limite temporairement les requêtes.\nRéessayez dans un instant.",
+      "Albert is temporarily rate-limiting requests.\nTry again in a moment.",
       DyadErrorKind.RateLimited,
     );
   }
   if (!response.ok) {
     throw new DyadError(
-      `Albert a répondu avec une erreur (HTTP ${response.status}).\nRéessayez plus tard.`,
+      `Albert answered with an error (HTTP ${response.status}).\nTry again later.`,
       DyadErrorKind.External,
     );
   }
@@ -195,7 +195,7 @@ export async function validateAlbertApiKey(
     body = await response.json();
   } catch {
     throw new DyadError(
-      "Réponse inattendue d'Albert.\nRéessayez plus tard.",
+      "Unexpected answer from Albert.\nTry again later.",
       DyadErrorKind.External,
     );
   }
@@ -205,7 +205,7 @@ export async function validateAlbertApiKey(
     data.some((m) => (m as { id?: unknown } | null)?.id === getAlbertModelId());
   if (!hasModel) {
     throw new DyadError(
-      `Le modèle ${getAlbertModelId()} n'est pas disponible avec cette clé Albert.`,
+      `The model ${getAlbertModelId()} is not available with this Albert key.`,
       DyadErrorKind.Precondition,
     );
   }
@@ -295,7 +295,7 @@ export async function testAlbertConnection(): Promise<void> {
   const key = getStoredKey() ?? process.env[ALBERT_ENV_VAR_NAME];
   if (!key) {
     throw new DyadError(
-      "Albert n'est pas connecté.",
+      "Albert is not connected.",
       DyadErrorKind.Precondition,
     );
   }

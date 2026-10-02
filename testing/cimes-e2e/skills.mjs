@@ -152,8 +152,8 @@ log(
   main.url(),
   "| Context7:",
   /Context7/.test(pluginsText),
-  "| Mémoire:",
-  /Mémoire/.test(pluginsText),
+  "| Memory:",
+  /Memory/.test(pluginsText),
 );
 screen("s4-plugins");
 for (const route of ["documents", "skills", "templates", "library"]) {

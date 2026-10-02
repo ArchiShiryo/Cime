@@ -18,7 +18,7 @@ describe("projects config", () => {
     const config = materializeProject(target, "dossier", "Session mai");
     expect(isProjectPath(target)).toBe(true);
     expect(fs.existsSync(path.join(target, "Documentation"))).toBe(true);
-    expect(fs.readFileSync(path.join(target, "LISEZMOI.md"), "utf8")).toContain(
+    expect(fs.readFileSync(path.join(target, "README.md"), "utf8")).toContain(
       "Session mai",
     );
     expect(readProjectConfig(target)).toEqual(config);

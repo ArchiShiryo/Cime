@@ -1,7 +1,6 @@
 /** File-organisation templates offered when creating a project (generic, any public service). */
 export interface ProjectTemplate {
   id: "libre" | "dossier" | "suivi" | "veille";
-  name: string;
   /** Folders created in the project (relative, forward slashes). */
   folders: string[];
   /** Skills enabled by default for this kind of project. */
@@ -16,35 +15,31 @@ export const PROJECT_BASE_SKILLS = ["office-fichiers", "recherche-web-sourcee"];
 export const PROJECT_TEMPLATES: readonly ProjectTemplate[] = [
   {
     id: "libre",
-    name: "Projet libre",
-    folders: [DOCUMENTATION_FOLDER, "En cours", "Livrables"],
+    folders: [DOCUMENTATION_FOLDER, "Work in progress", "Deliverables"],
     skills: [...PROJECT_BASE_SKILLS],
     instructions:
-      "Range les brouillons dans « En cours » et les documents finalisés dans « Livrables ».",
+      'Keep drafts in "Work in progress" and finished documents in "Deliverables".',
   },
   {
     id: "dossier",
-    name: "Dossier",
-    folders: [DOCUMENTATION_FOLDER, "Sources", "Rédaction", "Versions finales"],
+    folders: [DOCUMENTATION_FOLDER, "Sources", "Drafting", "Final versions"],
     skills: [...PROJECT_BASE_SKILLS],
     instructions:
-      "Rédige dans un français administratif clair. Cite les pièces de « Documentation » quand tu t'y appuies. Place les versions validées dans « Versions finales ».",
+      'Write in clear administrative language. Cite the documents in "Documentation" when you rely on them. Put approved versions in "Final versions".',
   },
   {
     id: "suivi",
-    name: "Suivi de projet",
-    folders: [DOCUMENTATION_FOLDER, "Planning", "Comptes rendus", "Livrables"],
+    folders: [DOCUMENTATION_FOLDER, "Planning", "Minutes", "Deliverables"],
     skills: [...PROJECT_BASE_SKILLS, "tableau-de-bord-et-graphiques"],
     instructions:
-      "Garde le planning à jour. Les comptes rendus vont dans « Comptes rendus ».",
+      'Keep the planning up to date. Meeting minutes go in "Minutes".',
   },
   {
     id: "veille",
-    name: "Veille et étude",
-    folders: [DOCUMENTATION_FOLDER, "Sources", "Notes", "Synthèses"],
+    folders: [DOCUMENTATION_FOLDER, "Sources", "Notes", "Summaries"],
     skills: [...PROJECT_BASE_SKILLS],
     instructions:
-      "Cite toujours tes sources (fichier ou lien). Distingue ce qui vient des documents de ce qui vient du web.",
+      "Always cite your sources (file or link). Distinguish what comes from the documents from what comes from the web.",
   },
 ];
 

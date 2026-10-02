@@ -9,7 +9,7 @@ export const BUNDLED_MCP_CATALOG: McpCatalogEntry[] = [
     slug: "context7",
     name: "Context7",
     description:
-      "Documentation à jour des bibliothèques et frameworks (React, Vite, Tailwind…), pour que l'agent n'invente pas d'API.",
+      "Up-to-date documentation for libraries and frameworks (React, Vite, Tailwind…), so the agent does not invent APIs.",
     category: "Documentation",
     featured: true,
     transport: "stdio",
@@ -18,10 +18,10 @@ export const BUNDLED_MCP_CATALOG: McpCatalogEntry[] = [
   },
   {
     slug: "memory",
-    name: "Mémoire",
+    name: "Memory",
     description:
-      "Graphe de connaissances local : l'agent retient des faits (préférences, décisions) d'une conversation à l'autre.",
-    category: "Mémoire",
+      "Local knowledge graph: the agent remembers facts (preferences, decisions) from one conversation to the next.",
+    category: "Memory",
     featured: true,
     transport: "stdio",
     command: "npx",
@@ -29,10 +29,10 @@ export const BUNDLED_MCP_CATALOG: McpCatalogEntry[] = [
   },
   {
     slug: "sequential-thinking",
-    name: "Raisonnement pas à pas",
+    name: "Step-by-step reasoning",
     description:
-      "Aide l'agent à décomposer un problème complexe en étapes et à réviser son raisonnement.",
-    category: "Raisonnement",
+      "Helps the agent break a complex problem into steps and revise its reasoning.",
+    category: "Reasoning",
     transport: "stdio",
     command: "npx",
     args: ["-y", "@modelcontextprotocol/server-sequential-thinking@2026.8.31"],
@@ -41,8 +41,8 @@ export const BUNDLED_MCP_CATALOG: McpCatalogEntry[] = [
     slug: "playwright",
     name: "Navigateur (Playwright)",
     description:
-      "Pilote un vrai navigateur pour tester l'application générée (clics, formulaires, captures). Télécharge un navigateur au premier usage.",
-    category: "Navigateur",
+      "Drives a real browser to test the generated app (clicks, forms, screenshots). Downloads a browser on first use.",
+    category: "Browser",
     transport: "stdio",
     command: "npx",
     args: ["-y", "@playwright/mcp@0.0.83"],

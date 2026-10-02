@@ -113,7 +113,7 @@ await goto("/projects");
 await main.waitForSelector("[data-testid=projects-page]", { timeout: 20000 });
 screen("p1-projects");
 await click("[data-testid=new-project]");
-await main.fill("[data-testid=project-name-input]", "Session Qualiopi");
+await main.fill("[data-testid=project-name-input]", "Training session");
 await click("[data-testid=project-template-dossier]");
 screen("p2-dialog");
 await click("[data-testid=create-project]");
@@ -129,7 +129,7 @@ log("project page url:", main.url());
 const root = path.join(home, "dyad-apps");
 const dirs = fs.existsSync(root) ? fs.readdirSync(root) : [];
 log("apps dir entries:", dirs.join(","));
-const projectDir = path.join(root, dirs.find((d) => /qualiopi/i.test(d)) ?? "");
+const projectDir = path.join(root, dirs.find((d) => /training/i.test(d)) ?? "");
 log(
   "marker file:",
   fs.existsSync(path.join(projectDir, ".cimes", "project.json")),
