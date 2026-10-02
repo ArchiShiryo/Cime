@@ -161,3 +161,13 @@ Dans Dyad, la recherche web, la lecture de pages et le shell passent par le serv
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
 - L'URL du lien « Où trouver ma clé ? » (`https://albert.sites.beta.gouv.fr/`) est à confirmer.
 - Icône Cimes (lettre « C » du logo CANOPÉ sur fond turquoise) : `assets/icon/logo.ico` (Windows, 7 tailles) et `logo.png` (Linux). `logo.icns` (macOS) est resté celui de Dyad.
+
+## Skills (compatibles Claude) et MCP
+
+- **Skills** (`src/skills/`) : un skill est un dossier avec un `SKILL.md` (frontmatter `name` + `description`, champs inconnus ignorés). Sources, de la plus faible à la plus forte priorité : skills intégrés (21, `src/skills/builtin/`), `<userData>/skills/`, `<app>/.claude/skills/`, `<app>/.cimes/skills/`. Le prompt n'embarque que les noms et descriptions ; l'outil `read_skill` charge le contenu et les fichiers du skill (confinés à son dossier). `/nom-du-skill args` charge un skill à la main. Les scripts passent par `run_shell` (relecture + accord). `allowed-tools` est lu mais sans effet. Gestion dans Paramètres > IA > Skills (activer/désactiver, importer un dossier ou un .zip/.skill, supprimer).
+- **MCP** : fonctionne sans Dyad Pro (serveurs stdio via npx et HTTP). Le catalogue de la page Plugins est **embarqué** (`src/ipc/shared/bundled_mcp_catalog.ts` : Context7, Mémoire, Raisonnement pas à pas, Playwright, versions épinglées, vérifiés) : plus aucun appel à api.dyad.sh. Chaque appel d'outil demande l'accord de l'utilisateur. L'expérience « scripts en bac à sable » est désactivée par défaut : DeepSeek utilise mieux les outils MCP enregistrés directement. Node.js doit être installé sur le poste pour les serveurs `npx`.
+- **Réseau** : les appels au modèle (fournisseur personnalisé, donc Albert) et la validation de la clé passent par la pile réseau d'Electron (proxy et certificats du système), comme les outils web.
+
+## Vérifié sur l'application empaquetée (Linux, DeepSeek réel)
+
+Via `testing/cimes-e2e/agent.mjs` contre l'API DeepSeek (variables de test `CIMES_E2E*`, voir README du dossier) : réponse + création d'un fichier ; recherche web + lecture de page + `node -v` dans le shell avec validation ; chargement d'un skill intégré par le modèle ; appel d'un serveur MCP (Mémoire) enregistrant puis relisant des données. `skills.mjs` : liste des skills, bascule, import, catalogue de plugins. **Non vérifié** : Windows (PowerShell, proxy réel, npx), prévisualisation d'une app complète (le pnpm du bac à sable est trop lent), modèle Albert réel (nom `deepseek-v4-flash-0731`).

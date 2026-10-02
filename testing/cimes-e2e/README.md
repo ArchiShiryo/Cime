@@ -22,5 +22,19 @@ AGENT_PROMPT="Cherche sur le web la dernière version stable de React, lis la pa
 
 Dans le bac à sable de développement, le réseau passe par un proxy : ajouter
 `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt` (inutile sur un poste normal).
-`agent.mjs` n'a **jamais été exécuté** : à valider et corriger (sélecteurs de la boîte de dialogue de
+`agent.mjs` a été exécuté avec succès sur l'application empaquetée (voir plus bas).
 consentement, détection de fin de réponse).
+
+## Modèle de test sans clé Albert
+
+Pour tester l'agent contre un autre point d'accès compatible OpenAI (par exemple l'API DeepSeek, nom de modèle `deepseek-flash`) :
+
+```sh
+CIMES_E2E=1 CIMES_E2E_BASE_URL=https://api.deepseek.com/v1 CIMES_E2E_MODEL=deepseek-flash \
+ALBERT_KEY_FOR_TEST=une-valeur APP_EXTRA_ARGS="--ignore-certificate-errors" \
+MCP_SEED_JSON='{"name":"memoire","command":"npx","args":["-y","@modelcontextprotocol/server-memory@2026.8.31"]}' \
+AGENT_PROMPT="..." xvfb-run -a node testing/cimes-e2e/agent.mjs out/Cimes-linux-x64/Cimes
+node testing/cimes-e2e/skills.mjs out/Cimes-linux-x64/Cimes   # Paramètres > Skills et catalogue de plugins
+```
+
+`APP_EXTRA_ARGS="--ignore-certificate-errors"` n'est nécessaire que derrière un proxy qui remplace les certificats (bac à sable). `agent.mjs` a été exécuté avec succès (recherche web, lecture de page, shell, skill, MCP).
