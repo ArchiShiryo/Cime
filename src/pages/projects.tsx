@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -53,10 +52,6 @@ export default function ProjectsPage() {
             <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
               Projets
             </h1>
-            <p className="text-md text-gray-600 dark:text-gray-400">
-              Un projet regroupe vos conversations, vos documents de référence
-              et les compétences activées, dans un même dossier de travail.
-            </p>
           </div>
           <Button onClick={() => setOpen(true)} data-testid="new-project">
             <Plus className="mr-1 h-4 w-4" /> Nouveau projet
@@ -67,8 +62,7 @@ export default function ProjectsPage() {
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : projects.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-            Aucun projet pour l&apos;instant. Créez-en un à partir d&apos;un
-            modèle d&apos;organisation de dossiers.
+            Aucun projet.
           </div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -100,10 +94,6 @@ export default function ProjectsPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nouveau projet</DialogTitle>
-            <DialogDescription>
-              Choisissez un modèle d&apos;organisation : il crée les dossiers et
-              active les compétences adaptées. Tout reste modifiable.
-            </DialogDescription>
           </DialogHeader>
           <Input
             autoFocus
@@ -112,7 +102,7 @@ export default function ProjectsPage() {
             onChange={(e) => setName(e.target.value)}
             data-testid="project-name-input"
           />
-          <ul className="grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">
+          <ul className="grid gap-2 sm:grid-cols-2">
             {PROJECT_TEMPLATES.map((template) => (
               <li key={template.id}>
                 <button
@@ -127,8 +117,8 @@ export default function ProjectsPage() {
                   )}
                 >
                   <span className="block font-medium">{template.name}</span>
-                  <span className="block text-muted-foreground">
-                    {template.description}
+                  <span className="block text-xs text-muted-foreground">
+                    {template.folders.slice(1).join(" · ")}
                   </span>
                 </button>
               </li>

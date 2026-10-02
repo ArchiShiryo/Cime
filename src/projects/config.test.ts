@@ -15,20 +15,20 @@ describe("projects config", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
     const target = path.join(dir, "p");
     expect(isProjectPath(target)).toBe(false);
-    const config = materializeProject(target, "formation", "Session mai");
+    const config = materializeProject(target, "dossier", "Session mai");
     expect(isProjectPath(target)).toBe(true);
     expect(fs.existsSync(path.join(target, "Documentation"))).toBe(true);
     expect(fs.readFileSync(path.join(target, "LISEZMOI.md"), "utf8")).toContain(
       "Session mai",
     );
     expect(readProjectConfig(target)).toEqual(config);
-    expect(config.enabledSkills).toContain("atelier-pedagogique");
+    expect(config.enabledSkills).toContain("office-fichiers");
     expect(buildProjectPrompt(config, "Session mai")).toContain("search_docs");
   });
 
   it("falls back to the free template and tolerates a broken config", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "proj-"));
-    expect(materializeProject(dir, "inconnu", "X").templateId).toBe("vierge");
+    expect(materializeProject(dir, "inconnu", "X").templateId).toBe("libre");
     fs.writeFileSync(path.join(dir, ".cimes", "project.json"), "{oops");
     expect(readProjectConfig(dir)).toBeNull();
   });

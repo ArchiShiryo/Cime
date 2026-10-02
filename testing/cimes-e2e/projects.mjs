@@ -106,7 +106,7 @@ await main.waitForSelector("[data-testid=projects-page]", { timeout: 20000 });
 screen("p1-projects");
 await click("[data-testid=new-project]");
 await main.fill("[data-testid=project-name-input]", "Session Qualiopi");
-await click("[data-testid=project-template-formation]");
+await click("[data-testid=project-template-dossier]");
 screen("p2-dialog");
 await click("[data-testid=create-project]");
 await sleep(4000);

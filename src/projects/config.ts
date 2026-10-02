@@ -35,8 +35,7 @@ export function readProjectConfig(projectPath: string): ProjectConfig | null {
     if (!raw || typeof raw !== "object") return null;
     return {
       version: 1,
-      templateId:
-        typeof raw.templateId === "string" ? raw.templateId : "vierge",
+      templateId: typeof raw.templateId === "string" ? raw.templateId : "libre",
       enabledSkills: Array.isArray(raw.enabledSkills)
         ? raw.enabledSkills.filter((s): s is string => typeof s === "string")
         : [],

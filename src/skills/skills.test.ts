@@ -137,7 +137,7 @@ describe("discoverSkills", () => {
       path.join(appDir, ".cimes", "project.json"),
       JSON.stringify({
         version: 1,
-        templateId: "vierge",
+        templateId: "libre",
         enabledSkills: ["charte-canope"],
         instructions: "",
       }),

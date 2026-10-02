@@ -113,10 +113,7 @@ function ProjectChats({ appId }: { appId: number; onOpened: () => void }) {
         <MessageSquarePlus className="mr-1 h-4 w-4" /> Nouvelle conversation
       </Button>
       {chats.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Aucune conversation. Toutes celles du projet travaillent dans le même
-          dossier.
-        </p>
+        <p className="text-sm text-muted-foreground">Aucune conversation.</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {chats.map((chat) => (
@@ -149,19 +146,13 @@ function ProjectDocs({ appId }: { appId: number }) {
   const total = docs.reduce((n, d) => n + d.chunkCount, 0);
   return (
     <div className="space-y-3" data-testid="project-docs">
-      <p className="text-sm text-muted-foreground">
-        Déposez ici les documents importants du projet (référentiels, textes,
-        modèles). Un clic sur « Indexer » les rend consultables par
-        l&apos;assistant, qui cite ses sources. Cette documentation reste propre
-        à ce projet.
-      </p>
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => indexDocs.mutate()}
           disabled={indexDocs.isPending}
           data-testid="project-index-docs"
         >
-          Indexer la documentation
+          Indexer
         </Button>
         <Button variant="outline" onClick={() => addDocs.mutate("files")}>
           Ajouter des fichiers
@@ -233,13 +224,8 @@ function ProjectSkills({ appId }: { appId: number }) {
     else next.delete(name);
     updateConfig.mutate({ enabledSkills: [...next] });
   };
-  const template = getProjectTemplate(config.templateId);
   return (
     <div className="space-y-4" data-testid="project-skills">
-      <p className="text-sm text-muted-foreground">
-        Seules les compétences cochées sont proposées à l&apos;assistant dans ce
-        projet (modèle « {template?.name ?? config.templateId} »).
-      </p>
       <ul className="divide-y rounded-md border">
         {skills
           .filter((skill) => skill.enabled)
@@ -255,7 +241,7 @@ function ProjectSkills({ appId }: { appId: number }) {
                 />
                 <span className="min-w-0">
                   <span className="block font-medium">{skill.name}</span>
-                  <span className="block text-sm text-muted-foreground">
+                  <span className="block truncate text-sm text-muted-foreground">
                     {skill.description}
                   </span>
                 </span>
