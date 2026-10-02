@@ -1,3 +1,4 @@
+import { logActivity } from "@/activity/activity_log";
 import { recordShellReviewOutcome } from "./shell_review_history";
 import { shellExecutionGuidance } from "@/shared/shell_capability";
 import { SubscriptionBillingError } from "@/shared/subscription_billing_error";
@@ -666,6 +667,7 @@ export async function handleLocalAgentStream(
   let selectedModel: ModelSelection;
   const maxToolCallSteps =
     settings.maxToolCallSteps ?? DEFAULT_MAX_TOOL_CALL_STEPS;
+  const turnStartedAt = Date.now();
   let fullResponse = "";
   let streamingPreview = ""; // Temporary preview for current tool, not persisted
   let streamingPreviewToolCallId: string | null = null;
@@ -785,6 +787,13 @@ export async function handleLocalAgentStream(
   }
 
   let chat = initialChat;
+  logActivity({
+    kind: "turn",
+    status: "start",
+    chatId: req.chatId,
+    appId: chat.appId,
+    detail: `mode=${readOnly ? "read-only" : planModeOnly ? "plan" : toolProfile}`,
+  });
   selectedModel = modelSelectionOverride
     ? await normalizeModelSelection(modelSelectionOverride)
     : chat.modelSelection
@@ -2453,9 +2462,27 @@ export async function handleLocalAgentStream(
       suppressAutoReview: buildMode || undefined,
     } satisfies ChatResponseEnd);
 
+    logActivity({
+      kind: "turn",
+      status: "ok",
+      ms: Date.now() - turnStartedAt,
+      chatId: req.chatId,
+      appId: chat.appId,
+    });
     return true; // Success
   } catch (error) {
     if (rootMutationOwner) closeMutationActor(rootMutationOwner.actorRunId);
+    logActivity({
+      kind: abortController.signal.aborted ? "turn" : "error",
+      name: abortController.signal.aborted ? "cancelled" : "turn_failed",
+      status: abortController.signal.aborted ? "ok" : "error",
+      ms: Date.now() - turnStartedAt,
+      chatId: req.chatId,
+      appId: chat.appId,
+      detail: abortController.signal.aborted
+        ? undefined
+        : getErrorMessageWithDetails(error),
+    });
     // Clean up any pending consent/questionnaire/integration requests for this chat to prevent
     // stale UI banners and orphaned promises
     clearPendingLocalAgentInputsForChat(req.chatId);

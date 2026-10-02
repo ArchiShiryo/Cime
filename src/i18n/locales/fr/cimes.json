@@ -117,5 +117,16 @@
       "suivi": "Suivi de projet",
       "veille": "Veille et étude"
     }
+  },
+  "activity": {
+    "title": "Journal d'activité",
+    "intro": "Ce que l'agent a fait récemment (outils, tours, erreurs). Utile pour comprendre un problème ou le joindre à un signalement. Le contenu des fichiers n'est jamais enregistré.",
+    "errorsOnly": "Erreurs seulement",
+    "refresh": "Actualiser",
+    "copy": "Copier pour un signalement",
+    "openFolder": "Ouvrir le dossier",
+    "clear": "Effacer",
+    "empty": "Aucune activité enregistrée.",
+    "copied": "Copié."
   }
 }

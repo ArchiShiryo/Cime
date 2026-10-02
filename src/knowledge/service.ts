@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import log from "electron-log";
 import { readSettings } from "@/main/settings";
+import { logActivity } from "@/activity/activity_log";
 import { chunkText } from "./chunker";
 import { getEmbeddingEngine, type EmbeddingEngine } from "./embeddings";
 import {
@@ -148,9 +149,21 @@ async function indexSource(id: number): Promise<void> {
     }
     replaceChunks(id, chunks);
     setSourceStatus(id, "ready");
+    logActivity({
+      kind: "knowledge",
+      name: "index",
+      status: "ok",
+      detail: `${source.name}: ${chunks.length} passages`,
+    });
     await embedPending();
   } catch (error) {
     logger.warn(`Indexing failed for ${source.name}:`, error);
+    logActivity({
+      kind: "knowledge",
+      name: "index",
+      status: "error",
+      detail: `${source.name}: ${error instanceof Error ? error.message : String(error)}`,
+    });
     setSourceStatus(
       id,
       "error",
@@ -176,6 +189,12 @@ export async function embedPending(): Promise<void> {
     }
   } catch (error) {
     logger.warn("Embedding failed; keyword search stays available:", error);
+    logActivity({
+      kind: "knowledge",
+      name: "embed",
+      status: "error",
+      detail: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 

@@ -47,6 +47,7 @@ import { registerAlbertHandlers } from "./handlers/albert_handlers";
 import { registerSkillsHandlers } from "./handlers/skills_handlers";
 import { registerKnowledgeHandlers } from "./handlers/knowledge_handlers";
 import { registerProjectsHandlers } from "./handlers/projects_handlers";
+import { registerActivityHandlers } from "./handlers/activity_handlers";
 import { registerSplashHandlers } from "./handlers/splash_handlers";
 import { registerPlanHandlers } from "./handlers/plan_handlers";
 import { registerMediaHandlers } from "./handlers/media_handlers";
@@ -98,6 +99,7 @@ export function registerIpcHandlers() {
   registerSkillsHandlers();
   registerKnowledgeHandlers();
   registerProjectsHandlers();
+  registerActivityHandlers();
   registerSplashHandlers();
   registerReleaseNoteHandlers();
   registerImportHandlers();

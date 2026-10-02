@@ -207,7 +207,7 @@ describe("knowledge base", () => {
     await waitForIdle();
     const empty = listSources().find((s) => s.name === "vide.txt")!;
     expect(empty.status).toBe("error");
-    expect(empty.error).toMatch(/Aucun texte/);
+    expect(empty.error).toMatch(/No readable text/);
     deleteSource(empty.id);
     expect(listSources().map((s) => s.name)).toEqual(["animaux.md"]);
   });

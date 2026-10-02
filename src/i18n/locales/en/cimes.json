@@ -117,5 +117,16 @@
       "suivi": "Project tracking",
       "veille": "Research and watch"
     }
+  },
+  "activity": {
+    "title": "Activity log",
+    "intro": "What the agent did recently (tools, turns, errors). Useful to understand a problem or to attach to a bug report. File contents are never recorded.",
+    "errorsOnly": "Errors only",
+    "refresh": "Refresh",
+    "copy": "Copy for a report",
+    "openFolder": "Open folder",
+    "clear": "Clear",
+    "empty": "No activity recorded yet.",
+    "copied": "Copied."
   }
 }

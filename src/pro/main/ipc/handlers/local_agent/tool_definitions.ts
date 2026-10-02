@@ -115,6 +115,7 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { ExecuteAddDependencyError } from "@/ipc/processors/executeAddDependency";
 import { withTrackedMutation } from "./subagents/mutation_activity_tracker";
 import { estimateTokens } from "@/ipc/utils/token_utils";
+import { logActivity, summarizeArgs } from "@/activity/activity_log";
 
 const logger = log.scope("local_agent_tools");
 
@@ -884,6 +885,7 @@ export function buildAgentToolSet(
         const toolCallId = executionOptions?.toolCallId;
         let presentationXml = "";
         let executionStarted = false;
+        let startedAt = 0;
         const invocationCtx =
           toolCallId && ctx.onToolActivity
             ? {
@@ -986,6 +988,7 @@ export function buildAgentToolSet(
             // (including failures) for retry/fallback telemetry
             trackFileEditTool(invocationCtx, tool.name, processedArgs);
             executionStarted = true;
+            startedAt = Date.now();
             const result = await withReferencedAppRead(
               tool.name,
               processedArgs,
@@ -993,6 +996,15 @@ export function buildAgentToolSet(
               (readCtx) => tool.execute(processedArgs, readCtx),
             );
             recordShellReviewOutcome(ctx, tool.name, processedArgs, { result });
+            logActivity({
+              kind: "tool",
+              name: tool.name,
+              status: "ok",
+              ms: Date.now() - startedAt,
+              chatId: invocationCtx.chatId,
+              appId: invocationCtx.appId,
+              detail: summarizeArgs(processedArgs),
+            });
 
             // Only completed mutations unblock run_tests. Failed tool calls are
             // still present in fileEditTracker for retry/fallback telemetry, but
@@ -1040,6 +1052,15 @@ export function buildAgentToolSet(
           });
           const errorMessage = getToolErrorSummary(error);
           const errorDetails = getToolErrorDisplayDetails(error);
+          logActivity({
+            kind: "tool",
+            name: tool.name,
+            status: "error",
+            ms: startedAt ? Date.now() - startedAt : undefined,
+            chatId: invocationCtx.chatId,
+            appId: invocationCtx.appId,
+            detail: `${summarizeArgs(args)} -> ${errorMessage}`,
+          });
 
           const errorXml = `<dyad-output type="error" message="Tool '${tool.name}' failed: ${escapeXmlAttr(errorMessage)}">${escapeXmlContent(errorDetails)}</dyad-output>`;
           invocationCtx.onXmlComplete(errorXml);

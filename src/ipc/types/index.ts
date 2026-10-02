@@ -88,6 +88,7 @@ export { albertContracts } from "./albert";
 export { skillsContracts } from "./skills";
 export { knowledgeContracts } from "./knowledge";
 export { projectsContracts } from "./projects";
+export { activityContracts } from "./activity";
 export { splashContracts } from "./splash";
 export { audioContracts } from "./audio";
 export { mediaContracts } from "./media";
@@ -159,6 +160,7 @@ export { albertClient } from "./albert";
 export { skillsClient } from "./skills";
 export { knowledgeClient } from "./knowledge";
 export { projectsClient } from "./projects";
+export { activityClient } from "./activity";
 export { splashClient } from "./splash";
 export { audioClient } from "./audio";
 export { mediaClient } from "./media";
@@ -583,6 +585,7 @@ import { albertClient } from "./albert";
 import { skillsClient } from "./skills";
 import { knowledgeClient } from "./knowledge";
 import { projectsClient } from "./projects";
+import { activityClient } from "./activity";
 import { splashClient } from "./splash";
 import { audioClient } from "./audio";
 import { mediaClient } from "./media";
@@ -675,6 +678,7 @@ export const ipc = {
   skills: skillsClient,
   knowledge: knowledgeClient,
   projects: projectsClient,
+  activity: activityClient,
   splash: splashClient,
   audio: audioClient,
   media: mediaClient,
