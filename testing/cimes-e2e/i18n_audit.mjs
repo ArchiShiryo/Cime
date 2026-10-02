@@ -65,6 +65,7 @@ const launch = () =>
       apiKey: { value: "sk-fake", encryptionType: "plaintext" },
     },
   };
+  if (process.env.E2E_LANG) settings.language = process.env.E2E_LANG;
   settings.selectedModel = {
     provider: "custom::albert",
     name: process.env.CIMES_E2E_MODEL || "deepseek-v4-flash-0731",
@@ -137,10 +138,17 @@ log(
   fs.existsSync(path.join(projectDir, "Documentation")),
 );
 
-
 // ---- audit -------------------------------------------------------------------
-const EN = new Set("the to your and you for with this that is are or from will can not in of on be it as an at by if when have has more all any new use used about into after before without only".split(" "));
-const FR = new Set("le la les des du de et un une pour vous votre vos dans est sur avec ce cette qui que ne pas par au aux ou en se son sa ses nous mes est sont être aucun aucune plus tout tous".split(" "));
+const EN = new Set(
+  "the to your and you for with this that is are or from will can not in of on be it as an at by if when have has more all any new use used about into after before without only".split(
+    " ",
+  ),
+);
+const FR = new Set(
+  "le la les des du de et un une pour vous votre vos dans est sur avec ce cette qui que ne pas par au aux ou en se son sa ses nous mes est sont être aucun aucune plus tout tous".split(
+    " ",
+  ),
+);
 const looksEnglish = (text) => {
   const words = text.toLowerCase().match(/[a-zàâçéèêëîïôûùü']+/g) ?? [];
   if (words.length === 0) return false;
@@ -148,16 +156,25 @@ const looksEnglish = (text) => {
   const fr = words.filter((w) => FR.has(w)).length;
   if (en > fr && en >= 1) return true;
   // short UI labels: a single capitalised English-looking word is checked against a small list
-  return words.length <= 3 && /^(back|next|submit|cancel|save|close|delete|settings|preview|code|publish|undo|retry|thought|search|apps|chat|loading|error|help|import|export|create|open|select|add|remove|edit|new|done|continue|skip|approve|configure|connect|disconnect|enable|disable|upgrade|learn more|get started|sign in|log in|sign out)$/i.test(text.trim());
+  return (
+    words.length <= 3 &&
+    /^(back|next|submit|cancel|save|close|delete|settings|preview|code|publish|undo|retry|thought|search|apps|chat|loading|error|help|import|export|create|open|select|add|remove|edit|new|done|continue|skip|approve|configure|connect|disconnect|enable|disable|upgrade|learn more|get started|sign in|log in|sign out)$/i.test(
+      text.trim(),
+    )
+  );
 };
 const collect = () =>
   main.evaluate(() => {
     const out = new Set();
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+    );
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       if (n.nodeType === Node.TEXT_NODE) {
         const el = n.parentElement;
-        if (!el || /^(SCRIPT|STYLE|CODE|PRE|NOSCRIPT)$/.test(el.tagName)) continue;
+        if (!el || /^(SCRIPT|STYLE|CODE|PRE|NOSCRIPT)$/.test(el.tagName))
+          continue;
         const style = getComputedStyle(el);
         if (style.display === "none" || style.visibility === "hidden") continue;
         const t = n.nodeValue.replace(/\s+/g, " ").trim();
@@ -179,7 +196,9 @@ const visit = async (name, route) => {
   const texts = await collect();
   report[name] = { total: texts.length, english: texts.filter(looksEnglish) };
   screen(`i18n-${name}`);
-  log(`${name}: ${texts.length} texts, ${report[name].english.length} look English`);
+  log(
+    `${name}: ${texts.length} texts, ${report[name].english.length} look English`,
+  );
 };
 
 await visit("home", "/");
@@ -187,10 +206,20 @@ await visit("settings", "/settings");
 await main.evaluate(() => window.scrollTo(0, 0));
 // the settings page is one long page: scroll through it so every section renders
 for (let y = 0; y < 8; y++) {
-  await main.evaluate((i) => document.querySelector("main, #root")?.scrollBy?.(0, 900) ?? window.scrollBy(0, 900), y);
+  await main.evaluate(
+    (i) =>
+      document.querySelector("main, #root")?.scrollBy?.(0, 900) ??
+      window.scrollBy(0, 900),
+    y,
+  );
   await sleep(300);
 }
-report.settings.english = [...new Set([...(report.settings.english), ...(await collect()).filter(looksEnglish)])];
+report.settings.english = [
+  ...new Set([
+    ...report.settings.english,
+    ...(await collect()).filter(looksEnglish),
+  ]),
+];
 await visit("library", "/library");
 await visit("templates", "/templates");
 await visit("documents", "/documents");
@@ -198,9 +227,13 @@ await visit("skills", "/skills");
 await visit("plugins", "/plugins");
 await visit("projects", "/projects");
 await click("[data-testid=project-new-chat]").catch(() => {});
-await main.evaluate(() => document.querySelector('a[href="/projects"]')?.click());
+await main.evaluate(() =>
+  document.querySelector('a[href="/projects"]')?.click(),
+);
 await sleep(1500);
-await main.evaluate(() => document.querySelector('[data-testid^="project-"]')?.click());
+await main.evaluate(() =>
+  document.querySelector('[data-testid^="project-"]')?.click(),
+);
 await sleep(2500);
 await click("[data-testid=project-new-chat]").catch(() => {});
 await sleep(3000);

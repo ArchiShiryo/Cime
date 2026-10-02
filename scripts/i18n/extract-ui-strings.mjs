@@ -21,6 +21,11 @@ const DIRS = [
   "src/lib",
   "src/first_prompt",
   "src/package_manager_warnings",
+  "src/prompts",
+  "src/shared",
+  "src/atoms",
+  "src/ipc/shared",
+  "src/pro/main/ipc/handlers/local_agent/tools",
 ];
 const ATTRS = new Set([
   "placeholder",
@@ -38,6 +43,7 @@ const ATTRS = new Set([
   "subtitle",
   "caption",
   "content",
+  "message",
 ]);
 const PROPS = new Set([
   "title",
@@ -86,10 +92,27 @@ function walk(dir, out = []) {
   return out;
 }
 
-const norm = (s) => s.replace(/\s+/g, " ").trim();
+const ENTITIES = {
+  "&quot;": '"',
+  "&amp;": "&",
+  "&apos;": "'",
+  "&#39;": "'",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&nbsp;": " ",
+  "&hellip;": "…",
+  "&mdash;": "—",
+  "&ndash;": "–",
+  "&rsquo;": "’",
+  "&lsquo;": "‘",
+  "&ldquo;": "“",
+  "&rdquo;": "”",
+};
+const decode = (t) => t.replace(/&[a-z]+;|&#\d+;/gi, (e) => ENTITIES[e] ?? e);
+const norm = (s) => decode(s).replace(/\s+/g, " ").trim();
 /** Looks like a sentence or label a person reads (not a class list, id, path, url, code). */
 function looksHuman(s) {
-  if (s.length < 2 || s.length > 400) return false;
+  if (s.length < 2 || s.length > 1200) return false;
   if (!/[A-Za-z]{2}/.test(s)) return false;
   if (/^(https?:|\/|\.\/|#|@|\$|[a-z]+:[a-z-]+)/i.test(s) && !/\s/.test(s))
     return false;
@@ -188,6 +211,30 @@ function visit(sf) {
         if (t) add(t);
       }
     } else if (
+      ts.isVariableDeclaration(node) &&
+      node.initializer &&
+      /^DESCRIPTION$|_DESCRIPTION$/.test(node.name.getText())
+    ) {
+      // Tool descriptions shown in Settings > Agent permissions.
+      const t = textOfExpr(node.initializer);
+      if (t !== null) add(t);
+    } else if (
+      (ts.isBindingElement(node) || ts.isParameter(node)) &&
+      node.initializer &&
+      PROPS.has(node.name.getText())
+    ) {
+      const t = textOfExpr(node.initializer);
+      if (t !== null) add(t);
+    } else if (
+      ts.isArrayLiteralExpression(node) &&
+      node.elements.length >= 2 &&
+      node.elements.every(
+        (e) => ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e),
+      )
+    ) {
+      // Lists of sentences (rotating placeholders, loading messages): multi-word entries only.
+      for (const e of node.elements) if (/\s/.test(e.text.trim())) add(e.text);
+    } else if (
       ts.isPropertyAssignment(node) &&
       PROPS.has(node.name.getText().replace(/["']/g, ""))
     ) {
@@ -232,6 +279,27 @@ for (const file of walkAll(path.join(root, "src"))) {
   ))
     add(m[1]);
 }
+// Descriptions shown from backend data: built-in skills, bundled plugins, manual extras.
+for (const dir of fs.readdirSync(path.join(root, "src/skills/builtin"), {
+  withFileTypes: true,
+})) {
+  if (!dir.isDirectory()) continue;
+  const file = path.join(root, "src/skills/builtin", dir.name, "SKILL.md");
+  if (!fs.existsSync(file)) continue;
+  const m = /^description:\s*(.+)$/m.exec(fs.readFileSync(file, "utf8"));
+  if (m) add(m[1]);
+}
+const catalog = fs.readFileSync(
+  path.join(root, "src/ipc/shared/bundled_mcp_catalog.ts"),
+  "utf8",
+);
+for (const m of catalog.matchAll(
+  /\b(?:name|description|category):\s*\n?\s*"([^"]+)"/g,
+))
+  add(m[1]);
+const extras = path.join(root, "scripts/i18n/extra-strings.json");
+if (fs.existsSync(extras))
+  for (const t of JSON.parse(fs.readFileSync(extras, "utf8"))) add(t);
 const list = [...found].sort((a, b) => a.localeCompare(b));
 fs.writeFileSync(
   path.join(root, "src/i18n/ui_strings_en.json"),
