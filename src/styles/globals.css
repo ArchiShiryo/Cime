@@ -95,7 +95,7 @@ body[data-scroll-locked] .app-region-drag {
      panel both end above it rather than being covered by it. */
   --layout-bottom-bar-height: 0px;
   --docs-bg: #f5f5f5;
-  --default-font-family: "Geist", sans-serif;
+  --default-font-family: "Ariane", "Geist", sans-serif;
   --default-mono-font-family: "Geist Mono", monospace;
   /* --background: oklch(1 0 0); */
   --background-lightest: #fff;

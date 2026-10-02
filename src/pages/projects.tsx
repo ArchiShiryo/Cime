@@ -81,9 +81,6 @@ export default function ProjectsPage() {
                     <span className="block truncate font-medium">
                       {project.name}
                     </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {project.resolvedPath}
-                    </span>
                   </span>
                 </button>
               </li>

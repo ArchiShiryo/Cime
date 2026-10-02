@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useSearch } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { FolderOpen, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,6 @@ type TabId = (typeof TABS)[number]["id"];
 export default function ProjectDetailsPage() {
   const { t } = useTranslation("cimes");
   const { appId } = useSearch({ from: "/project" });
-  const navigate = useNavigate();
-  const setSelectedAppId = useSetAtom(selectedAppIdAtom);
   const { apps } = useLoadApps();
   const project = apps.find((app) => app.id === appId);
   const [tab, setTab] = useState<TabId>("chats");
@@ -46,9 +44,6 @@ export default function ProjectDetailsPage() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {project?.name ?? t("projects.defaultProject")}
             </h1>
-            <p className="truncate text-sm text-muted-foreground">
-              {project?.resolvedPath}
-            </p>
           </div>
           {project && (
             <ProjectActions
@@ -314,7 +309,6 @@ function ProjectFiles({ appId }: { appId: number }) {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">{config?.path}</p>
     </div>
   );
 }
