@@ -187,3 +187,11 @@ Le skill intégré `office-fichiers` livre un script Node unique (`office.mjs`, 
 - Vérifié : test unitaire qui exécute vraiment le script (création, remplacement, relecture) ; tour d'agent réel sur l'application empaquetée (skill chargé, .docx créé et relu).
 - Limites : pas d'aperçu ni de conversion PDF, pas de .doc/.xls/.ppt anciens, macros et graphiques Excel existants non conservés à la réécriture. Les fichiers générés n'ont pas pu être ouverts dans Word/LibreOffice ici (LibreOffice inutilisable dans le bac à sable) : à ouvrir dans Office sur un vrai poste.
 - Prérequis : `node` accessible depuis le shell de l'agent (Cimes utilise son Node géré ou celui du système).
+
+## Base de documents (RAG)
+
+- **Pourquoi pas de serveur ni de GPU** : le découpage, l'index mots-clés (BM25 avec accents, pluriels et mots vides français) et la recherche par similarité (calculée en JavaScript, sans module natif) tournent sur le poste. Seul le calcul des vecteurs passe par Albert (`POST /v1/embeddings`), désactivable dans Paramètres > IA > Base de documents (option « Recherche par le sens »).
+- **Fonctionnement** (`src/knowledge/`) : formats PDF, Word, Excel, PowerPoint, Markdown, TXT, CSV, HTML (extraction par le script du skill `office-fichiers`). Index dans `<userData>/knowledge.db` (SQLite à part). Recherche hybride par fusion de rangs. L'agent dispose de l'outil `search_docs` (résultats traités comme des données non fiables) et d'une ligne dans le prompt quand la base contient des documents.
+- **Albert hors ligne ou sans modèle d'embeddings** : la recherche par mots reste disponible ; les vecteurs manquants sont calculés à la prochaine indexation.
+- **Vérifié** : tests unitaires (découpage, classement, indexation de vrais .docx/.xlsx/.pptx, faux serveur d'embeddings, mode sans envoi à Albert) ; tour d'agent réel sur l'application empaquetée avec `search_docs` (réponse citant le fichier et la page) ; écran de réglages.
+- **Non vérifié** : le vrai point d'accès Albert d'embeddings (nom et `type` du modèle, taille des lots, quotas) ; la détection se fait par `GET /v1/models` (type contenant « embedding » ou nom bge/e5/gte). Pas d'OCR : un PDF scanné est signalé en erreur. Pas de reranking (`/v1/rerank`) pour l'instant.
