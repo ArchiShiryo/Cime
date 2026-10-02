@@ -2,6 +2,8 @@
 // chat models Cimes offers. Albert has no hard-coded roster in its docs: the
 // list (ids and max_context_length) comes from the API itself.
 
+import { ALBERT_KNOWN_MODELS } from "./albert";
+
 export interface AlbertModelInfo {
   id: string;
   displayName: string;
@@ -37,7 +39,9 @@ export function parseAlbertModels(data: unknown): AlbertModelInfo[] {
         : DEFAULT_CONTEXT_WINDOW;
     models.push({
       id,
-      displayName: `${id} - Albert`,
+      displayName:
+        ALBERT_KNOWN_MODELS.find((known) => known.id === id)?.displayName ??
+        `${id} - Albert`,
       contextWindow,
       // Output is sent verbatim as max tokens: keep it well below the window.
       maxOutputTokens: Math.min(

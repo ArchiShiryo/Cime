@@ -49,3 +49,16 @@ describe("parseAlbertModels", () => {
     expect(parseAlbertModels(undefined)).toEqual([]);
   });
 });
+
+describe("known Albert models", () => {
+  it("keeps the friendly name of a documented model when the API lists it", () => {
+    const [gpt] = parseAlbertModels([
+      {
+        id: "gpt-oss-120b",
+        type: "text-generation",
+        max_context_length: 131072,
+      },
+    ]);
+    expect(gpt.displayName).toBe("GPT-OSS 120B - Albert");
+  });
+});

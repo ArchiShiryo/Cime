@@ -17,6 +17,7 @@ import { systemFetch } from "@/ipc/utils/system_fetch";
 import {
   ALBERT_API_BASE_URL,
   ALBERT_CONTEXT_WINDOW,
+  ALBERT_KNOWN_MODELS,
   ALBERT_ENV_VAR_NAME,
   ALBERT_MAX_OUTPUT_TOKENS,
   ALBERT_MODEL_DISPLAY_NAME,
@@ -100,6 +101,31 @@ export function ensureAlbertProvider(): void {
     for (const duplicate of existing.slice(1)) {
       db.delete(language_models)
         .where(eq(language_models.id, duplicate.id))
+        .run();
+    }
+  }
+  // Other Albert chat models (GPT-OSS, Mistral, Qwen…): added when missing,
+  // never overwritten, since a connected key refreshes their real limits.
+  for (const known of ALBERT_KNOWN_MODELS) {
+    const present = db
+      .select({ id: language_models.id })
+      .from(language_models)
+      .where(
+        and(
+          eq(language_models.customProviderId, ALBERT_PROVIDER_ID),
+          eq(language_models.apiName, known.id),
+        ),
+      )
+      .all();
+    if (present.length === 0) {
+      db.insert(language_models)
+        .values({
+          displayName: known.displayName,
+          apiName: known.id,
+          customProviderId: ALBERT_PROVIDER_ID,
+          context_window: known.contextWindow,
+          max_output_tokens: ALBERT_MAX_OUTPUT_TOKENS,
+        })
         .run();
     }
   }
