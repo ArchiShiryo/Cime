@@ -104,12 +104,28 @@ if (process.env.MCP_SEED_JSON) {
   const db = new DatabaseSync(path.join(userData, "sqlite.db"));
   const seed = JSON.parse(process.env.MCP_SEED_JSON);
   const env = {};
-  for (const k of ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "NODE_EXTRA_CA_CERTS", "npm_config_https_proxy", "npm_config_cafile", "SSL_CERT_FILE", "PATH"]) {
+  for (const k of [
+    "HTTPS_PROXY",
+    "https_proxy",
+    "HTTP_PROXY",
+    "http_proxy",
+    "NODE_EXTRA_CA_CERTS",
+    "npm_config_https_proxy",
+    "npm_config_cafile",
+    "SSL_CERT_FILE",
+    "PATH",
+  ]) {
     if (process.env[k]) env[k] = process.env[k];
   }
   db.prepare(
     "INSERT INTO mcp_servers (name, transport, command, args, env_json, enabled) VALUES (?, ?, ?, ?, ?, 1)",
-  ).run(seed.name, "stdio", seed.command, JSON.stringify(seed.args), JSON.stringify(env));
+  ).run(
+    seed.name,
+    "stdio",
+    seed.command,
+    JSON.stringify(seed.args),
+    JSON.stringify(env),
+  );
   db.close();
   log("MCP server seeded:", seed.name);
 }
