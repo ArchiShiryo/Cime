@@ -1,31 +1,31 @@
 ---
 name: charte-canope
-description: Applique la charte graphique Réseau Canopé (couleurs, typographie, ton) à une application ou une page web. À utiliser dès que l'utilisateur parle de Canopé, de charte, d'identité visuelle ou veut un rendu institutionnel.
+description: Applies the Réseau Canopé graphic charter (colours, typography, tone) to an application or a web page. Use it as soon as the user mentions Canopé, charter, or visual identity, or wants an institutional look.
 ---
 
-# Charte Réseau Canopé
+# Réseau Canopé Charter
 
-## Couleurs
+## Colours
 
-- Fond clair : `#F4EFED`
-- Turquoise principal (titres, boutons, liens) : `#005A5B`
-- Sauge secondaire (accents, bordures) : `#94A088`
-- Texte : gris très foncé (`#1F2A2A`), jamais du noir pur.
-- Définir ces couleurs comme variables CSS (`--canope-fond`, `--canope-turquoise`, `--canope-sauge`) et ne jamais les répéter en dur.
+- Light background: `#F4EFED`
+- Main turquoise (headings, buttons, links): `#005A5B`
+- Secondary sage (accents, borders): `#94A088`
+- Text: very dark grey (`#1F2A2A`), never pure black.
+- Define these colours as CSS variables (`--canope-fond`, `--canope-turquoise`, `--canope-sauge`) and never repeat them as hard-coded values.
 
-## Typographie
+## Typography
 
-- Police de titre : Marianne si disponible, sinon une sans-serif lisible (Source Sans 3, system-ui).
-- Corps : 16 px minimum, interligne 1,5.
+- Heading font: Marianne if available, otherwise a legible sans-serif (Source Sans 3, system-ui).
+- Body: 16 px minimum, line height 1.5.
 
-## Ton et mise en page
+## Tone and layout
 
-- Français clair, phrases courtes, pas de jargon.
-- Beaucoup d'espace, coins légèrement arrondis, une seule action principale par écran.
-- Pas de violet, pas de dégradés criards.
-- Le logo Canopé se place en haut à gauche ; ne pas le déformer ni le recolorer.
+- Clear French, short sentences, no jargon.
+- Lots of space, slightly rounded corners, a single main action per screen.
+- No purple, no garish gradients.
+- The Canopé logo goes at the top left; do not distort or recolour it.
 
-## Vérifications avant de rendre la main
+## Checks before handing off
 
-1. Contraste texte/fond d'au moins 4,5:1 (voir le skill `accessibilite-rgaa`).
-2. Les trois couleurs sont définies une seule fois.
+1. Text/background contrast of at least 4.5:1 (see the `accessibilite-rgaa` skill).
+2. The three colours are defined only once.

@@ -1,15 +1,15 @@
 ---
 name: fiche-imprimable-a4
-description: Crée des pages web destinées à l'impression en A4 ou A5 (fiches, certificats, plannings, affiches) avec une mise en page CSS fiable. À utiliser pour tout document qui sera imprimé ou exporté en PDF depuis le navigateur.
+description: Creates web pages intended for A4 or A5 printing (worksheets, certificates, schedules, posters) with reliable CSS layout. Use for any document that will be printed or exported to PDF from the browser.
 ---
 
-# Fiche imprimable
+# Printable sheet
 
-- Utiliser `@page { size: A4; margin: 15mm; }` (ou `A5`) et `@media print` ; masquer boutons et navigation à l'impression.
-- Unités physiques (`mm`, `pt`) pour les gabarits ; `break-inside: avoid` sur les blocs qui ne doivent pas être coupés, `break-after: page` pour forcer un saut.
-- Couleurs : prévoir une version qui reste lisible en noir et blanc ; ajouter `print-color-adjust: exact` seulement pour les fonds essentiels.
-- Corps de texte 10–11 pt, titres hiérarchisés, marges suffisantes pour la perforation (20 mm à gauche si classeur).
-- Champs à remplir à la main : lignes de 8 mm de haut minimum, cases à cocher de 5 mm.
-- Bouton « Imprimer » (`window.print()`) visible à l'écran uniquement.
-- Vérifier l'aperçu avant impression : aucun contenu coupé, numéros de page si plusieurs pages.
-- Identité visuelle : `charte-canope`.
+- Use `@page { size: A4; margin: 15mm; }` (or `A5`) and `@media print`; hide buttons and navigation when printing.
+- Physical units (`mm`, `pt`) for templates; `break-inside: avoid` on blocks that must not be split, `break-after: page` to force a page break.
+- Colours: provide a version that stays legible in black and white; add `print-color-adjust: exact` only for essential backgrounds.
+- Body text 10–11 pt, hierarchically structured headings, margins large enough for hole punching (20 mm on the left for a binder).
+- Fields to be filled in by hand: lines at least 8 mm high, checkboxes 5 mm.
+- "Imprimer" button (`window.print()`) visible on screen only.
+- Check the print preview: no content cut off, page numbers if there are several pages.
+- Visual identity: `charte-canope`.

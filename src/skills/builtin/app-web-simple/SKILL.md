@@ -1,22 +1,22 @@
 ---
 name: app-web-simple
-description: Conventions pour générer dans Cimes des applications web simples, robustes et faciles à maintenir par des non-développeurs (structure, état, validation, vérifications finales). À utiliser quand l'utilisateur demande de créer ou d'étendre une petite application.
+description: Conventions for generating in Cimes simple, robust web applications that are easy for non-developers to maintain (structure, state, validation, final checks). To use when the user asks to create or extend a small application.
 ---
 
-# Application web simple
+# Simple web application
 
-## Principes
+## Principles
 
-- Le plus petit nombre de fichiers et de dépendances possible ; pas de bibliothèque ajoutée sans raison écrite.
-- Une page = une tâche claire. Interface en français, textes dans un seul endroit.
-- Données locales (`localStorage`) tant qu'aucun serveur n'est demandé ; prévoir l'export/import JSON des données.
-- Valider les saisies, afficher des messages d'erreur compréhensibles, jamais d'écran blanc.
+- The smallest possible number of files and dependencies; no library added without a written reason.
+- One page = one clear task. Interface in French, texts in a single place.
+- Local data (`localStorage`) as long as no server is requested; provide JSON export/import of the data.
+- Validate inputs, display understandable error messages, never a blank screen.
 
-## Avant de rendre la main
+## Before handing over
 
-1. Lancer la vérification de types / le build disponible et corriger les erreurs.
-2. Relire l'application dans l'aperçu : le parcours principal fonctionne de bout en bout.
-3. Vérifier qu'aucun secret (clé d'API) n'est écrit dans le code.
-4. Résumer en 3 lignes maximum ce qui a été fait et comment l'utiliser.
+1. Run the available type checking / build and fix the errors.
+2. Review the application in the preview: the main journey works from start to finish.
+3. Check that no secret (API key) is written in the code.
+4. Summarise in 3 lines maximum what was done and how to use it.
 
-Pour l'identité visuelle, utiliser le skill `charte-canope` ; pour l'accessibilité, `accessibilite-rgaa`.
+For visual identity, use the `charte-canope` skill; for accessibility, `accessibilite-rgaa`.

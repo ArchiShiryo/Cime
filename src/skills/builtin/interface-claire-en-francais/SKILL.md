@@ -1,15 +1,15 @@
 ---
 name: interface-claire-en-francais
-description: Rédige les textes d'une interface en français clair (libellés de boutons, messages d'erreur, consignes, aide) pour un public non technique. À utiliser dès qu'une application contient du texte à destination d'utilisateurs.
+description: Writes interface text in clear French (button labels, error messages, instructions, help) for a non-technical audience. Use whenever an application contains text intended for users.
 ---
 
-# Interface en français clair
+# Clear French interface
 
-- **Boutons** : un verbe d'action précis (« Enregistrer la fiche », pas « OK » ni « Valider »).
-- **Erreurs** : dire ce qui s'est passé, pourquoi, et comment corriger (« Le fichier dépasse 5 Mo. Choisissez un fichier plus léger. »). Jamais de code technique ni de ton accusateur.
-- **Consignes** : phrases courtes (≤ 20 mots), voix active, une action par phrase, vouvoiement cohérent.
-- **Vocabulaire** : éviter les anglicismes (« enregistrer » plutôt que « sauvegarder/save », « téléverser » ou « envoyer » selon le contexte) et le jargon ; définir un terme technique indispensable la première fois.
-- **États vides** : expliquer quoi faire (« Aucune fiche pour l'instant. Cliquez sur “Nouvelle fiche” »).
-- **Confirmations** : avant une suppression, dire ce qui sera perdu ; après une action, confirmer ce qui a été fait.
-- **Typographie française** : espace insécable avant `: ; ? !`, guillemets « », dates `12 mars 2026`, nombres `1 250,50 €`.
-- Centraliser tous les textes dans un seul fichier pour faciliter la relecture.
+- **Buttons**: a precise action verb (« Enregistrer la fiche », not « OK » or « Valider »).
+- **Errors**: say what happened, why, and how to fix it (« Le fichier dépasse 5 Mo. Choisissez un fichier plus léger. »). Never a technical code or an accusatory tone.
+- **Instructions**: short sentences (≤ 20 words), active voice, one action per sentence, consistent use of the formal "vous" (vouvoiement).
+- **Vocabulary**: avoid anglicisms (« enregistrer » rather than « sauvegarder/save », « téléverser » or « envoyer » depending on context) and jargon; define an essential technical term the first time it appears.
+- **Empty states**: explain what to do (« Aucune fiche pour l'instant. Cliquez sur “Nouvelle fiche” »).
+- **Confirmations**: before a deletion, say what will be lost; after an action, confirm what was done.
+- **French typography**: non-breaking space before `: ; ? !`, guillemets « », dates `12 mars 2026`, numbers `1 250,50 €`.
+- Centralise all text in a single file to make proofreading easier.

@@ -1,14 +1,14 @@
 ---
 name: deboguer-methodiquement
-description: Méthode pas à pas pour diagnostiquer et corriger un bug ou une erreur dans une application (page blanche, erreur de build, fonctionnalité qui ne marche pas). À utiliser dès qu'un problème est signalé ou qu'une vérification échoue.
+description: Step-by-step method for diagnosing and fixing a bug or error in an application (blank page, build error, feature that doesn't work). Use as soon as a problem is reported or a check fails.
 ---
 
-# Déboguer méthodiquement
+# Debug methodically
 
-1. **Reproduire** : écrire précisément ce qui est attendu et ce qui se passe. Lire les journaux de l'application (outil de lecture des logs) et le message d'erreur complet, sans en supposer le sens.
-2. **Localiser** : remonter la pile d'appels jusqu'au premier fichier du projet ; lire ce fichier et ses voisins avant de modifier quoi que ce soit.
-3. **Une hypothèse à la fois** : formuler la cause probable, la vérifier (lecture du code, ajout d'un `console.log` temporaire), puis seulement corriger.
-4. **Corriger à la racine**, pas le symptôme ; changer le minimum de lignes.
-5. **Vérifier** : relancer la vérification de types / le build / l'aperçu et refaire le parcours qui échouait. Ne pas déclarer « corrigé » sans l'avoir constaté.
-6. **Nettoyer** : retirer les traces de débogage.
-7. **Coincé après deux tentatives** : arrêter, résumer à l'utilisateur ce qui est établi et ce qui reste inconnu, proposer des pistes. Ne pas empiler les rustines ni réécrire tout le projet.
+1. **Reproduce**: write down precisely what is expected and what actually happens. Read the application logs (log-reading tool) and the full error message, without assuming what it means.
+2. **Locate**: walk back up the call stack to the first file in the project; read that file and its neighbours before changing anything.
+3. **One hypothesis at a time**: state the likely cause, verify it (read the code, add a temporary `console.log`), and only then fix it.
+4. **Fix at the root**, not the symptom; change as few lines as possible.
+5. **Verify**: re-run the type check / the build / the preview and go through the path that was failing again. Do not declare it "fixed" without having seen it.
+6. **Clean up**: remove the debugging traces.
+7. **Stuck after two attempts**: stop, summarise for the user what is established and what remains unknown, suggest leads. Do not pile up patches or rewrite the whole project.

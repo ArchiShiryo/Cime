@@ -1,27 +1,27 @@
 ---
 name: quiz-et-jeux-pedagogiques
-description: Crée des quiz, jeux de mémoire, cartes mémoire (flashcards) et exercices interactifs pour la classe ou un atelier, avec score et retour immédiat. À utiliser quand on demande un jeu, un quiz, un exercice autocorrigé ou une activité ludique.
+description: Creates quizzes, memory games, flashcards and interactive exercises for the classroom or a workshop, with scoring and immediate feedback. Use when a game, a quiz, a self-grading exercise or a fun activity is requested.
 ---
 
-# Quiz et jeux pédagogiques
+# Quizzes and educational games
 
-## Avant de coder
+## Before coding
 
-Préciser (en une seule question groupée si besoin) : public et niveau, notion visée, nombre de questions, usage (individuel, projeté en groupe, sur tablette).
+Specify (in a single grouped question if needed): audience and level, target concept, number of questions, use (individual, projected for a group, on a tablet).
 
-## Contenu
+## Content
 
-- Les questions vivent dans **un seul fichier de données** (`questions.json` ou un tableau en haut du code), jamais dans le HTML, pour que l'enseignant puisse les modifier sans toucher à l'interface.
-- Chaque question : énoncé, choix, bonne réponse, **explication courte** affichée après la réponse (le retour immédiat est l'intérêt pédagogique).
-- Mélanger l'ordre des questions et des choix à chaque partie.
+- The questions live in **a single data file** (`questions.json` or an array at the top of the code), never in the HTML, so that the teacher can edit them without touching the interface.
+- Each question: prompt, choices, correct answer, **short explanation** shown after the answer (immediate feedback is the pedagogical point).
+- Shuffle the order of questions and choices on every run.
 
 ## Interface
 
-- Une question par écran, gros boutons (utilisables au doigt), progression visible (« 3 / 10 »).
-- Score final avec message encourageant, bouton « Rejouer » et « Revoir mes erreurs ».
-- Pas de chronomètre stressant par défaut ; l'option doit se désactiver.
-- Fonctionne au clavier et au tactile ; contrastes conformes (skill `accessibilite-rgaa`).
+- One question per screen, large buttons (finger-friendly), visible progress ("3 / 10").
+- Final score with an encouraging message, a "Rejouer" (Play again) button and a "Revoir mes erreurs" (Review my mistakes) button.
+- No stressful timer by default; the option must be switchable off.
+- Works with keyboard and touch; compliant contrast (skill `accessibilite-rgaa`).
 
-## Données
+## Data
 
-- Ne jamais enregistrer de nom d'élève sans nécessité ; si un score est conservé, c'est en local (voir `donnees-eleves-rgpd`).
+- Never store a pupil's name unless necessary; if a score is kept, it is stored locally (see `donnees-eleves-rgpd`).

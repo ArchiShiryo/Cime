@@ -141,10 +141,7 @@ export async function validateAlbertApiKey(
 ): Promise<AlbertModelInfo[]> {
   const apiKey = normalizeProviderApiKeyInput(rawKey);
   if (!apiKey) {
-    throw new DyadError(
-      "Enter your Albert API key.",
-      DyadErrorKind.Validation,
-    );
+    throw new DyadError("Enter your Albert API key.", DyadErrorKind.Validation);
   }
   if (findInvalidProviderApiKeyCharacter(apiKey)) {
     throw new DyadError(
@@ -294,10 +291,7 @@ export async function connectAlbert(rawKey: string): Promise<AlbertStatus> {
 export async function testAlbertConnection(): Promise<void> {
   const key = getStoredKey() ?? process.env[ALBERT_ENV_VAR_NAME];
   if (!key) {
-    throw new DyadError(
-      "Albert is not connected.",
-      DyadErrorKind.Precondition,
-    );
+    throw new DyadError("Albert is not connected.", DyadErrorKind.Precondition);
   }
   // Also refreshes the model list, so new Albert models appear after a test.
   const models = await validateAlbertApiKey(key);

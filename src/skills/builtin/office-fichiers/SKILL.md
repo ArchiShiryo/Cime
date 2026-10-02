@@ -1,36 +1,36 @@
 ---
 name: office-fichiers
-description: Lire, créer et modifier des fichiers Word (.docx), Excel (.xlsx) et PowerPoint (.pptx), et lire le texte des PDF sans Microsoft Office, avec une boîte à outils Node fournie (aucune installation, fonctionne hors ligne sur un PC verrouillé). À utiliser dès que l'utilisateur mentionne un fichier Word, Excel, PowerPoint, un tableau, un compte rendu, un diaporama, un publipostage ou veut modifier un document existant.
+description: Read, create and edit Word (.docx), Excel (.xlsx) and PowerPoint (.pptx) files, and read the text of PDFs without Microsoft Office, using a provided Node toolkit (no installation, works offline on a locked-down PC). Use whenever the user mentions a Word, Excel or PowerPoint file, a spreadsheet, a report, a slide deck, a mail merge, or wants to modify an existing document.
 ---
 
-# Fichiers Word, Excel et PowerPoint
+# Word, Excel and PowerPoint files
 
-Tout passe par un seul script Node : `office.mjs`, dans le dossier de ce skill (le chemin exact est donné par `read_skill`, ligne « The skill folder is »). Il fonctionne avec le Node déjà utilisé par Cimes, **sans `npm install` ni accès internet**. Lance-le avec l'outil shell : `node "<dossier>/scripts/office.mjs" <commande> ...` (l'utilisateur est averti avant chaque commande).
+Everything goes through a single Node script: `office.mjs`, in this skill's folder (the exact path is given by `read_skill`, on the line "The skill folder is"). It works with the Node version already used by Cimes, **with no `npm install` and no internet access**. Run it with the shell tool: `node "<folder>/scripts/office.mjs" <command> ...` (the user is warned before each command).
 
-## Règles d'or
+## Golden rules
 
-1. **Ne jamais écraser l'original** : écrire dans un nouveau fichier (`nom-v2.docx`) et dire où il se trouve. Les fichiers de l'utilisateur ne sont pas dans le dossier de l'application : demander le chemin complet si besoin.
-2. **Lire avant de modifier** (`read`), puis **relire le résultat** pour vérifier.
-3. Formats pris en charge : `.docx`, `.xlsx`, `.pptx` (lecture, création, modification) et `.pdf` (lecture seule). Les anciens `.doc`, `.xls`, `.ppt` : demander à l'utilisateur de les « Enregistrer sous » au format récent.
-4. Pas de rendu visuel possible (pas d'aperçu, pas de PDF) : décrire ce qui a été produit et inviter l'utilisateur à ouvrir le fichier pour vérifier la mise en page.
-5. Données de personnes (élèves, stagiaires) : voir `donnees-eleves-rgpd`.
+1. **Never overwrite the original**: write to a new file (`name-v2.docx`) and say where it is. The user's files are not in the application folder: ask for the full path if needed.
+2. **Read before modifying** (`read`), then **read the result back** to check it.
+3. Supported formats: `.docx`, `.xlsx`, `.pptx` (read, create, modify) and `.pdf` (read-only). For older `.doc`, `.xls`, `.ppt`: ask the user to "Save as" the recent format.
+4. No visual rendering possible (no preview, no PDF): describe what was produced and invite the user to open the file to check the layout.
+5. Personal data (pupils, trainees): see `donnees-eleves-rgpd`.
 
-## Commandes
+## Commands
 
 ```
-node office.mjs read fichier.docx|xlsx|pptx|pdf        # docx : Markdown ; xlsx/pptx : JSON ; pdf : texte par page
-node office.mjs md2docx entree.md sortie.docx [titre]  # Markdown -> Word (titres, listes, gras/italique, tableaux)
-node office.mjs csv2xlsx entree.csv sortie.xlsx        # CSV (; ou ,) -> Excel, en-tête en gras, colonnes ajustées
-node office.mjs xlsx2csv entree.xlsx sortie.csv [feuille]
-node office.mjs json2pptx diapos.json sortie.pptx      # [{"title","subtitle","bullets":[],"text","notes"}]
-node office.mjs replace fichier remplacements.json sortie   # {"ancien":"nouveau"} : garde la mise en forme
+node office.mjs read file.docx|xlsx|pptx|pdf           # docx: Markdown; xlsx/pptx: JSON; pdf: text by page
+node office.mjs md2docx input.md output.docx [title]   # Markdown -> Word (headings, lists, bold/italic, tables)
+node office.mjs csv2xlsx input.csv output.xlsx         # CSV (; or ,) -> Excel, bold header, adjusted columns
+node office.mjs xlsx2csv input.xlsx output.csv [sheet]
+node office.mjs json2pptx slides.json output.pptx      # [{"title","subtitle","bullets":[],"text","notes"}]
+node office.mjs replace file replacements.json output  # {"old":"new"}: keeps the formatting
 ```
 
-`replace` fonctionne sur .docx (corps, en-têtes, pieds de page), .pptx (diapos et notes) et .xlsx (textes). Idéal pour **remplir un modèle** : garder le fichier modèle, remplacer des repères comme `{{NOM}}`.
+`replace` works on .docx (body, headers, footers), .pptx (slides and notes) and .xlsx (text). Ideal for **filling in a template**: keep the template file, replace markers such as `{{NOM}}`.
 
-## Quand les commandes ne suffisent pas : écrire un script
+## When the commands are not enough: write a script
 
-Le même fichier est aussi une **bibliothèque**. Créer un script `.mjs` (dans le dossier du projet, jamais dans le dossier du skill) :
+The same file is also a **library**. Create a `.mjs` script (in the project folder, never in the skill folder):
 
 ```js
 import {
@@ -39,23 +39,23 @@ import {
   PptxGenJS,
   mammoth,
   JSZip,
-} from "<dossier>/scripts/office.mjs";
+} from "<folder>/scripts/office.mjs";
 ```
 
-- **Word** (`docx`) : `new docx.Document({ sections: [{ children: [new docx.Paragraph(...), new docx.Table(...)] }] })`, puis `docx.Packer.toBuffer(doc)` et `fs.writeFileSync`. Pieds de page, numéros de page (`docx.PageNumber.CURRENT`), images (`docx.ImageRun`), styles de titres, orientation paysage, sections.
-- **Excel** (`ExcelJS`) : `const wb = new ExcelJS.Workbook(); await wb.xlsx.readFile(f)` pour ouvrir un classeur **en conservant ses formats**, modifier `sheet.getCell("B2").value = ...`, formules `{ formula: "SUM(B2:B10)" }`, formats de nombre (`numFmt: "0.00 €"`), largeurs, couleurs, validation de données, mise en forme conditionnelle, graphiques non pris en charge. Puis `await wb.xlsx.writeFile(sortie)`.
-- **PowerPoint** (`PptxGenJS`) : `pptx.addSlide()`, `addText`, `addImage`, `addTable`, `addChart` (graphiques natifs), `addNotes`. Pour modifier un .pptx existant, préférer `replace` ; pour changer sa structure, `JSZip` permet d'éditer le XML (diapo = `ppt/slides/slideN.xml`).
-- **Lecture** : `mammoth.convertToMarkdown({ path })` (Word) ; `ExcelJS` (Excel).
+- **Word** (`docx`): `new docx.Document({ sections: [{ children: [new docx.Paragraph(...), new docx.Table(...)] }] })`, then `docx.Packer.toBuffer(doc)` and `fs.writeFileSync`. Footers, page numbers (`docx.PageNumber.CURRENT`), images (`docx.ImageRun`), heading styles, landscape orientation, sections.
+- **Excel** (`ExcelJS`): `const wb = new ExcelJS.Workbook(); await wb.xlsx.readFile(f)` to open a workbook **keeping its formats**, modify `sheet.getCell("B2").value = ...`, formulas `{ formula: "SUM(B2:B10)" }`, number formats (`numFmt: "0.00 €"`), widths, colours, data validation, conditional formatting, charts not supported. Then `await wb.xlsx.writeFile(output)`.
+- **PowerPoint** (`PptxGenJS`): `pptx.addSlide()`, `addText`, `addImage`, `addTable`, `addChart` (native charts), `addNotes`. To modify an existing .pptx, prefer `replace`; to change its structure, `JSZip` lets you edit the XML (slide = `ppt/slides/slideN.xml`).
+- **Reading**: `mammoth.convertToMarkdown({ path })` (Word); `ExcelJS` (Excel).
 
-## Charte Canopé (si demandé)
+## Canopé charter (if requested)
 
-Fond `#F4EFED`, turquoise `#005A5B` (titres, en-têtes), sauge `#94A088` (accents), texte `#222222`. Police Calibri/Arial (Marianne n'est souvent pas installée sur les postes). Détails : skill `charte-canope`. Pour une présentation institutionnelle exacte (masques officiels), partir du modèle .potx de l'utilisateur et utiliser `replace`.
+Background `#F4EFED`, turquoise `#005A5B` (titles, headers), sage `#94A088` (accents), text `#222222`. Font Calibri/Arial (Marianne is often not installed on workstations). Details: `charte-canope` skill. For an exact institutional presentation (official masks), start from the user's .potx template and use `replace`.
 
-## Pièges connus
+## Known pitfalls
 
-- **PDF** : seul le texte est lu (pas la mise en page, ni les images). Un PDF scanné n'a pas de texte : la lecture ne renvoie rien, le dire à l'utilisateur. Impossible de créer un PDF : produire un .docx et demander à l'utilisateur de l'enregistrer en PDF depuis Word.
+- **PDF**: only the text is read (not the layout, nor the images). A scanned PDF has no text: reading returns nothing, tell the user. Creating a PDF is impossible: produce a .docx and ask the user to save it as PDF from Word.
 
-- Une cellule Excel avec formule n'a pas de valeur calculée tant que le fichier n'est pas ouvert dans Excel : ne pas annoncer de résultats chiffrés issus d'une formule sans les avoir calculés soi-même.
-- Les macros (.xlsm, .docm), commentaires de révision, suivi des modifications et graphiques Excel existants peuvent être perdus si le fichier est réécrit avec `ExcelJS` : le dire à l'utilisateur et travailler sur une copie.
-- Mots coupés en plusieurs « runs » : `replace` gère ce cas ; un script maison doit fusionner les runs d'un paragraphe.
-- Les accents et l'UTF-8 sont gérés ; pour un CSV destiné à Excel français, utiliser `;` (c'est ce que fait `xlsx2csv`).
+- An Excel cell with a formula has no calculated value until the file is opened in Excel: do not announce numerical results from a formula without computing them yourself.
+- Macros (.xlsm, .docm), revision comments, track changes and existing Excel charts may be lost if the file is rewritten with `ExcelJS`: tell the user and work on a copy.
+- Words split across several "runs": `replace` handles this case; a home-made script must merge the runs of a paragraph.
+- Accents and UTF-8 are handled; for a CSV intended for French Excel, use `;` (that is what `xlsx2csv` does).

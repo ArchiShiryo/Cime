@@ -1,15 +1,15 @@
 ---
 name: formulaire-et-collecte-de-donnees
-description: Construit des formulaires de saisie, fiches d'inscription ou tableaux de suivi avec validation, stockage local et export CSV/JSON. À utiliser pour collecter, saisir ou suivre des informations (inscriptions, présences, évaluations).
+description: Builds input forms, registration sheets or tracking tables with validation, local storage and CSV/JSON export. Use to collect, enter or track information (registrations, attendance, evaluations).
 ---
 
-# Formulaire et collecte de données
+# Form and data collection
 
-1. **Modéliser** : lister les champs (nom, type, obligatoire ou non). Un champ = une question ; pas de champ « au cas où ».
-2. **Valider** à la saisie et à l'envoi : formats (e-mail, date, nombre), messages d'erreur en français, reliés au champ (`aria-describedby`), jamais d'alerte bloquante.
-3. **Stocker en local** (`localStorage` ou IndexedDB) tant qu'aucun serveur n'est demandé ; proposer **Exporter en CSV** (séparateur `;`, encodage UTF-8 avec BOM pour Excel) et **Importer/Exporter en JSON** pour sauvegarder.
-4. **Afficher** les données dans un tableau triable/filtrable, avec bouton de suppression confirmé.
-5. **Protéger** : échapper tout texte saisi avant affichage (jamais `innerHTML` avec une saisie), limiter les longueurs.
-6. Prévenir que les données restent sur cet ordinateur et expliquer comment les sauvegarder.
+1. **Model**: list the fields (name, type, mandatory or not). One field = one question; no "au cas où" (just in case) field.
+2. **Validate** on input and on submission: formats (email, date, number), error messages in French, linked to the field (`aria-describedby`), never a blocking alert.
+3. **Store locally** (`localStorage` or IndexedDB) as long as no server is requested; offer **Exporter en CSV** (separator `;`, UTF-8 encoding with BOM for Excel) and **Importer/Exporter en JSON** for backup.
+4. **Display** the data in a sortable/filterable table, with a confirmed delete button.
+5. **Protect**: escape any entered text before display (never `innerHTML` with user input), limit lengths.
+6. Warn that the data remains on this computer and explain how to back it up.
 
-Données de personnes : appliquer `donnees-eleves-rgpd`.
+Personal data: apply `donnees-eleves-rgpd`.

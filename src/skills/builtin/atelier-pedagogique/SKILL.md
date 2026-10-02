@@ -1,24 +1,24 @@
 ---
 name: atelier-pedagogique
-description: Aide à concevoir et rédiger un atelier ou une séquence de formation (objectifs, durée, matériel, déroulé pas à pas) pour un public non technique, en français clair. À utiliser pour préparer un atelier, un support d'animation ou une fiche d'activité.
+description: Helps design and write a workshop or a training sequence (objectives, duration, materials, step-by-step rundown) for a non-technical audience, in plain French. Use it to prepare a workshop, a facilitation kit or an activity sheet.
 ---
 
-# Concevoir un atelier
+# Designing a workshop
 
-Demander d'abord (une seule question groupée si des infos manquent) : public, durée, nombre de participants, matériel disponible, objectif observable.
+First ask (a single grouped question if information is missing): audience, duration, number of participants, available materials, observable objective.
 
-## Structure du document produit
+## Structure of the document produced
 
-1. **Titre et résumé** en deux phrases.
-2. **Objectifs** : 2 à 4, formulés avec un verbe d'action observable (« être capable de… »).
-3. **Prérequis et matériel**.
-4. **Déroulé minuté** : tableau Temps / Activité / Rôle de l'animateur / Production attendue.
-5. **Activité principale** détaillée pas à pas, avec consignes lisibles à voix haute.
-6. **Évaluation** : comment savoir que l'objectif est atteint (production, quiz court, démonstration).
-7. **Variantes** : version plus courte, version pour public avancé.
+1. **Title and summary** in two sentences.
+2. **Objectives**: 2 to 4, phrased with an observable action verb ("être capable de…").
+3. **Prerequisites and materials**.
+4. **Timed rundown**: table Time / Activity / Facilitator's role / Expected output.
+5. **Main activity** detailed step by step, with instructions that can be read aloud.
+6. **Assessment**: how to know the objective has been met (output, short quiz, demonstration).
+7. **Variants**: a shorter version, a version for an advanced audience.
 
 ## Style
 
-- Phrases courtes, vocabulaire courant, définir chaque terme technique à sa première apparition.
-- Alterner explication, démonstration et manipulation (jamais plus de 10 minutes sans action des participants).
-- Prévoir les pannes classiques (réseau, compte oublié) avec une solution de repli.
+- Short sentences, everyday vocabulary, define each technical term the first time it appears.
+- Alternate explanation, demonstration and hands-on work (never more than 10 minutes without participants doing something).
+- Plan for the usual breakdowns (network, forgotten account) with a fallback solution.

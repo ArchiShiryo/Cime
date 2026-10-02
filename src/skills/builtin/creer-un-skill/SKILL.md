@@ -1,31 +1,31 @@
 ---
 name: creer-un-skill
-description: Aide à écrire un nouveau skill au format Claude (dossier avec SKILL.md) que l'utilisateur peut importer dans Cimes. À utiliser quand l'utilisateur veut capitaliser une méthode, une consigne ou une charte sous forme de skill réutilisable.
+description: Helps write a new skill in the Claude format (a folder with a SKILL.md) that the user can import into Cimes. Use when the user wants to capture a method, a set of instructions or a style guide as a reusable skill.
 ---
 
-# Créer un skill
+# Creating a skill
 
-Un skill est un dossier portant le nom du skill, avec un fichier `SKILL.md` :
+A skill is a folder named after the skill, containing a `SKILL.md` file:
 
 ```
 mon-skill/
-  SKILL.md          (obligatoire)
-  references/       (documents lus à la demande, optionnel)
-  scripts/          (scripts, optionnel)
-  assets/           (modèles, images, optionnel)
+  SKILL.md          (required)
+  references/       (documents read on demand, optional)
+  scripts/          (scripts, optional)
+  assets/           (templates, images, optional)
 ```
 
-## Démarche
+## Approach
 
-1. Demander **ce que le skill doit permettre** et **dans quelles situations il se déclenche** ; recueillir un ou deux exemples réels.
-2. Écrire l'en-tête YAML :
+1. Ask **what the skill should make possible** and **in which situations it triggers**; collect one or two real examples.
+2. Write the YAML header:
    ```
    ---
-   name: nom-en-minuscules-avec-tirets
-   description: Ce que fait le skill ET quand l'utiliser (c'est ce texte qui décide du déclenchement : être précis, 1 à 3 phrases).
+   name: lowercase-name-with-hyphens
+   description: What the skill does AND when to use it (this text decides the triggering: be precise, 1 to 3 sentences).
    ---
    ```
-3. Écrire le corps en Markdown : instructions à l'impératif, étapes numérotées, critères de vérification. Rester sous 500 lignes ; déplacer le détail dans `references/` et le mentionner (« voir references/regles.md »).
-4. N'ajouter un script que s'il apporte une vraie fiabilité ; expliquer son usage et ne jamais y mettre de secret.
-5. Créer le dossier dans l'application (`.cimes/skills/<nom>/SKILL.md`) ou le fournir en `.zip` à importer dans Paramètres > IA > Skills.
-6. Tester avec une demande réaliste : le skill est-il listé, se déclenche-t-il, les consignes suffisent-elles ?
+3. Write the body in Markdown: instructions in the imperative, numbered steps, verification criteria. Stay under 500 lines; move details into `references/` and mention them ("see references/regles.md").
+4. Only add a script if it brings real reliability; explain how to use it and never put a secret in it.
+5. Create the folder in the application (`.cimes/skills/<name>/SKILL.md`) or provide it as a `.zip` to import in Settings > AI > Skills.
+6. Test with a realistic request: is the skill listed, does it trigger, are the instructions enough?

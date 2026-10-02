@@ -1,13 +1,13 @@
 ---
 name: planifier-avant-de-coder
-description: Cadre une demande d'application ou de fonctionnalité floue ou volumineuse avant de coder (besoin, parcours, périmètre minimal, étapes vérifiables). À utiliser pour un nouveau projet, une demande vague ou un changement touchant plusieurs fichiers.
+description: Frames a vague or large application or feature request before coding (need, user journey, minimal scope, verifiable steps). To use for a new project, a vague request, or a change touching several files.
 ---
 
-# Planifier avant de coder
+# Plan before coding
 
-1. **Reformuler** le besoin en deux phrases et le faire confirmer si l'ambiguïté est réelle (poser au plus 3 questions, regroupées).
-2. **Qui, quoi, comment** : utilisateur principal, tâche principale, parcours en 3 à 5 étapes.
-3. **Périmètre minimal utilisable** : la plus petite version qui rend le service ; lister explicitement ce qui est reporté.
-4. **Étapes** : découper en tâches de moins d'une demi-heure chacune, chacune avec son critère de vérification (« je vois… », « le build passe »). Les suivre avec la liste de tâches de l'agent.
-5. **Risques** : données personnelles (`donnees-eleves-rgpd`), accessibilité (`accessibilite-rgaa`), fonctionnement hors ligne (`application-hors-ligne`).
-6. **Exécuter** une étape à la fois, vérifier, puis passer à la suivante ; informer l'utilisateur des écarts par rapport au plan.
+1. **Restate** the need in two sentences and have it confirmed if the ambiguity is real (ask at most 3 questions, grouped together).
+2. **Who, what, how**: main user, main task, journey in 3 to 5 steps.
+3. **Minimal usable scope**: the smallest version that delivers the service; explicitly list what is deferred.
+4. **Steps**: break down into tasks of less than half an hour each, each with its verification criterion ("I see…", "the build passes"). Track them with the agent's task list.
+5. **Risks**: personal data (`donnees-eleves-rgpd`), accessibility (`accessibilite-rgaa`), offline operation (`application-hors-ligne`).
+6. **Execute** one step at a time, verify, then move on to the next; inform the user of any deviations from the plan.
