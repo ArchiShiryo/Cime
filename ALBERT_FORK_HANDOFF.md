@@ -203,3 +203,13 @@ Le skill intégré `office-fichiers` livre un script Node unique (`office.mjs`, 
 - **Modes** (Paramètres > IA > Base de documents) : « Sur ce poste » (par défaut), « Avec Albert », « Mots seulement ». Chaque vecteur retient son moteur ; changer de mode relance l'analyse avec le nouveau moteur. Au démarrage, un rattrapage calcule les vecteurs manquants.
 - **Mesuré (bac à sable Linux, 4 cœurs)** : 3,4 / 5,4 / 11 passages par seconde avec 1 / 2 / 4 threads (passages de ~900 caractères) ; ~1 Go de RAM résidente pendant le calcul. Le worker utilise au plus 4 threads et laisse un cœur libre. À mesurer sur vos PC : ~1 500 passages (≈ 500 pages) ≈ 2 à 8 minutes la première fois.
 - **Vérifié** : tests unitaires avec le vrai modèle (recherche par le sens sans mot commun, changement de mode) ; application empaquetée Linux : le worker démarre dans l'`utilityProcess`, indexe, et l'agent retrouve un document par le sens. **Non vérifié sous Windows** (WASM + utilityProcess, performances, antivirus).
+
+## Aucun contact avec les serveurs Dyad (mis à jour)
+
+`DYAD_SERVICES_ENABLED = false` (`src/shared/branding.ts`) : le catalogue de modèles, la configuration distante, les gabarits communautaires, le catalogue MCP, la liste d'autorisation pnpm, l'heure serveur du quota et les vérifications de facturation utilisent uniquement des données locales. Autres appels de fond supprimés : Monaco (éditeur de code) est maintenant embarqué au lieu d'être chargé depuis cdn.jsdelivr.net ; les illustrations des gabarits sont dessinées localement (plus d'images github.com/user-attachments) ; le téléchargement du dictionnaire de correction orthographique (Google) est désactivé.
+
+**Vérifié** avec `testing/cimes-e2e/netprobe.mjs` sur l'application empaquetée : les domaines Dyad sont redirigés vers un écouteur local (auto-test réussi) et le journal réseau de Chromium est lu pendant la navigation dans 7 pages : **aucune connexion vers Dyad et aucune requête de fond** (liste vide). Reste dépendant d'un service externe uniquement ce que l'utilisateur déclenche : Albert, outils web de l'agent, serveurs MCP (npm), npm/pnpm pour les apps générées, et le clonage GitHub des gabarits non fournis dans l'application (Next.js, Vite+Nitro, Portal).
+
+## Palette
+
+Les familles Tailwind violet, purple, indigo, fuchsia et blue sont remappées vers le turquoise Canopé dans `src/styles/globals.css` (un seul endroit) ; les couleurs en dur (terminal, pages de retour OAuth) ont été recolorées.
