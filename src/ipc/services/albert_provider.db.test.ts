@@ -174,7 +174,8 @@ describe("syncAlbertModels", () => {
     ];
     syncAlbertModels(listed);
     syncAlbertModels(listed);
-    expect(models()).toHaveLength(2 + KNOWN - 0);
+    // Known models the API does not list are dropped: only what the key can use is offered.
+    expect(models()).toHaveLength(2);
     expect(models().find((m) => m.apiName === "llama-x")).toMatchObject({
       context_window: 65_536,
       max_output_tokens: 8_192,
@@ -183,10 +184,11 @@ describe("syncAlbertModels", () => {
     const main = models().find((m) => m.apiName === ALBERT_MODEL_ID)!;
     expect(main.context_window).toBe(ALBERT_CONTEXT_WINDOW);
     expect(main.max_output_tokens).toBe(ALBERT_MAX_OUTPUT_TOKENS);
-    // Models that disappear from the list are left alone, and the startup
-    // repair does not remove synced models.
+    // Models that disappear from the list are removed on the next sync; the
+    // startup repair only re-adds the known roster until the next refresh.
     syncAlbertModels([listed[0]]);
+    expect(models().map((m) => m.apiName)).toEqual([ALBERT_MODEL_ID]);
     ensureAlbertProvider();
-    expect(models()).toHaveLength(2 + KNOWN - 0);
+    expect(models()).toHaveLength(1 + KNOWN);
   });
 });

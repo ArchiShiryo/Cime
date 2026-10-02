@@ -21,7 +21,7 @@ Everything goes through a single Node script: `office.mjs`, in this skill's fold
 ```
 node office.mjs read file.docx|xlsx|pptx|pdf           # docx: Markdown; xlsx/pptx: JSON; pdf: text by page
 node office.mjs md2docx input.md output.docx [title]   # Markdown -> Word (headings, lists, bold/italic, tables)
-node office.mjs csv2xlsx input.csv output.xlsx         # CSV (; or ,) -> Excel, bold header, adjusted columns
+node office.mjs csv2xlsx input.csv output.xlsx         # CSV -> Excel, bold header, adjusted columns. Write French data with ";" as separator (decimals like 14,5 stay whole)
 node office.mjs xlsx2csv input.xlsx output.csv [sheet]
 node office.mjs json2pptx slides.json output.pptx      # [{"title","subtitle","bullets":[],"text","notes"}]
 node office.mjs replace file replacements.json output  # {"old":"new"}: keeps the formatting

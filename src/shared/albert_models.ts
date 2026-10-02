@@ -2,7 +2,7 @@
 // chat models Cimes offers. Albert has no hard-coded roster in its docs: the
 // list (ids and max_context_length) comes from the API itself.
 
-import { ALBERT_KNOWN_MODELS } from "./albert";
+import { ALBERT_KNOWN_MODELS, ALBERT_UNRELIABLE_TOOL_MODEL } from "./albert";
 
 export interface AlbertModelInfo {
   id: string;
@@ -26,6 +26,7 @@ export function parseAlbertModels(data: unknown): AlbertModelInfo[] {
       unknown
     >;
     if (typeof id !== "string" || !id || seen.has(id)) continue;
+    if (ALBERT_UNRELIABLE_TOOL_MODEL.test(id)) continue;
     const isChat =
       type === "text-generation" ||
       (type === undefined && !NON_CHAT_ID.test(id));

@@ -178,7 +178,7 @@ export function encodePng(width, height, channels, data) {
 async function withOcrWorker(lang, run) {
   const dir = findOcrDir();
   if (!dir) {
-    throw new Error("OCR indisponible : le module de reconnaissance de texte n'est pas installé avec cette version.");
+    throw new Error("OCR unavailable: the text recognition module is not installed with this version.");
   }
   const req = createRequire(path.join(dir, "package.json"));
   const { createWorker } = req("tesseract.js");
@@ -511,8 +511,27 @@ export function parseCsv(text, delimiter) {
   return rows;
 }
 
+/**
+ * French decimals written with a comma inside a comma-separated file
+ * ("Lea,14,5") split a number over two cells. A row longer than the header is
+ * repaired by joining an integer cell with a following 1-3 digit cell.
+ */
+export function repairDecimalCommas(rows) {
+  const width = rows[0]?.length ?? 0;
+  return rows.map((row, index) => {
+    if (index === 0 || row.length <= width) return row;
+    const fixed = [...row];
+    for (let i = 0; i < fixed.length - 1 && fixed.length > width; ) {
+      if (/^-?\d+$/.test(fixed[i]) && /^\d{1,3}$/.test(fixed[i + 1])) {
+        fixed.splice(i, 2, `${fixed[i]},${fixed[i + 1]}`);
+      } else i++;
+    }
+    return fixed.length === width ? fixed : row;
+  });
+}
+
 export async function csvToXlsx(csvFile, outFile, sheetName = "Feuille 1") {
-  const rows = parseCsv(fs.readFileSync(csvFile, "utf8"));
+  const rows = repairDecimalCommas(parseCsv(fs.readFileSync(csvFile, "utf8")));
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(sheetName);
   for (const row of rows) {
@@ -551,7 +570,7 @@ export async function xlsxToCsv(file, outFile, sheetName) {
   const sheet = sheetName
     ? sheets.find((s) => s.name === sheetName)
     : sheets[0];
-  if (!sheet) throw new Error(`Feuille introuvable : ${sheetName}`);
+  if (!sheet) throw new Error(`Sheet not found: ${sheetName}`);
   const quote = (v) =>
     /[;"\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
   fs.writeFileSync(
@@ -628,20 +647,20 @@ export async function jsonToPptx(slides, outFile, options = {}) {
 
 // ---------------------------------------------------------------- CLI
 
-const HELP = `Cimes Office toolkit (Word, Excel, PowerPoint sans Microsoft Office)
+const HELP = `Cimes Office toolkit (Word, Excel, PowerPoint without Microsoft Office)
 
-Lire
-  node office.mjs read <fichier.docx|xlsx|pptx|pdf>    texte (docx: Markdown, autres: JSON ; pdf: texte par page)
-Créer
-  node office.mjs md2docx <entree.md> <sortie.docx> [titre]
-  node office.mjs csv2xlsx <entree.csv> <sortie.xlsx>
-  node office.mjs xlsx2csv <entree.xlsx> <sortie.csv> [feuille]
-  node office.mjs json2pptx <diapos.json> <sortie.pptx>     [{"title","bullets":[],"text","notes","subtitle"}]
-OCR (documents scannés, hors ligne)
-  node office.mjs ocr <fichier.pdf|png|jpg|bmp> [pages ex. 1,2,5]   texte reconnu (français et anglais)
-Modifier (garde la mise en forme)
-  node office.mjs replace <fichier> <remplacements.json> <sortie>   {"ancien":"nouveau"}
-Bibliothèque : import { docx, ExcelJS, PptxGenJS, mammoth, JSZip } from "<chemin>/office.mjs"`;
+Read
+  node office.mjs read <file.docx|xlsx|pptx|pdf>       text (docx: Markdown, others: JSON; pdf: text per page)
+Create
+  node office.mjs md2docx <input.md> <output.docx> [title]
+  node office.mjs csv2xlsx <input.csv> <output.xlsx>
+  node office.mjs xlsx2csv <input.xlsx> <output.csv> [sheet]
+  node office.mjs json2pptx <slides.json> <output.pptx>     [{"title","bullets":[],"text","notes","subtitle"}]
+OCR (scanned documents, offline)
+  node office.mjs ocr <file.pdf|png|jpg|bmp> [pages e.g. 1,2,5]   recognised text (French and English)
+Edit (keeps the formatting)
+  node office.mjs replace <file> <replacements.json> <output>   {"old":"new"}
+Library: import { docx, ExcelJS, PptxGenJS, mammoth, JSZip } from "<path>/office.mjs"`;
 
 async function main(argv) {
   const [command, ...args] = argv;
@@ -655,7 +674,7 @@ async function main(argv) {
       else if (ext === ".pptx")
         console.log(JSON.stringify(await readPptx(file), null, 1));
       else if (ext === ".pdf") console.log(JSON.stringify(await readPdf(file), null, 1));
-      else throw new Error("Formats lus : .docx, .xlsx, .pptx, .pdf");
+      else throw new Error("Readable formats: .docx, .xlsx, .pptx, .pdf");
       return;
     }
     case "ocr": {
@@ -666,31 +685,38 @@ async function main(argv) {
         console.log(JSON.stringify(await ocrPdf(file, { pages }), null, 1));
       } else if ([".png", ".jpg", ".jpeg", ".bmp"].includes(ext)) {
         console.log(await ocrImage(file));
-      } else throw new Error("Formats OCR : .pdf, .png, .jpg, .jpeg, .bmp");
+      } else throw new Error("OCR formats: .pdf, .png, .jpg, .jpeg, .bmp");
       return;
     }
     case "md2docx":
       await markdownToDocx(fs.readFileSync(args[0], "utf8"), args[1], {
         title: args[2],
       });
-      console.log(`Créé : ${args[1]}`);
+      console.log(`Created: ${args[1]}`);
       return;
     case "csv2xlsx":
       await csvToXlsx(args[0], args[1]);
-      console.log(`Créé : ${args[1]}`);
+      console.log(`Created: ${args[1]}`);
       return;
     case "xlsx2csv":
       await xlsxToCsv(args[0], args[1], args[2]);
-      console.log(`Créé : ${args[1]}`);
+      console.log(`Created: ${args[1]}`);
       return;
     case "json2pptx":
       await jsonToPptx(JSON.parse(fs.readFileSync(args[0], "utf8")), args[1]);
-      console.log(`Créé : ${args[1]}`);
+      console.log(`Created: ${args[1]}`);
       return;
     case "replace": {
       const map = JSON.parse(fs.readFileSync(args[1], "utf8"));
       const count = await replaceText(args[0], map, args[2]);
-      console.log(`${count} remplacement(s) -> ${args[2]}`);
+      if (count === 0) {
+        // Do not leave a lookalike copy behind: a "0 replacement" run is a failure.
+        fs.rmSync(args[2], { force: true });
+        throw new Error(
+          "No replacement made: the searched text was not found (case, spaces, text split in several pieces, or inside an image). Run the read command and copy the exact text. No file was created.",
+        );
+      }
+      console.log(`${count} replacement(s) -> ${args[2]}`);
       return;
     }
     default:
@@ -703,7 +729,7 @@ const invoked =
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 if (invoked) {
   main(process.argv.slice(2)).catch((error) => {
-    console.error(`Erreur : ${error.message}`);
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   });
 }

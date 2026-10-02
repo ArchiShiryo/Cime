@@ -1,4 +1,5 @@
 import { logActivity } from "@/activity/activity_log";
+import { describeProviderError } from "@/ipc/utils/friendly_model_error";
 import { recordShellReviewOutcome } from "./shell_review_history";
 import { shellExecutionGuidance } from "@/shared/shell_capability";
 import { SubscriptionBillingError } from "@/shared/subscription_billing_error";
@@ -2645,6 +2646,8 @@ const FREE_MODEL_QUOTA_MARKERS = [
 ];
 
 function getErrorMessageWithDetails(error: unknown): string {
+  const friendly = describeProviderError(error);
+  if (friendly) return friendly;
   const message = getErrorMessage(error);
   const responseBody = getErrorResponseBody(error);
   if (!responseBody || message.includes(responseBody)) {

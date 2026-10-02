@@ -255,16 +255,20 @@ export default function SettingsPage() {
             <div id={SETTING_IDS.enableShellTool}>
               <ShellExperimentSwitch />
             </div>
-            <div id={SETTING_IDS.enableCloudSandbox}>
-              <CloudSandboxExperimentSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.enableCloudSandbox}>
+                <CloudSandboxExperimentSwitch />
+              </div>
+            )}
 
             <div id={SETTING_IDS.enableMultiWindow}>
               <MultiWindowExperimentSwitch />
             </div>
-            <div id={SETTING_IDS.enableClaudeCodeSubscription}>
-              <ClaudeCodeSubscriptionExperimentSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.enableClaudeCodeSubscription}>
+                <ClaudeCodeSubscriptionExperimentSwitch />
+              </div>
+            )}
 
             <div id={SETTING_IDS.enableAppPreviewDomains}>
               <AppPreviewDomainsSwitch />
@@ -274,9 +278,11 @@ export default function SettingsPage() {
               <TestRunInPreviewSwitch />
             </div>
 
-            <div id={SETTING_IDS.autoApproveSafeMcpTools}>
-              <AutoApproveMcpSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.autoApproveSafeMcpTools}>
+                <AutoApproveMcpSwitch />
+              </div>
+            )}
 
             <div
               id={SETTING_IDS.enableOwnServerDeployment}

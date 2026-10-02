@@ -335,7 +335,7 @@ describe("office-fichiers built-in skill", () => {
       run("md2docx", "a.md", "a.docx");
       fs.writeFileSync(path.join(root, "r.json"), '{"{{NOM}}":"Awa"}');
       expect(run("replace", "a.docx", "r.json", "b.docx")).toContain(
-        "2 remplacement",
+        "2 replacement",
       );
       const text = run("read", "b.docx");
       expect(text).toContain("Titre Awa");
@@ -381,4 +381,20 @@ describe("office-fichiers built-in skill", () => {
       fs.rmSync(root, { recursive: true, force: true });
     }
   });
+});
+
+describe("office toolkit safeguards", () => {
+  it("keeps French decimal commas together when a CSV is comma-separated", async () => {
+    const office = await import("./builtin-assets/office.mjs");
+    const rows = office.repairDecimalCommas?.([
+      ["Nom", "Note"],
+      ["Lea", "14", "5"],
+      ["Paul", "12"],
+    ]);
+    expect(rows).toEqual([
+      ["Nom", "Note"],
+      ["Lea", "14,5"],
+      ["Paul", "12"],
+    ]);
+  }, 60_000);
 });

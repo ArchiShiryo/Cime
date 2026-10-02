@@ -28,6 +28,10 @@ import type {
 import { getEnvVar } from "./read_env";
 import { getMaxTokens, getTemperature } from "./token_utils";
 import log from "electron-log";
+import {
+  ALBERT_PROVIDER_ID,
+  albertSupportsReasoningEffort,
+} from "@/shared/albert";
 import { FREE_OPENROUTER_MODEL_NAMES } from "../shared/language_model_constants";
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
 import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
@@ -965,7 +969,12 @@ function getRegularModelClient(
           modelClient: {
             model: provider(model.name),
             builtinProviderId: providerConfig.id,
-            reasoningEffortProviderId: providerConfig.id,
+            // Albert models differ: sending an unsupported effort makes the call fail.
+            reasoningEffortProviderId:
+              providerConfig.id !== ALBERT_PROVIDER_ID ||
+              albertSupportsReasoningEffort(model.name)
+                ? providerConfig.id
+                : undefined,
           },
           backupModelClients: [],
         };

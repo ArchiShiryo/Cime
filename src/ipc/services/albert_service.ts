@@ -24,6 +24,7 @@ import {
   ALBERT_MODEL_ID,
   ALBERT_PROVIDER_DISPLAY_NAME,
   ALBERT_PROVIDER_ID,
+  ALBERT_UNRELIABLE_TOOL_MODEL,
 } from "@/shared/albert";
 import type { AlbertStatus } from "@/ipc/types/albert";
 
@@ -106,6 +107,16 @@ export function ensureAlbertProvider(): void {
   }
   // Other Albert chat models (GPT-OSS, Mistral, Qwen…): added when missing,
   // never overwritten, since a connected key refreshes their real limits.
+  // Remove models that were offered by earlier versions but are unreliable.
+  for (const row of db
+    .select({ id: language_models.id, apiName: language_models.apiName })
+    .from(language_models)
+    .where(eq(language_models.customProviderId, ALBERT_PROVIDER_ID))
+    .all()) {
+    if (ALBERT_UNRELIABLE_TOOL_MODEL.test(row.apiName)) {
+      db.delete(language_models).where(eq(language_models.id, row.id)).run();
+    }
+  }
   for (const known of ALBERT_KNOWN_MODELS) {
     const present = db
       .select({ id: language_models.id })
@@ -216,6 +227,21 @@ export async function validateAlbertApiKey(
  * Models that are no longer listed are left alone.
  */
 export function syncAlbertModels(models: AlbertModelInfo[]): void {
+  // Drop models the API no longer lists (and ones known to misbehave) so the
+  // picker never offers something that fails. The default model is kept.
+  if (models.length > 0) {
+    const listed = new Set(models.map((model) => model.id));
+    listed.add(getAlbertModelId());
+    for (const row of db
+      .select({ id: language_models.id, apiName: language_models.apiName })
+      .from(language_models)
+      .where(eq(language_models.customProviderId, ALBERT_PROVIDER_ID))
+      .all()) {
+      if (!listed.has(row.apiName)) {
+        db.delete(language_models).where(eq(language_models.id, row.id)).run();
+      }
+    }
+  }
   for (const model of models) {
     if (model.id === getAlbertModelId()) continue;
     const values = {
@@ -319,4 +345,17 @@ export function getAlbertConnection(): {
 } | null {
   const apiKey = getStoredKey();
   return apiKey ? { baseUrl: getAlbertBaseUrl(), apiKey } : null;
+}
+
+/** Re-reads the model list with the stored key (never throws): keeps the picker truthful between connects. */
+export async function refreshAlbertModels(): Promise<void> {
+  const key = getStoredKey();
+  if (!key) return;
+  try {
+    const models = await validateAlbertApiKey(key);
+    ensureAlbertProvider();
+    syncAlbertModels(models);
+  } catch (error) {
+    logger.warn("Could not refresh the Albert model list:", error);
+  }
 }

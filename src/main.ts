@@ -47,8 +47,14 @@ import { handleDyadProReturn } from "./main/pro";
 import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
-import { ensureAlbertProvider } from "./ipc/services/albert_service";
-import { AUTO_UPDATE_AVAILABLE } from "./shared/branding";
+import {
+  ensureAlbertProvider,
+  refreshAlbertModels,
+} from "./ipc/services/albert_service";
+import {
+  AUTO_UPDATE_AVAILABLE,
+  DYAD_SERVICES_ENABLED,
+} from "./shared/branding";
 import { showSplash } from "./splash/splash_window";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
@@ -464,6 +470,8 @@ export async function onReady() {
     initializeDatabase();
     try {
       ensureAlbertProvider();
+      const refresh = setTimeout(() => void refreshAlbertModels(), 8_000);
+      refresh.unref?.();
     } catch (error) {
       logger.error("Failed to initialize Albert provider", error);
     }
@@ -1393,6 +1401,16 @@ const createApplicationMenu = () => {
   const appMenu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(appMenu);
 };
+
+// Cimes never talks to Dyad's servers. Chromium resolves host names ahead of
+// time for links it renders (speculative DNS), which QA saw for www.dyad.sh;
+// make those names unresolvable at the network layer. Must run before ready.
+if (!DYAD_SERVICES_ENABLED) {
+  app.commandLine.appendSwitch(
+    "host-resolver-rules",
+    "MAP dyad.sh ~NOTFOUND, MAP *.dyad.sh ~NOTFOUND",
+  );
+}
 
 // Register dyad-media:// protocol for serving persistent media attachments.
 // Must be called before app.whenReady().

@@ -62,3 +62,25 @@ describe("known Albert models", () => {
     expect(gpt.displayName).toBe("GPT-OSS 120B - Albert");
   });
 });
+
+describe("models that cannot be used in agent mode", () => {
+  it("does not offer a model that prints its tool calls as text", () => {
+    const parsed = parseAlbertModels([
+      { id: "qwen3-coder-30b-a3b-instruct", type: "text-generation" },
+      { id: "gpt-oss-120b", type: "text-generation" },
+    ]);
+    expect(parsed.map((m) => m.id)).toEqual(["gpt-oss-120b"]);
+  });
+
+  it("sends a reasoning effort only to the families that accept it", async () => {
+    const { albertSupportsReasoningEffort } = await import("./albert");
+    expect(albertSupportsReasoningEffort("gpt-oss-120b")).toBe(true);
+    expect(albertSupportsReasoningEffort("deepseek-v4-flash-0731")).toBe(true);
+    expect(albertSupportsReasoningEffort("ministral-3-8b-instruct-2512")).toBe(
+      false,
+    );
+    expect(
+      albertSupportsReasoningEffort("mistral-small-3-2-24b-instruct-2506"),
+    ).toBe(false);
+  });
+});

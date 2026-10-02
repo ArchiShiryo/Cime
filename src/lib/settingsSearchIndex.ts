@@ -1,3 +1,4 @@
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 export const SECTION_IDS = {
   general: "general-settings",
   workflow: "workflow-settings",
@@ -75,7 +76,7 @@ type SearchableSettingItem = {
   sectionLabel: string;
 };
 
-export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
+const ALL_SETTINGS_SEARCH_ITEMS: SearchableSettingItem[] = [
   // General Settings
   {
     id: SETTING_IDS.theme,
@@ -810,3 +811,16 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
     sectionLabel: "Danger Zone",
   },
 ];
+
+// Cimes has no paid offer: hide the settings that only exist for Dyad Pro or a
+// Claude subscription so a search never leads to a missing control.
+const PAID_ONLY_SETTING_IDS = new Set<string>([
+  SETTING_IDS.enableCloudSandbox,
+  SETTING_IDS.autoApproveSafeMcpTools,
+  SETTING_IDS.enableClaudeCodeSubscription,
+]);
+
+export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] =
+  ALL_SETTINGS_SEARCH_ITEMS.filter(
+    (item) => PAID_FEATURES_ENABLED || !PAID_ONLY_SETTING_IDS.has(item.id),
+  );

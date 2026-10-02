@@ -47,9 +47,16 @@ export const ALBERT_KNOWN_MODELS: readonly AlbertKnownModel[] = [
     displayName: "Ministral 3 8B - Albert",
     contextWindow: 131_072,
   },
-  {
-    id: "qwen3-coder-30b-a3b-instruct",
-    displayName: "Qwen3 Coder 30B - Albert",
-    contextWindow: 131_072,
-  },
 ];
+
+// Models that print their tool calls as plain text instead of calling the tool
+// (QA on Windows: no consent card, nothing runs). They are not offered.
+export const ALBERT_UNRELIABLE_TOOL_MODEL = /qwen3-coder/i;
+
+// Only these families accept a reasoning_effort value; Mistral models reject
+// "medium" (supported: none, high), so nothing is sent to them.
+export const ALBERT_REASONING_EFFORT_MODEL = /^(deepseek|gpt-oss)/i;
+
+export function albertSupportsReasoningEffort(modelId: string): boolean {
+  return ALBERT_REASONING_EFFORT_MODEL.test(modelId);
+}
