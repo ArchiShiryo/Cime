@@ -42,7 +42,7 @@ export function SkillsSettings() {
         </p>
       </div>
 
-      <ul className="divide-y rounded-md border">
+      <ul className="max-h-[28rem] divide-y overflow-y-auto rounded-md border">
         {skills.map((skill) => (
           <li
             key={skill.name}

@@ -10,6 +10,8 @@ export function useSkills() {
   const listQuery = useQuery({
     queryKey: queryKeys.skills.all,
     queryFn: () => ipc.skills.list(),
+    // Skills can also be added on disk, so re-read them whenever the list shows.
+    refetchOnMount: "always",
   });
   const importMutation = useMutation({
     mutationFn: (kind: "folder" | "archive") => ipc.skills.import({ kind }),
