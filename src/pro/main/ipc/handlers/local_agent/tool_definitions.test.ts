@@ -32,6 +32,7 @@ describe("Build mode tool profile", () => {
       "reinstall_and_restart_app",
       "update_todos",
       "read_guide",
+      "read_skill",
       "planning_questionnaire",
       "write_app_blueprint",
     ]);

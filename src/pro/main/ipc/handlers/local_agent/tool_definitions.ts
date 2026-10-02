@@ -64,6 +64,7 @@ import { planningQuestionnaireTool } from "./tools/planning_questionnaire";
 import { writePlanTool } from "./tools/write_plan";
 import { exitPlanTool } from "./tools/exit_plan";
 import { readGuideTool } from "./tools/read_guide";
+import { readSkillTool } from "./tools/read_skill";
 import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
@@ -194,6 +195,7 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   restartAppTool,
   reinstallAndRestartAppTool,
   readGuideTool,
+  readSkillTool,
   executeSandboxScriptTool,
   searchMcpToolsTool,
   getMcpToolSchemaTool,
@@ -490,6 +492,7 @@ export const BUILD_MODE_TOOL_NAMES = [
   "reinstall_and_restart_app",
   "update_todos",
   "read_guide",
+  "read_skill",
   "planning_questionnaire",
   "write_app_blueprint",
 ] as const satisfies readonly AgentToolName[];

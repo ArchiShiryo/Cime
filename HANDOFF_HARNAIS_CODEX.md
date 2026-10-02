@@ -165,7 +165,7 @@ mon-skill/
 
 ### S1 — Divulgation progressive (cœur de la compat)
 
-1. **Niveau 1** : le prompt système n'embarque que `name` + `description` de chaque skill (liste courte, ~100 tokens/skill) dans un bloc `<available_skills>`, avec la consigne : « si la demande correspond à un skill, charge-le avec `read_skill` avant d'agir ». Fonctionne pour les prompts *basic* et *full* (`local_agent_prompt.ts`) ; mettre à jour les snapshots (`rules/prompt-guides.md`).
+1. **Niveau 1** : le prompt système n'embarque que `name` + `description` de chaque skill (liste courte, ~100 tokens/skill) dans un bloc `<available_skills>`, avec la consigne : « si la demande correspond à un skill, charge-le avec `read_skill` avant d'agir ». Fonctionne pour les prompts _basic_ et _full_ (`local_agent_prompt.ts`) ; mettre à jour les snapshots (`rules/prompt-guides.md`).
 2. **Niveau 2** : nouvel outil agent `read_skill({ name })` (`tools/read_skill.ts`, enregistré dans `tool_definitions.ts`, `modifiesState: false`, consentement « always », autorisé en Ask/Plan) → renvoie le corps de `SKILL.md` + la liste des fichiers du skill (chemins relatifs).
 3. **Niveau 3** : les fichiers `references/*`, `assets/*` sont lus à la demande avec l'outil de lecture existant ; ajouter à `read_skill` un paramètre optionnel `file` pour lire un fichier du skill **sans** sortir du dossier (chemin normalisé, refus de `..`).
 4. Les skills ne sont **pas** copiés dans l'app de l'utilisateur ; ils restent dans leur dossier d'origine.
@@ -197,13 +197,13 @@ Réutiliser le mécanisme existant des `/slug` prompts : `/nom [arguments]` char
 - `accessibilite-rgaa` : checklist RGAA/contraste/clavier/ARIA appliquée aux apps générées.
 - `atelier-pedagogique` : structure d'un atelier (objectif, durée, matériel, pas-à-pas pour un public non technique) et rédaction en français clair.
 - `app-web-simple` : conventions pour générer des apps front simples et robustes dans Cimes (stack par défaut, structure de fichiers, vérifications avant de rendre la main).
-Chacun ≤ 500 lignes, `description` précise (sinon DeepSeek ne les déclenchera pas).
+  Chacun ≤ 500 lignes, `description` précise (sinon DeepSeek ne les déclenchera pas).
 
 ### S6 — Reste du harnais (sans Dyad Pro)
 
 Dans l'ordre d'utilité pour les ateliers :
 
-1. **Boucle agent fiable avec DeepSeek V4 Flash** : lancer `testing/cimes-e2e/agent.mjs` (jamais exécuté) avec `ALBERT_KEY_FOR_TEST` ; mesurer sur 5 runs la génération d'une app + preview, les appels d'outils mal formés, les boucles. Ajuster descriptions d'outils/prompt *basic* en conséquence (§3).
+1. **Boucle agent fiable avec DeepSeek V4 Flash** : lancer `testing/cimes-e2e/agent.mjs` (jamais exécuté) avec `ALBERT_KEY_FOR_TEST` ; mesurer sur 5 runs la génération d'une app + preview, les appels d'outils mal formés, les boucles. Ajuster descriptions d'outils/prompt _basic_ en conséquence (§3).
 2. **Planification / todos** : vérifier que `update_todos` (ou équivalent) et le mode Plan fonctionnent sans Pro ; sinon les rendre disponibles.
 3. **Sous-agents / exploration** : l'exploration de code est un service Pro. Fournir une version locale : un outil `explore` qui lance une boucle courte, lecture seule (`read_file`, `grep`, `list_files`), avec le même modèle, et renvoie un résumé ; plafonner étapes et tokens.
 4. **Compaction de contexte** : fenêtre Albert = 131 072 tokens ; vérifier que la compaction/troncature d'historique se déclenche avant dépassement (tests avec historique long, sorties shell/web volumineuses tronquées).

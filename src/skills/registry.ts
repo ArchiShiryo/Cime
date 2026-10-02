@@ -1,0 +1,158 @@
+import fs from "node:fs";
+import path from "node:path";
+import log from "electron-log";
+import { getUserDataPath } from "@/paths/paths";
+import { BUILTIN_SKILLS } from "./builtin";
+import {
+  MAX_SKILL_FILE_BYTES,
+  SKILL_FILE_NAME,
+  parseSkillMd,
+  type ParsedSkill,
+} from "./parse";
+
+const logger = log.scope("skills");
+
+const MAX_SKILLS = 200;
+const MAX_LISTED_FILES = 200;
+
+export type SkillOrigin = "builtin" | "user" | "app";
+
+export interface Skill extends ParsedSkill {
+  origin: SkillOrigin;
+  /** Absolute folder of the skill; undefined for built-in skills. */
+  dir?: string;
+}
+
+export function getUserSkillsDir(): string {
+  return path.join(getUserDataPath(), "skills");
+}
+
+/** Skill folders inside an app; .claude/skills makes Claude repos work as-is. */
+export function getAppSkillRoots(appPath: string): string[] {
+  return [
+    path.join(appPath, ".claude", "skills"),
+    path.join(appPath, ".cimes", "skills"),
+  ];
+}
+
+async function readSkillDir(
+  dir: string,
+  origin: SkillOrigin,
+): Promise<Skill | null> {
+  const file = path.join(dir, SKILL_FILE_NAME);
+  try {
+    // lstat so a SKILL.md symlink pointing outside the folder is refused.
+    const stat = await fs.promises.lstat(file);
+    if (!stat.isFile() || stat.size > MAX_SKILL_FILE_BYTES) return null;
+    const result = parseSkillMd(
+      await fs.promises.readFile(file, "utf8"),
+      path.basename(dir),
+    );
+    if (!result.ok) {
+      logger.warn(`Ignoring skill at ${dir}: ${result.error}`);
+      return null;
+    }
+    return { ...result.skill, origin, dir };
+  } catch {
+    return null;
+  }
+}
+
+async function readRoot(root: string, origin: SkillOrigin): Promise<Skill[]> {
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.promises.readdir(root, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const skills: Skill[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const skill = await readSkillDir(path.join(root, entry.name), origin);
+    if (skill) skills.push(skill);
+  }
+  return skills;
+}
+
+/**
+ * All skills visible for an app. Later sources override earlier ones with the
+ * same name: built-in < user < app (.claude/skills, then .cimes/skills).
+ */
+export async function discoverSkills(
+  options: {
+    appPath?: string;
+    userSkillsDir?: string;
+    disabled?: readonly string[];
+    includeDisabled?: boolean;
+  } = {},
+): Promise<Skill[]> {
+  const byName = new Map<string, Skill>();
+  const add = (skill: Skill) => {
+    if (byName.has(skill.name)) {
+      logger.info(
+        `Skill "${skill.name}" from ${skill.origin} overrides an earlier one`,
+      );
+    }
+    byName.set(skill.name, skill);
+  };
+  for (const skill of BUILTIN_SKILLS) add({ ...skill, origin: "builtin" });
+  for (const skill of await readRoot(
+    options.userSkillsDir ?? getUserSkillsDir(),
+    "user",
+  )) {
+    add(skill);
+  }
+  if (options.appPath) {
+    for (const root of getAppSkillRoots(options.appPath)) {
+      for (const skill of await readRoot(root, "app")) add(skill);
+    }
+  }
+  const disabled = new Set(options.disabled ?? []);
+  return [...byName.values()]
+    .filter((skill) => options.includeDisabled || !disabled.has(skill.name))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, MAX_SKILLS);
+}
+
+/** Resolve a file inside a skill folder, refusing traversal and symlink escape. */
+export async function resolveSkillFile(
+  skill: Skill,
+  relativePath: string,
+): Promise<string | null> {
+  if (!skill.dir) return null;
+  const root = await fs.promises.realpath(skill.dir);
+  const target = path.resolve(root, relativePath);
+  if (target !== root && !target.startsWith(root + path.sep)) return null;
+  try {
+    const real = await fs.promises.realpath(target);
+    if (real !== root && !real.startsWith(root + path.sep)) return null;
+    return real;
+  } catch {
+    return null;
+  }
+}
+
+/** Relative paths of the files bundled with a skill (bounded). */
+export async function listSkillFiles(skill: Skill): Promise<string[]> {
+  if (!skill.dir) return [];
+  const files: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    if (files.length >= MAX_LISTED_FILES) return;
+    let entries: fs.Dirent[];
+    try {
+      entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (files.length >= MAX_LISTED_FILES) return;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (entry.isFile() && entry.name !== SKILL_FILE_NAME) {
+        files.push(path.relative(skill.dir!, full).split(path.sep).join("/"));
+      }
+    }
+  };
+  await walk(skill.dir);
+  return files.sort();
+}
