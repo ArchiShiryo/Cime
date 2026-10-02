@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import log from "electron-log";
 import { getUserDataPath } from "@/paths/paths";
+import { readProjectConfig } from "@/projects/config";
 import { BUILTIN_SKILLS, type BuiltinSkill } from "./builtin";
 import {
   MAX_SKILL_FILE_BYTES,
@@ -152,8 +153,17 @@ export async function discoverSkills(
     }
   }
   const disabled = new Set(options.disabled ?? []);
+  // A project only offers the skills its owner switched on (plus its own folders' skills).
+  const project = options.appPath ? readProjectConfig(options.appPath) : null;
+  const projectSkills = project ? new Set(project.enabledSkills) : null;
   return [...byName.values()]
     .filter((skill) => options.includeDisabled || !disabled.has(skill.name))
+    .filter(
+      (skill) =>
+        !projectSkills ||
+        skill.origin === "app" ||
+        projectSkills.has(skill.name),
+    )
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, MAX_SKILLS);
 }

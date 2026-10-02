@@ -127,6 +127,33 @@ describe("knowledge base", () => {
     fs.writeFileSync(path.join(docs, "image.png"), "not supported");
   });
 
+  it("keeps a project's documentation apart from the global base", async () => {
+    holder.mode = "keywords";
+    const project = path.join(holder.userData, "projet");
+    fs.mkdirSync(project, { recursive: true });
+    fs.writeFileSync(
+      path.join(project, "referentiel.md"),
+      "Indicateur 12 : tracer les preuves de formation.",
+    );
+    await addToKnowledgeBase([docs]);
+    await addToKnowledgeBase([project], project);
+    await waitForKnowledgeIdle();
+    expect(listSources(null, project).map((s) => s.name)).toEqual([
+      "referentiel.md",
+    ]);
+    expect(listSources().some((s) => s.name === "referentiel.md")).toBe(false);
+    const scoped = await searchKnowledge(
+      "indicateur preuves",
+      3,
+      undefined,
+      project,
+    );
+    expect(scoped[0]?.source).toBe("referentiel.md");
+    const global = await searchKnowledge("indicateur preuves", 3);
+    expect(global.some((hit) => hit.source === "referentiel.md")).toBe(false);
+    expect(getKnowledgeStats(project).ready).toBe(1);
+  });
+
   it("collects supported files recursively and skips the rest", async () => {
     const files = await collectFiles([docs]);
     expect(files.map((f) => path.basename(f)).sort()).toEqual([

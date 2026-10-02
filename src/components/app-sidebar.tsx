@@ -7,6 +7,7 @@ import {
   BookOpen,
   Blocks,
   FileSearch,
+  FolderKanban,
   Sparkles,
   Moon,
   Sun,
@@ -55,6 +56,11 @@ const items = [
     title: "Apps",
     to: "/",
     icon: Home,
+  },
+  {
+    title: "Projects",
+    to: "/projects",
+    icon: FolderKanban,
   },
   {
     title: "Settings",

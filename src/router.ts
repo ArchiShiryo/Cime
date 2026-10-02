@@ -9,6 +9,7 @@ import { templatesRoute } from "./routes/templates";
 import { pluginsRoute } from "./routes/plugins";
 import { documentsRoute } from "./routes/documents";
 import { skillsRoute } from "./routes/skills";
+import { projectsRoute, projectDetailsRoute } from "./routes/projects";
 import { pluginDetailRoute } from "./routes/plugin-detail";
 import { libraryRoute } from "./routes/library";
 import { appsRoute } from "./routes/apps";
@@ -22,6 +23,8 @@ const routeTree = rootRoute.addChildren([
   pluginsRoute,
   documentsRoute,
   skillsRoute,
+  projectsRoute,
+  projectDetailsRoute,
   pluginDetailRoute,
   libraryRoute,
   appsRoute,

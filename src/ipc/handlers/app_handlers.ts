@@ -1,4 +1,5 @@
 import { deleteChatJournals } from "@/ipc/services/chat_journal_cleanup";
+import { isProjectPath, materializeProject } from "@/projects/config";
 import { initialChatExecution } from "@/ipc/utils/chat_execution_selection";
 import { app, dialog } from "electron";
 import { closeDatabase, db, getDatabaseFilePaths } from "../../db";
@@ -938,9 +939,13 @@ export function registerAppHandlers() {
         })
         .returning();
 
-      await createFromTemplate({
-        fullAppPath,
-      });
+      if (params.projectTemplateId) {
+        materializeProject(fullAppPath, params.projectTemplateId, app.name);
+      } else {
+        await createFromTemplate({
+          fullAppPath,
+        });
+      }
 
       // Ensure `.dyad/` is gitignored before the initial commit so the agent's
       // later `ensureDyadGitignored` call is a no-op and the app stays clean.
@@ -962,7 +967,11 @@ export function registerAppHandlers() {
         .where(eq(chats.id, chat.id));
 
       const result = {
-        app: { ...app, resolvedPath: fullAppPath },
+        app: {
+          ...app,
+          resolvedPath: fullAppPath,
+          isProject: Boolean(params.projectTemplateId),
+        },
         chatId: chat.id,
       };
       return result;
@@ -1226,6 +1235,7 @@ export function registerAppHandlers() {
       files,
       frameworkType: detectFrameworkType(appPath),
       resolvedPath: appPath,
+      isProject: isProjectPath(appPath),
       supabaseProjectName,
       vercelTeamSlug,
       deploymentProvidersInUse: {
@@ -1243,6 +1253,7 @@ export function registerAppHandlers() {
     const appsWithResolvedPath = allApps.map((app) => ({
       ...app,
       resolvedPath: getDyadAppPath(app.path),
+      isProject: isProjectPath(getDyadAppPath(app.path)),
     }));
     return {
       apps: appsWithResolvedPath,

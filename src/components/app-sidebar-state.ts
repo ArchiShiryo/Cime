@@ -12,7 +12,8 @@ export type AppSidebarItemTitle =
   | "Templates"
   | "Plugins"
   | "Documents"
-  | "Skills";
+  | "Skills"
+  | "Projects";
 
 export function getRouteSidebarPanel(pathname: string): AppSidebarPanel | null {
   if (
@@ -108,6 +109,9 @@ export function isSidebarItemActive({
   }
   if (title === "Documents") {
     return pathname.startsWith("/documents");
+  }
+  if (title === "Projects") {
+    return pathname.startsWith("/project");
   }
   if (title === "Skills") {
     return pathname.startsWith("/skills");

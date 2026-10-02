@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { escapeXmlAttr, type ToolDefinition } from "./types";
 import { searchKnowledge } from "@/knowledge/service";
+import { isProjectPath } from "@/projects/config";
 
 const searchDocsSchema = z.object({
   query: z
@@ -37,6 +38,7 @@ export const searchDocsTool: ToolDefinition<z.infer<typeof searchDocsSchema>> =
         args.query,
         args.limit ?? 6,
         ctx.abortSignal,
+        isProjectPath(ctx.appPath) ? ctx.appPath : "",
       );
       if (hits.length === 0) {
         return "No passage found in the document base. Try other words, or tell the user that no document covers this.";

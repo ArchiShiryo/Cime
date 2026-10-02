@@ -126,6 +126,33 @@ describe("discoverSkills", () => {
     expect(hidden.some((s) => s.name === "other")).toBe(false);
   });
 
+  it("a project only offers the skills it enabled, plus its own", async () => {
+    const appDir = path.join(root, "app");
+    write(
+      path.join(appDir, ".cimes", "skills", "local-skill"),
+      SKILL.replace("demo-skill", "local-skill"),
+    );
+    fs.mkdirSync(path.join(appDir, ".cimes"), { recursive: true });
+    fs.writeFileSync(
+      path.join(appDir, ".cimes", "project.json"),
+      JSON.stringify({
+        version: 1,
+        templateId: "vierge",
+        enabledSkills: ["charte-canope"],
+        instructions: "",
+      }),
+    );
+    const skills = await discoverSkills({
+      appPath: appDir,
+      userSkillsDir: path.join(root, "none"),
+      builtinSkillsDir: path.join(root, "builtin"),
+    });
+    expect(skills.map((s) => s.name).sort()).toEqual([
+      "charte-canope",
+      "local-skill",
+    ]);
+  });
+
   it("skips invalid skills without failing", async () => {
     write(path.join(root, "user", "broken"), "no frontmatter");
     const skills = await discoverSkills({

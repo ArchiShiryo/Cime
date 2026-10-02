@@ -1,7 +1,7 @@
 // Lists every host the packaged app tries to reach on its own (no user action).
 // Dyad's domains are pointed at a local listener (/etc/hosts, needs root) so any
 // connection attempt is logged; Chromium's net-log captures the rest.
-import { spawn, execFileSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";

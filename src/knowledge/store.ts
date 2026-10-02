@@ -15,6 +15,8 @@ export interface KnowledgeSource {
   error: string | null;
   chunkCount: number;
   embeddedCount: number;
+  /** "" for the global document base, else the project folder the source belongs to. */
+  scope: string;
 }
 
 export interface StoredChunk {
@@ -68,6 +70,17 @@ export function getKnowledgeDb(file?: string): Database.Database {
   if (!columns.some((column) => column.name === "embedder")) {
     database.exec("ALTER TABLE chunks ADD COLUMN embedder TEXT");
   }
+  const sourceColumns = database
+    .prepare("PRAGMA table_info(sources)")
+    .all() as {
+    name: string;
+  }[];
+  if (!sourceColumns.some((column) => column.name === "scope")) {
+    database.exec(
+      "ALTER TABLE sources ADD COLUMN scope TEXT NOT NULL DEFAULT ''",
+    );
+  }
+  database.exec("CREATE INDEX IF NOT EXISTS sources_scope ON sources(scope)");
   return database;
 }
 
@@ -82,14 +95,16 @@ export function upsertSource(
   name: string,
   size: number,
   mtime: number,
+  scope = "",
 ): number {
   const db = getKnowledgeDb();
   db.prepare(
-    `INSERT INTO sources (path, name, size, mtime, status, error, updated_at)
-     VALUES (?, ?, ?, ?, 'pending', NULL, ?)
+    `INSERT INTO sources (path, name, size, mtime, status, error, updated_at, scope)
+     VALUES (?, ?, ?, ?, 'pending', NULL, ?, ?)
      ON CONFLICT(path) DO UPDATE SET name = excluded.name, size = excluded.size,
-       mtime = excluded.mtime, status = 'pending', error = NULL, updated_at = excluded.updated_at`,
-  ).run(file, name, size, mtime, Date.now());
+       mtime = excluded.mtime, status = 'pending', error = NULL, updated_at = excluded.updated_at,
+       scope = excluded.scope`,
+  ).run(file, name, size, mtime, Date.now(), scope);
   return (
     db.prepare("SELECT id FROM sources WHERE path = ?").get(file) as {
       id: number;
@@ -156,20 +171,32 @@ export function setChunkEmbedding(
 }
 
 /** Sources with passage counts; `embeddedCount` counts vectors whose embedder starts with `embedderPrefix` (any when omitted). */
-export function listSources(embedderPrefix?: string | null): KnowledgeSource[] {
+export function listSources(
+  embedderPrefix?: string | null,
+  scope = "",
+): KnowledgeSource[] {
   return getKnowledgeDb()
     .prepare(
-      `SELECT s.id, s.path, s.name, s.size, s.mtime, s.status, s.error,
+      `SELECT s.id, s.path, s.name, s.size, s.mtime, s.status, s.error, s.scope,
               COUNT(c.id) AS chunkCount,
               COUNT(CASE WHEN c.embedding IS NOT NULL AND (? IS NULL OR c.embedder LIKE ? || '%') THEN 1 END) AS embeddedCount
        FROM sources s LEFT JOIN chunks c ON c.source_id = s.id
+       WHERE s.scope = ?
        GROUP BY s.id ORDER BY s.name COLLATE NOCASE`,
     )
-    .all(embedderPrefix ?? null, embedderPrefix ?? null) as KnowledgeSource[];
+    .all(
+      embedderPrefix ?? null,
+      embedderPrefix ?? null,
+      scope,
+    ) as KnowledgeSource[];
 }
 
 export function getSource(id: number): KnowledgeSource | undefined {
-  return listSources().find((source) => source.id === id);
+  const row = getKnowledgeDb()
+    .prepare("SELECT scope FROM sources WHERE id = ?")
+    .get(id) as { scope: string } | undefined;
+  if (!row) return undefined;
+  return listSources(null, row.scope).find((source) => source.id === id);
 }
 
 export function removeSource(id: number): void {
@@ -183,13 +210,15 @@ function toVector(blob: Buffer | null): Float32Array | null {
   return new Float32Array(copy.buffer);
 }
 
-export function loadReadyChunks(): (StoredChunk & { sourceName: string })[] {
+export function loadReadyChunks(
+  scope = "",
+): (StoredChunk & { sourceName: string })[] {
   const rows = getKnowledgeDb()
     .prepare(
       `SELECT c.id, c.source_id AS sourceId, c.ordinal, c.location, c.text, c.embedding, c.embedder, s.name AS sourceName
-       FROM chunks c JOIN sources s ON s.id = c.source_id WHERE s.status = 'ready'`,
+       FROM chunks c JOIN sources s ON s.id = c.source_id WHERE s.status = 'ready' AND s.scope = ?`,
     )
-    .all() as (Omit<StoredChunk, "embedding"> & {
+    .all(scope) as (Omit<StoredChunk, "embedding"> & {
     embedding: Buffer | null;
     sourceName: string;
   })[];

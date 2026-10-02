@@ -75,7 +75,10 @@ export function waitForKnowledgeIdle(): Promise<void> {
 }
 
 /** Registers files and indexes them in the background (one at a time). */
-export async function addToKnowledgeBase(inputs: string[]): Promise<number> {
+export async function addToKnowledgeBase(
+  inputs: string[],
+  scope = "",
+): Promise<number> {
   const files = await collectFiles(inputs);
   const ids: number[] = [];
   for (const file of files) {
@@ -86,6 +89,7 @@ export async function addToKnowledgeBase(inputs: string[]): Promise<number> {
         path.basename(file),
         stat.size,
         Math.floor(stat.mtimeMs),
+        scope,
       ),
     );
   }
@@ -175,12 +179,12 @@ export async function embedPending(): Promise<void> {
   }
 }
 
-export function getKnowledgeStats(): {
+export function getKnowledgeStats(scope = ""): {
   sources: number;
   ready: number;
   chunks: number;
 } {
-  const sources = listSources();
+  const sources = listSources(null, scope);
   return {
     sources: sources.length,
     ready: sources.filter((source) => source.status === "ready").length,
@@ -189,12 +193,15 @@ export function getKnowledgeStats(): {
 }
 
 /** Sources with the number of passages already analysed by the current engine. */
-export function listSourcesWithProgress(): KnowledgeSource[] {
+export function listSourcesWithProgress(scope = ""): KnowledgeSource[] {
   const mode = getEmbeddingMode();
   if (mode === "keywords") {
-    return listSources().map((source) => ({ ...source, embeddedCount: 0 }));
+    return listSources(null, scope).map((source) => ({
+      ...source,
+      embeddedCount: 0,
+    }));
   }
-  return listSources(mode === "local" ? "local:" : "albert:");
+  return listSources(mode === "local" ? "local:" : "albert:", scope);
 }
 
 export { listSources };
@@ -205,8 +212,9 @@ export async function searchKnowledge(
   query: string,
   limit = 6,
   signal?: AbortSignal,
+  scope = "",
 ): Promise<SearchHit[]> {
-  const chunks = loadReadyChunks();
+  const chunks = loadReadyChunks(scope);
   if (chunks.length === 0) return [];
   const keyword = bm25Scores(
     tokenizeForSearch(query),
