@@ -1,4 +1,5 @@
 import log from "electron-log";
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import { z } from "zod";
 
 const logger = log.scope("remote_desktop_config");
@@ -52,6 +53,7 @@ async function fetchRemoteDesktopConfig(): Promise<RemoteDesktopConfig | null> {
 }
 
 export async function getRemoteDesktopConfig(): Promise<RemoteDesktopConfig | null> {
+  if (!DYAD_SERVICES_ENABLED) return null;
   if (
     remoteDesktopConfigCache &&
     remoteDesktopConfigCache.expiresAt > Date.now()

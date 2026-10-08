@@ -10,6 +10,11 @@ import {
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
 import { SubscriptionModelMenu } from "./SubscriptionModelMenu";
+
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  PAID_FEATURES_ENABLED: true,
+}));
 const mocks = vi.hoisted(() => ({
   connected: false,
   credentialError: false,

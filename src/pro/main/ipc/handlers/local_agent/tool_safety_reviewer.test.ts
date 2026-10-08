@@ -15,6 +15,15 @@ import {
   reviewToolAction,
   SHELL_REVIEW_TIMEOUT_MS,
 } from "./tool_safety_reviewer";
+
+// Upstream behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
 const input = {
   settings: {} as UserSettings,
   system: "policy",
@@ -37,6 +46,28 @@ describe("mandatory tool reviewer", () => {
       });
     },
   );
+  it("reviews with the user's selected model in Cimes (no OpenAI access)", async () => {
+    branding.paid = false;
+    try {
+      mocks.streamText.mockReturnValue({
+        text: Promise.resolve('{"reason":"Bounded task","decision":"allow"}'),
+      });
+      const settings = {
+        selectedModel: {
+          provider: "custom::albert",
+          name: "deepseek-v4-flash-0731",
+        },
+      } as UserSettings;
+      await reviewToolAction({ ...input, settings });
+      expect(mocks.getModelClient).toHaveBeenCalledWith(
+        settings.selectedModel,
+        settings,
+      );
+    } finally {
+      branding.paid = true;
+    }
+  });
+
   it("accepts a structured allow and preserves exact command data", async () => {
     mocks.streamText.mockReturnValue({
       text: Promise.resolve('{"reason":"Bounded task","decision":"allow"}'),

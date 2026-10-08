@@ -1,0 +1,404 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("electron-log", () => ({
+  default: {
+    scope: () => ({
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+    }),
+  },
+}));
+vi.mock("@/paths/paths", () => ({ getUserDataPath: () => os.tmpdir() }));
+
+import { parseSkillMd } from "./parse";
+import {
+  type Skill,
+  discoverSkills,
+  listSkillFiles,
+  resolveSkillFile,
+} from "./registry";
+import {
+  buildAvailableSkillsPrompt,
+  expandSkillInvocation,
+  substituteSkillVariables,
+} from "./prompt";
+import { BUILTIN_SKILLS } from "./builtin";
+
+const SKILL = `---
+name: demo-skill
+description: Does a demo.
+allowed-tools: Read, Bash
+unknown-field: ignored
+---
+# Demo
+Run \${CLAUDE_SKILL_DIR}/scripts/go.sh $ARGUMENTS
+`;
+
+describe("parseSkillMd", () => {
+  it("parses a Claude skill and ignores unknown fields", () => {
+    const result = parseSkillMd(SKILL, "demo-skill");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.skill.name).toBe("demo-skill");
+    expect(result.skill.allowedTools).toEqual(["Read", "Bash"]);
+    expect(result.skill.body.startsWith("# Demo")).toBe(true);
+  });
+
+  it("handles BOM and CRLF", () => {
+    const result = parseSkillMd("﻿" + SKILL.replace(/\n/g, "\r\n"));
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects missing frontmatter, bad names and empty descriptions", () => {
+    expect(parseSkillMd("# no frontmatter").ok).toBe(false);
+    expect(
+      parseSkillMd("---\nname: Bad Name\ndescription: x\n---\nbody").ok,
+    ).toBe(false);
+    expect(parseSkillMd("---\nname: ok\n---\nbody").ok).toBe(false);
+    expect(parseSkillMd("---\njust text\n---\nx").ok).toBe(false);
+  });
+
+  it("falls back to the folder name", () => {
+    const result = parseSkillMd("---\ndescription: d\n---\nb", "from-dir");
+    expect(result.ok && result.skill.name).toBe("from-dir");
+  });
+});
+
+describe("builtin skills", () => {
+  it("ships valid skills whose names match their folders", () => {
+    const dir = path.join(__dirname, "builtin");
+    const folders = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    expect(folders.length).toBeGreaterThanOrEqual(15);
+    expect(BUILTIN_SKILLS.map((skill) => skill.name).sort()).toEqual(folders);
+    for (const skill of BUILTIN_SKILLS) {
+      expect(skill.description.length).toBeGreaterThan(40);
+      expect(skill.body.split("\n").length).toBeLessThan(500);
+    }
+  });
+});
+
+describe("discoverSkills", () => {
+  let root: string;
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-skills-"));
+  });
+  afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const write = (dir: string, content = SKILL) => {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "SKILL.md"), content);
+  };
+
+  it("finds user and app skills, app overrides user, disabled are hidden", async () => {
+    const userDir = path.join(root, "user");
+    const appDir = path.join(root, "app");
+    write(path.join(userDir, "demo-skill"));
+    write(
+      path.join(appDir, ".claude", "skills", "demo-skill"),
+      SKILL.replace("Does a demo.", "App version."),
+    );
+    write(
+      path.join(appDir, ".cimes", "skills", "other"),
+      SKILL.replace("demo-skill", "other"),
+    );
+    const skills = await discoverSkills({
+      appPath: appDir,
+      userSkillsDir: userDir,
+    });
+    const demo = skills.find((s) => s.name === "demo-skill")!;
+    expect(demo.origin).toBe("app");
+    expect(demo.description).toBe("App version.");
+    expect(skills.some((s) => s.name === "other")).toBe(true);
+    const hidden = await discoverSkills({
+      appPath: appDir,
+      userSkillsDir: userDir,
+      disabled: ["other"],
+    });
+    expect(hidden.some((s) => s.name === "other")).toBe(false);
+  });
+
+  it("a project only offers the skills it enabled, plus its own", async () => {
+    const appDir = path.join(root, "app");
+    write(
+      path.join(appDir, ".cimes", "skills", "local-skill"),
+      SKILL.replace("demo-skill", "local-skill"),
+    );
+    fs.mkdirSync(path.join(appDir, ".cimes"), { recursive: true });
+    fs.writeFileSync(
+      path.join(appDir, ".cimes", "project.json"),
+      JSON.stringify({
+        version: 1,
+        templateId: "libre",
+        enabledSkills: ["charte-canope"],
+        instructions: "",
+      }),
+    );
+    const skills = await discoverSkills({
+      appPath: appDir,
+      userSkillsDir: path.join(root, "none"),
+      builtinSkillsDir: path.join(root, "builtin"),
+    });
+    expect(skills.map((s) => s.name).sort()).toEqual([
+      "charte-canope",
+      "local-skill",
+    ]);
+  });
+
+  it("skips invalid skills without failing", async () => {
+    write(path.join(root, "user", "broken"), "no frontmatter");
+    const skills = await discoverSkills({
+      userSkillsDir: path.join(root, "user"),
+    });
+    expect(skills.some((s) => s.name === "broken")).toBe(false);
+  });
+
+  it("lists bundled files and refuses path traversal and symlink escape", async () => {
+    const dir = path.join(root, "user", "demo-skill");
+    write(dir);
+    fs.mkdirSync(path.join(dir, "references"));
+    fs.writeFileSync(path.join(dir, "references", "a.md"), "A");
+    fs.writeFileSync(path.join(root, "secret.txt"), "secret");
+    try {
+      fs.symlinkSync(path.join(root, "secret.txt"), path.join(dir, "link.txt"));
+    } catch {
+      // symlinks may be unavailable (Windows without privileges)
+    }
+    const [skill] = (
+      await discoverSkills({ userSkillsDir: path.join(root, "user") })
+    ).filter((s) => s.name === "demo-skill");
+    expect(await listSkillFiles(skill)).toContain("references/a.md");
+    expect(await resolveSkillFile(skill, "references/a.md")).not.toBeNull();
+    expect(await resolveSkillFile(skill, "../../secret.txt")).toBeNull();
+    expect(await resolveSkillFile(skill, "link.txt")).toBeNull();
+    expect(await resolveSkillFile(skill, "missing.md")).toBeNull();
+  });
+});
+
+describe("prompt helpers", () => {
+  const parsed = parseSkillMd(SKILL, "demo-skill");
+  if (!parsed.ok) throw new Error(parsed.error);
+  const skill: Skill = {
+    ...parsed.skill,
+    origin: "user",
+    dir: "/skills/demo-skill",
+  };
+
+  it("lists only names and descriptions, never bodies", () => {
+    const prompt = buildAvailableSkillsPrompt([skill]);
+    expect(prompt).toContain("demo-skill: Does a demo.");
+    expect(prompt).not.toContain("# Demo");
+    expect(buildAvailableSkillsPrompt([])).toBe("");
+  });
+
+  it("hides model-disabled skills from the list but allows /name", () => {
+    const hidden = { ...skill, disableModelInvocation: true };
+    expect(buildAvailableSkillsPrompt([hidden])).toBe("");
+    expect(expandSkillInvocation("/demo-skill x", [hidden])).toContain(
+      "# Demo",
+    );
+  });
+
+  it("expands /name with arguments and the skill dir", () => {
+    const text = expandSkillInvocation("/demo-skill hello world", [skill])!;
+    expect(text).toContain("/skills/demo-skill/scripts/go.sh hello world");
+    expect(expandSkillInvocation("/unknown", [skill])).toBeNull();
+    expect(expandSkillInvocation("not a command", [skill])).toBeNull();
+    expect(
+      expandSkillInvocation("/demo-skill", [
+        { ...skill, userInvocable: false },
+      ]),
+    ).toBeNull();
+  });
+
+  it("substitutes both variable spellings", () => {
+    expect(
+      substituteSkillVariables("$CLAUDE_SKILL_DIR ${CIMES_SKILL_DIR}", "/d"),
+    ).toBe("/d /d");
+  });
+});
+
+import { zipSync, strToU8 } from "fflate";
+import {
+  deleteUserSkill,
+  importSkillFromPath,
+  installSkillFiles,
+  normalizeEntryPath,
+  unzipSkillArchive,
+} from "./import";
+
+describe("skill import", () => {
+  let dest: string;
+  beforeEach(() => {
+    dest = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-import-"));
+  });
+  afterEach(() => fs.rmSync(dest, { recursive: true, force: true }));
+
+  it("normalizes entry paths and rejects traversal", () => {
+    expect(normalizeEntryPath("a/b.md")).toBe("a/b.md");
+    expect(normalizeEntryPath("a\\b.md")).toBe("a/b.md");
+    expect(normalizeEntryPath("../x")).toBeNull();
+    expect(normalizeEntryPath("a/../../x")).toBeNull();
+    expect(normalizeEntryPath("/etc/passwd")).toBeNull();
+    expect(normalizeEntryPath("C:/x")).toBeNull();
+  });
+
+  it("imports a zip with a wrapper folder and reports scripts", async () => {
+    const zip = zipSync({
+      "demo-skill/SKILL.md": strToU8(SKILL),
+      "demo-skill/scripts/go.sh": strToU8("echo hi"),
+      "demo-skill/references/a.md": strToU8("A"),
+    });
+    const zipPath = path.join(dest, "demo.skill");
+    fs.writeFileSync(zipPath, zip);
+    const result = await importSkillFromPath(
+      zipPath,
+      path.join(dest, "skills"),
+    );
+    expect(result.name).toBe("demo-skill");
+    expect(result.scripts).toEqual(["scripts/go.sh"]);
+    expect(
+      fs.existsSync(
+        path.join(dest, "skills", "demo-skill", "references", "a.md"),
+      ),
+    ).toBe(true);
+    await deleteUserSkill("demo-skill", path.join(dest, "skills"));
+    expect(fs.existsSync(path.join(dest, "skills", "demo-skill"))).toBe(false);
+  });
+
+  it("refuses zip-slip entries, non-zip files and skills without SKILL.md", async () => {
+    const evil = zipSync({
+      "SKILL.md": strToU8(SKILL),
+      "../escape.txt": strToU8("x"),
+    });
+    expect(() => unzipSkillArchive(evil)).toThrow(/Unsafe path/);
+    expect(() => unzipSkillArchive(new Uint8Array([1, 2, 3]))).toThrow(/zip/);
+    await expect(
+      installSkillFiles(new Map([["readme.md", new Uint8Array([1])]]), dest),
+    ).rejects.toThrow(/SKILL.md/);
+  });
+
+  it("imports a folder and ignores symlinks", async () => {
+    const src = path.join(dest, "src");
+    fs.mkdirSync(src);
+    fs.writeFileSync(path.join(src, "SKILL.md"), SKILL);
+    fs.writeFileSync(path.join(dest, "outside.txt"), "secret");
+    try {
+      fs.symlinkSync(
+        path.join(dest, "outside.txt"),
+        path.join(src, "link.txt"),
+      );
+    } catch {
+      // symlinks may be unavailable
+    }
+    const result = await importSkillFromPath(src, path.join(dest, "skills"));
+    expect(result.fileCount).toBe(1);
+  });
+});
+
+import { execFileSync } from "node:child_process";
+
+describe("office-fichiers built-in skill", () => {
+  it("writes a runnable toolkit to disk and the script really edits Office files", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "cimes-office-"));
+    try {
+      const skills = await discoverSkills({
+        userSkillsDir: path.join(root, "none"),
+        builtinSkillsDir: path.join(root, "builtin"),
+      });
+      const office = skills.find((s) => s.name === "office-fichiers")!;
+      expect(office.origin).toBe("builtin");
+      expect(await listSkillFiles(office)).toEqual(
+        expect.arrayContaining(["scripts/office.mjs"]),
+      );
+      const script = (await resolveSkillFile(office, "scripts/office.mjs"))!;
+      expect(script).toBeTruthy();
+      expect(await resolveSkillFile(office, "../x")).toBeNull();
+
+      const run = (...args: string[]) =>
+        execFileSync(process.execPath, [script, ...args], {
+          cwd: root,
+          encoding: "utf8",
+        });
+      fs.writeFileSync(
+        path.join(root, "a.md"),
+        "# Titre {{NOM}}\n\nBonjour **{{NOM}}**.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n",
+      );
+      run("md2docx", "a.md", "a.docx");
+      fs.writeFileSync(path.join(root, "r.json"), '{"{{NOM}}":"Awa"}');
+      expect(run("replace", "a.docx", "r.json", "b.docx")).toContain(
+        "2 replacement",
+      );
+      const text = run("read", "b.docx");
+      expect(text).toContain("Titre Awa");
+      expect(text).not.toContain("{{NOM}}");
+
+      // A minimal one-page PDF with a text layer.
+      const objects = [
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+        "<< /Length 46 >>\nstream\nBT /F1 18 Tf 20 100 Td (Bonjour Cayenne) Tj ET\nendstream",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+      ];
+      let pdf = "%PDF-1.4\n";
+      const offsets: number[] = [];
+      objects.forEach((body, index) => {
+        offsets.push(pdf.length);
+        pdf += `${index + 1} 0 obj\n${body}\nendobj\n`;
+      });
+      const xrefAt = pdf.length;
+      pdf += `xref\n0 6\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF\n`;
+      fs.writeFileSync(path.join(root, "t.pdf"), pdf);
+      expect(JSON.parse(run("read", "t.pdf"))[0]).toMatchObject({
+        page: 1,
+        text: "Bonjour Cayenne",
+      });
+
+      fs.writeFileSync(path.join(root, "n.csv"), "Nom;Note\nAwa;12,5\n");
+      run("csv2xlsx", "n.csv", "n.xlsx");
+      expect(run("read", "n.xlsx")).toContain("12.5");
+
+      fs.writeFileSync(
+        path.join(root, "s.json"),
+        '[{"title":"Atelier"},{"title":"Plan","bullets":["Un","Deux"],"notes":"dire bonjour"}]',
+      );
+      run("json2pptx", "s.json", "s.pptx");
+      const slides = JSON.parse(run("read", "s.pptx"));
+      expect(slides[1]).toMatchObject({
+        text: ["Plan", "Un", "Deux"],
+        notes: "dire bonjour",
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("office toolkit safeguards", () => {
+  it("keeps French decimal commas together when a CSV is comma-separated", async () => {
+    // A variable path keeps the 3 MB bundle out of the type-checker.
+    const bundle = "./builtin-assets/office.mjs";
+    const office = (await import(/* @vite-ignore */ bundle)) as {
+      repairDecimalCommas: (rows: string[][]) => string[][];
+    };
+    const rows = office.repairDecimalCommas([
+      ["Nom", "Note"],
+      ["Lea", "14", "5"],
+      ["Paul", "12"],
+    ]);
+    expect(rows).toEqual([
+      ["Nom", "Note"],
+      ["Lea", "14,5"],
+      ["Paul", "12"],
+    ]);
+  }, 60_000);
+});

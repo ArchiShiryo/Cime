@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAlbert } from "@/hooks/useAlbert";
 
 export function AlbertSettings() {
+  const { t } = useTranslation("cimes");
   const { status, connect, testConnection, disconnect } = useAlbert();
   const [editing, setEditing] = useState(false);
   const [apiKey, setApiKey] = useState("");
@@ -17,7 +19,7 @@ export function AlbertSettings() {
       await connect.mutateAsync(apiKey);
       setApiKey("");
       setEditing(false);
-      toast.success("Albert est connecté.");
+      toast.success(t("albert.connected"));
     } catch {
       // Error shown inline below; keep the input.
     }
@@ -26,7 +28,7 @@ export function AlbertSettings() {
   const test = async () => {
     try {
       await testConnection.mutateAsync();
-      toast.success("Albert est connecté.");
+      toast.success(t("albert.connected"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
     }
@@ -35,21 +37,23 @@ export function AlbertSettings() {
   return (
     <div className="space-y-3" data-testid="albert-settings">
       <div className="text-sm">
-        <div className="font-medium">Albert - DINUM</div>
+        <div className="font-medium">{t("albert.name")}</div>
         <div className="text-muted-foreground">
-          État :{" "}
+          {t("albert.state")}{" "}
           {connected ? (
-            <span className="font-medium text-primary">● Connecté</span>
+            <span className="font-medium text-primary">
+              {t("albert.stateConnected")}
+            </span>
           ) : (
-            "○ Non connecté"
+            t("albert.stateDisconnected")
           )}
-          {status ? ` · Modèle : ${status.modelDisplayName}` : ""}
+          {status
+            ? ` · ${t("albert.model", { name: status.modelDisplayName })}`
+            : ""}
         </div>
         {!connected && status?.fromEnvironment && (
           <div className="text-xs text-muted-foreground">
-            Une variable ALBERT_API_KEY existe sur ce poste : enregistrez la clé
-            ici pour lClé fournie par la variable d&apos;environnement
-            ALBERT_API_KEY.apos;utiliser dans Cimes.
+            {t("albert.envKey")}
           </div>
         )}
       </div>
@@ -60,7 +64,7 @@ export function AlbertSettings() {
             type="password"
             autoComplete="off"
             spellCheck={false}
-            placeholder="Clé API Albert"
+            placeholder={t("albert.apiKey")}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             disabled={connect.isPending}
@@ -79,7 +83,7 @@ export function AlbertSettings() {
               {connect.isPending && (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
-              Enregistrer
+              {t("albert.save")}
             </Button>
             <Button
               size="sm"
@@ -90,7 +94,7 @@ export function AlbertSettings() {
                 connect.reset();
               }}
             >
-              Annuler
+              {t("albert.cancel")}
             </Button>
           </div>
         </div>
@@ -108,11 +112,11 @@ export function AlbertSettings() {
               {testConnection.isPending && (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
-              Tester la connexion
+              {t("albert.test")}
             </Button>
           )}
           <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-            {connected ? "Modifier la clé" : "Connecter Albert"}
+            {connected ? t("albert.editKey") : t("albert.connectAlbert")}
           </Button>
           {connected && (
             <Button
@@ -121,7 +125,7 @@ export function AlbertSettings() {
               onClick={() => disconnect.mutate()}
               disabled={disconnect.isPending}
             >
-              Déconnecter Albert
+              {t("albert.disconnect")}
             </Button>
           )}
         </div>

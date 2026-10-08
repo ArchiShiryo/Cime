@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useAtom, useAtomValue } from "jotai";
 import { selectedAppIdAtom } from "@/atoms/appAtoms";
 import { useVersions } from "@/hooks/useVersions";
+import { useLoadApps } from "@/hooks/useLoadApps";
 import { Button } from "../ui/button";
 import {
   Tooltip,
@@ -51,6 +52,9 @@ export function ChatHeader({
   const { t } = useTranslation("chat");
   const appId = useAtomValue(selectedAppIdAtom);
   const { versions, loading: versionsLoading } = useVersions(appId);
+  const { apps } = useLoadApps();
+  // A project has no app to preview, no versions pane and no git banner.
+  const isProject = apps.some((app) => app.id === appId && app.isProject);
   const { navigate } = useRouter();
   const [selectedChatId] = useAtom(selectedChatIdAtom);
   const [terminalOpenByChatId, setTerminalOpenByChatId] = useAtom(
@@ -206,9 +210,10 @@ export function ChatHeader({
 
       {/* Show uncommitted files banner when on a branch and there are uncommitted changes */}
       {/* Hide while streaming to avoid distracting the user */}
-      {!isVersionPaneOpen && branchInfo?.branch && !isStreaming && (
-        <UncommittedFilesBanner appId={appId} />
-      )}
+      {!isProject &&
+        !isVersionPaneOpen &&
+        branchInfo?.branch &&
+        !isStreaming && <UncommittedFilesBanner appId={appId} />}
 
       {/* Why is this pt-0.5? Because the loading bar is h-1 (it always takes space) and we want the vertical spacing to be consistent.*/}
       <div className="@container flex items-center justify-between pb-1.5 pt-0.5">
@@ -222,16 +227,18 @@ export function ChatHeader({
             <PlusCircle size={16} />
             <span>{t("newChat")}</span>
           </Button>
-          <Button
-            onClick={onVersionClick}
-            variant="ghost"
-            className="hidden @6xs:flex cursor-pointer items-center gap-1 text-sm px-2 py-1 rounded-md"
-          >
-            <History size={16} />
-            {versionsLoading
-              ? "..."
-              : `${t("header.versionCount", { count: versions.length })}${versionPostfix}`}
-          </Button>
+          {!isProject && (
+            <Button
+              onClick={onVersionClick}
+              variant="ghost"
+              className="hidden @6xs:flex cursor-pointer items-center gap-1 text-sm px-2 py-1 rounded-md"
+            >
+              <History size={16} />
+              {versionsLoading
+                ? "..."
+                : `${t("header.versionCount", { count: versions.length })}${versionPostfix}`}
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -262,17 +269,19 @@ export function ChatHeader({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <button
-            data-testid="toggle-preview-panel-button"
-            onClick={onTogglePreview}
-            className="cursor-pointer p-2 hover:bg-(--background-lightest) rounded-md"
-          >
-            {isPreviewOpen ? (
-              <PanelRightClose size={20} />
-            ) : (
-              <PanelRightOpen size={20} />
-            )}
-          </button>
+          {!isProject && (
+            <button
+              data-testid="toggle-preview-panel-button"
+              onClick={onTogglePreview}
+              className="cursor-pointer p-2 hover:bg-(--background-lightest) rounded-md"
+            >
+              {isPreviewOpen ? (
+                <PanelRightClose size={20} />
+              ) : (
+                <PanelRightOpen size={20} />
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

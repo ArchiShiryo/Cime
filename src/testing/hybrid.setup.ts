@@ -57,12 +57,13 @@ vi.mock("@/ipc/processors/supabase_dependency_analysis", () => ({
 }));
 
 vi.mock("react-i18next", async () => {
-  const [common, settings, chat, home, errors] = await Promise.all([
+  const [common, settings, chat, home, errors, cimes] = await Promise.all([
     import("@/i18n/locales/en/common.json"),
     import("@/i18n/locales/en/settings.json"),
     import("@/i18n/locales/en/chat.json"),
     import("@/i18n/locales/en/home.json"),
     import("@/i18n/locales/en/errors.json"),
+    import("@/i18n/locales/en/cimes.json"),
   ]);
   const resources: Record<string, unknown> = {
     common: common.default,
@@ -70,6 +71,7 @@ vi.mock("react-i18next", async () => {
     chat: chat.default,
     home: home.default,
     errors: errors.default,
+    cimes: cimes.default,
   };
 
   const readPath = (source: unknown, path: string): unknown =>

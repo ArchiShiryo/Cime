@@ -122,3 +122,6 @@ storybook-static/
 eval-results/
 benchmark-results/
 benchmarks/code-explorer/repos/
+
+# Embedded local-embedding runtime and model (prepared by scripts/prepare-embedding.mjs)
+/resources/

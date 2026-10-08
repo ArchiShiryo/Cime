@@ -28,6 +28,10 @@ import type {
 import { getEnvVar } from "./read_env";
 import { getMaxTokens, getTemperature } from "./token_utils";
 import log from "electron-log";
+import {
+  ALBERT_PROVIDER_ID,
+  albertSupportsReasoningEffort,
+} from "@/shared/albert";
 import { FREE_OPENROUTER_MODEL_NAMES } from "../shared/language_model_constants";
 import { getLanguageModelProviders } from "../shared/language_model_helpers";
 import { resolveBuiltinModelAlias } from "../shared/remote_language_model_catalog";
@@ -44,6 +48,7 @@ import { getOllamaApiUrl } from "../handlers/local_model_ollama_handler";
 import { createFallback } from "./fallback_ai_model";
 import { getDyadEngineBaseUrl } from "./dyad_engine_url";
 import { getTestFetchOption } from "./test_fetch_override";
+import { systemFetch } from "./system_fetch";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import {
   findInvalidProviderApiKeyCharacter,
@@ -957,13 +962,19 @@ function getRegularModelClient(
           includeUsage,
           baseURL: providerConfig.apiBaseUrl,
           apiKey,
-          ...getModelClientFetchOption(),
+          // System proxy and certificates (school networks, Windows).
+          fetch: getModelClientFetchOption().fetch ?? systemFetch,
         });
         return {
           modelClient: {
             model: provider(model.name),
             builtinProviderId: providerConfig.id,
-            reasoningEffortProviderId: providerConfig.id,
+            // Albert models differ: sending an unsupported effort makes the call fail.
+            reasoningEffortProviderId:
+              providerConfig.id !== ALBERT_PROVIDER_ID ||
+              albertSupportsReasoningEffort(model.name)
+                ? providerConfig.id
+                : undefined,
           },
           backupModelClients: [],
         };

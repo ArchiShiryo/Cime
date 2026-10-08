@@ -66,7 +66,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   selectedThemeId: DEFAULT_THEME_ID,
   isRunning: false,
   lastKnownPerformance: undefined,
-  enableSandboxScriptExecution: true,
+  // Cimes: DeepSeek handles directly registered MCP tools more reliably than
+  // scripts in the MustardScript sandbox.
+  enableSandboxScriptExecution: false,
   enableMcpToolSearch: true,
   enableCodeExplorer: true,
   runTypeScriptForWholeProject: false,
@@ -402,6 +404,11 @@ export function writeSettings(settings: Partial<UserSettings>): void {
       settingsForWrite.settings,
       settingsForWrite.preserved,
     );
+    if (newSettings.pisteClientSecret) {
+      newSettings.pisteClientSecret = encrypt(
+        newSettings.pisteClientSecret.value,
+      );
+    }
     if (newSettings.githubAccessToken) {
       newSettings.githubAccessToken = encrypt(
         newSettings.githubAccessToken.value,
@@ -661,6 +668,19 @@ function readExistingSettingsFile(
       } else {
         delete neon.accessToken;
       }
+    }
+  }
+  if (combinedSettings.pisteClientSecret) {
+    const resolved = resolveStoredSecret(
+      combinedSettings.pisteClientSecret,
+      "PISTE client secret",
+      ["pisteClientSecret"],
+      ctx,
+    );
+    if (resolved) {
+      combinedSettings.pisteClientSecret = resolved;
+    } else {
+      delete combinedSettings.pisteClientSecret;
     }
   }
   if (combinedSettings.githubAccessToken) {

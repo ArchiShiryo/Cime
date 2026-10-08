@@ -30,6 +30,8 @@ export function useAlbert() {
 
   const testMutation = useMutation({
     mutationFn: () => ipc.albert.testConnection(),
+    // Testing also refreshes the list of Albert models.
+    onSuccess: refreshAll,
   });
 
   const disconnectMutation = useMutation({

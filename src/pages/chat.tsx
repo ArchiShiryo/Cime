@@ -6,6 +6,7 @@ import {
   type ImperativePanelHandle,
 } from "react-resizable-panels";
 import { ChatPanel } from "../components/ChatPanel";
+import { useLoadApps } from "@/hooks/useLoadApps";
 import { PreviewPanel } from "../components/preview_panel/PreviewPanel";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ const DEFAULT_CHAT_PANEL_SIZE = 50;
 export default function ChatPage() {
   const { id: chatId, appId: routeAppId } = useSearch({ from: "/chat" });
   const navigate = useNavigate();
-  const [isPreviewOpen, setIsPreviewOpen] = useAtom(isPreviewOpenAtom);
+  const [isPreviewOpenSetting, setIsPreviewOpen] = useAtom(isPreviewOpenAtom);
   const [isChatPanelHidden, setIsChatPanelHidden] = useAtom(
     isChatPanelHiddenAtom,
   );
@@ -30,6 +31,12 @@ export default function ChatPage() {
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const setSelectedAppId = useSetAtom(selectedAppIdAtom);
   const { chats, loading } = useChats(selectedAppId);
+  const { apps } = useLoadApps();
+  // A project is a documents workspace: there is no app to preview.
+  const isProject = apps.some(
+    (app) => app.id === selectedAppId && app.isProject,
+  );
+  const isPreviewOpen = isPreviewOpenSetting && !isProject;
   const previousSizeRef = useRef<number>(DEFAULT_CHAT_PANEL_SIZE);
   const isInitialMountRef = useRef(true);
   const selectedAppIdRef = useRef(selectedAppId);

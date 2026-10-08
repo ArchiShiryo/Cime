@@ -4,6 +4,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import { ProviderSettingsGrid } from "@/components/ProviderSettings";
 import { AlbertSettings } from "@/components/AlbertSettings";
+import { WebSearchSettings } from "@/components/WebSearchSettings";
+import { SkillsSettings } from "@/components/SkillsSettings";
+import { KnowledgeSettings } from "@/components/KnowledgeSettings";
+import { ActivityLogSettings } from "@/components/ActivityLogSettings";
+import { PersonalizationSettings } from "@/components/PersonalizationSettings";
+import { OfficialSourcesSettings } from "@/components/OfficialSourcesSettings";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { ipc } from "@/ipc/types";
 import { showSuccess, showError } from "@/lib/toast";
@@ -139,13 +145,22 @@ export default function SettingsPage() {
 
         <div>
           <GeneralSettings appVersion={appVersion} />
+          <SettingsSection
+            id={SECTION_IDS.personalization}
+            title="Personalization"
+            description="How the assistant writes for you."
+          >
+            <div id={SETTING_IDS.personalization}>
+              <PersonalizationSettings />
+            </div>
+          </SettingsSection>
           <WorkflowSettings />
           <AISettings />
 
           <SettingsSection
             id={SECTION_IDS.providers}
             title="Model Providers"
-            description="Connect the AI providers Dyad uses to build and run your apps."
+            description="Connect the AI providers Cimes uses to build and run your apps."
           >
             <AlbertSettings />
             <ProviderSettingsGrid />
@@ -155,7 +170,7 @@ export default function SettingsPage() {
             <SettingsSection
               id={SECTION_IDS.telemetry}
               title="Telemetry"
-              description="Anonymous usage data that helps improve Dyad."
+              description="Anonymous usage data that helps improve Cimes."
             >
               <div id={SETTING_IDS.telemetry} className="space-y-1.5">
                 <TelemetrySwitch />
@@ -176,7 +191,7 @@ export default function SettingsPage() {
           <SettingsSection
             id={SECTION_IDS.integrations}
             title="Integrations"
-            description="Link Dyad to the services you deploy and store data with."
+            description="Link Cimes to the services you deploy and store data with."
           >
             <div id={SETTING_IDS.github}>
               <GitHubIntegration />
@@ -250,16 +265,20 @@ export default function SettingsPage() {
             <div id={SETTING_IDS.enableShellTool}>
               <ShellExperimentSwitch />
             </div>
-            <div id={SETTING_IDS.enableCloudSandbox}>
-              <CloudSandboxExperimentSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.enableCloudSandbox}>
+                <CloudSandboxExperimentSwitch />
+              </div>
+            )}
 
             <div id={SETTING_IDS.enableMultiWindow}>
               <MultiWindowExperimentSwitch />
             </div>
-            <div id={SETTING_IDS.enableClaudeCodeSubscription}>
-              <ClaudeCodeSubscriptionExperimentSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.enableClaudeCodeSubscription}>
+                <ClaudeCodeSubscriptionExperimentSwitch />
+              </div>
+            )}
 
             <div id={SETTING_IDS.enableAppPreviewDomains}>
               <AppPreviewDomainsSwitch />
@@ -269,9 +288,11 @@ export default function SettingsPage() {
               <TestRunInPreviewSwitch />
             </div>
 
-            <div id={SETTING_IDS.autoApproveSafeMcpTools}>
-              <AutoApproveMcpSwitch />
-            </div>
+            {PAID_FEATURES_ENABLED && (
+              <div id={SETTING_IDS.autoApproveSafeMcpTools}>
+                <AutoApproveMcpSwitch />
+              </div>
+            )}
 
             <div
               id={SETTING_IDS.enableOwnServerDeployment}
@@ -461,7 +482,7 @@ export function GeneralSettings({ appVersion }: { appVersion: string | null }) {
     <SettingsSection
       id={SECTION_IDS.general}
       title="General"
-      description="Appearance, language, and how Dyad runs on your machine."
+      description="Appearance, language, and how Cimes runs on your machine."
     >
       <div id={SETTING_IDS.theme} className="flex items-center gap-4">
         <label className="text-sm font-medium text-foreground">Theme</label>
@@ -527,7 +548,7 @@ export function WorkflowSettings() {
     <SettingsSection
       id={SECTION_IDS.workflow}
       title="Workflow"
-      description="How Dyad handles code changes, previews, and notifications."
+      description="How Cimes handles code changes, previews, and notifications."
     >
       <div id={SETTING_IDS.defaultChatMode}>
         <DefaultChatModeSelector />
@@ -598,6 +619,26 @@ export function AISettings() {
     >
       <div id={SETTING_IDS.maxToolCallSteps}>
         <MaxToolCallStepsSelector />
+      </div>
+
+      <div id={SETTING_IDS.webSearchSearxng}>
+        <WebSearchSettings />
+      </div>
+
+      <div id={SETTING_IDS.knowledge}>
+        <KnowledgeSettings />
+      </div>
+
+      <div id={SETTING_IDS.skills}>
+        <SkillsSettings />
+      </div>
+
+      <div id={SETTING_IDS.officialSources}>
+        <OfficialSourcesSettings />
+      </div>
+
+      <div id={SETTING_IDS.activityLog}>
+        <ActivityLogSettings />
       </div>
 
       <div id={SETTING_IDS.contextCompaction} className="space-y-1.5">

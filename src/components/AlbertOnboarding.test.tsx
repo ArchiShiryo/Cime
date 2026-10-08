@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AlbertOnboarding } from "./AlbertOnboarding";
 import { AlbertSettings } from "./AlbertSettings";
+import i18n from "@/i18n";
 
 const mocks = vi.hoisted(() => ({
   getStatus: vi.fn(),
@@ -47,7 +48,8 @@ function renderWithClient(ui: React.ReactElement) {
   );
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await i18n.changeLanguage("fr");
   vi.clearAllMocks();
   mocks.getStatus.mockResolvedValue(DISCONNECTED);
 });

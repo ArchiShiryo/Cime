@@ -1,4 +1,5 @@
 import type { UserSettings } from "@/lib/schemas";
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 
 export function isShellExperimentAvailable({
   settings,
@@ -21,8 +22,10 @@ export function isShellExperimentAvailable({
   isChild?: boolean;
 }): boolean {
   return (
-    !!settings.enableShellTool &&
-    isDyadPro &&
+    // Cimes enables the shell by default (every command still needs the
+    // user's approval, see run_shell); upstream keeps it an opt-in Pro experiment.
+    (settings.enableShellTool ?? !PAID_FEATURES_ENABLED) &&
+    (isDyadPro || !PAID_FEATURES_ENABLED) &&
     !freeModelMode &&
     !readOnly &&
     !planModeOnly &&

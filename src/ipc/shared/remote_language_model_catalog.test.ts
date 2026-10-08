@@ -4,6 +4,12 @@ import {
   SMALL_MODEL_NAME,
 } from "./language_model_constants";
 
+// The catalog tests exercise the remote path, which Cimes switches off.
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  DYAD_SERVICES_ENABLED: true,
+}));
+
 type RemoteAlias = {
   id: string;
   providerId: string;

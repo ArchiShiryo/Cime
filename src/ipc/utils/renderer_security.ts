@@ -37,6 +37,10 @@ function rendererTrustPoliciesMatch(
 const PACKAGED_RENDERER_STATIC_PATHS = new Set([
   "/",
   "/app-details",
+  "/documents",
+  "/project",
+  "/projects",
+  "/skills",
   "/apps",
   "/chat",
   "/library",
