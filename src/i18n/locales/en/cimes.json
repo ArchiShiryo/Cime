@@ -87,6 +87,17 @@
     "intro": "Connect plugins (MCP servers) to give the agent new tools: up-to-date documentation, memory, browser… Each tool call asks for your approval. \"npx\" servers require Node.js to be installed on this computer.",
     "add": "Add plugin"
   },
+  "research": {
+    "label": "Why this approach",
+    "projects": {
+      "title": "Why projects work this way",
+      "text": "Answers rely on your own documents (RAG) instead of the model's memory alone, which reduces invented content and lets it point to its sources. The assistant works in a folder with explicit tools and notes, rather than in an isolated chat. The authors report better factual answers and better handling of long work."
+    },
+    "apps": {
+      "title": "Why apps work this way",
+      "text": "The assistant writes code, runs it and reads the result before answering, instead of only describing what to do. The authors report that agents acting through executable code and well-designed tools solve more tasks."
+    }
+  },
   "projects": {
     "title": "Projects",
     "new": "New project",

@@ -87,6 +87,17 @@
     "intro": "Connectez des plugins (serveurs MCP) pour donner de nouveaux outils à l'agent : documentation à jour, mémoire, navigateur… Chaque appel d'outil demande votre accord. Les serveurs « npx » exigent que Node.js soit installé sur ce poste.",
     "add": "Ajouter un plugin"
   },
+  "research": {
+    "label": "Pourquoi cette approche",
+    "projects": {
+      "title": "Pourquoi les projets fonctionnent ainsi",
+      "text": "Les réponses s'appuient sur vos propres documents (RAG) plutôt que sur la seule mémoire du modèle : moins d'inventions, et possibilité d'indiquer ses sources. L'assistant travaille dans un dossier, avec des outils et des notes explicites, plutôt que dans une conversation isolée. Les auteurs rapportent des réponses plus exactes et une meilleure tenue sur les travaux longs."
+    },
+    "apps": {
+      "title": "Pourquoi les apps fonctionnent ainsi",
+      "text": "L'assistant écrit du code, l'exécute et lit le résultat avant de répondre, au lieu de se contenter de décrire quoi faire. Les auteurs rapportent que les agents qui agissent par du code exécutable et des outils bien conçus réussissent plus de tâches."
+    }
+  },
   "projects": {
     "title": "Projets",
     "new": "Nouveau projet",

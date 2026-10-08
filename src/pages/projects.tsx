@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { FolderKanban, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResearchNote } from "@/components/ResearchNote";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -51,8 +52,9 @@ export default function ProjectsPage() {
       <div className="max-w-5xl space-y-6 pb-12">
         <header className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="mb-2 flex items-center gap-2 text-3xl font-bold text-gray-900 dark:text-white">
               {t("projects.title")}
+              <ResearchNote id="projects" />
             </h1>
           </div>
           <Button onClick={() => setOpen(true)} data-testid="new-project">
