@@ -43,6 +43,16 @@ Vérifié :
 
 Reporté volontairement : politique DSI, tâches guidées, tâches planifiées, OCR manuscrit.
 
+## Récupérer le projet
+
+```sh
+git clone https://github.com/ArchiShiryo/Cime.git
+cd Cime
+git checkout claude/dyad-themes-ucuvhn
+```
+
+Sans git : ZIP de la branche, <https://github.com/ArchiShiryo/Cime/archive/refs/heads/claude/dyad-themes-ucuvhn.zip> (connecté à GitHub si le dépôt est privé). Si le dossier existe déjà : `git fetch origin && git checkout claude/dyad-themes-ucuvhn && git pull`.
+
 ## Lancer en local
 
 ```sh
