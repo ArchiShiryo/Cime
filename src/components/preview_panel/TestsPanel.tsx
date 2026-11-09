@@ -867,7 +867,7 @@ export function TestsPanel() {
   const isRemovingTestDatabase =
     isCleaningUp && runState.isolation?.mode === "neon-branch";
 
-  // With the experiment enabled, "headed" means visible in Dyad's preview
+  // With the experiment enabled, "headed" means visible in Cimes's preview
   // rather than in a separate Playwright browser window.
   const previewRunEnabled = !!settings?.enableTestRunInPreview;
   const runsInPreviewWebContentsView = previewRunEnabled && headed;
@@ -990,7 +990,7 @@ export function TestsPanel() {
     try {
       const { outcome } = await switchKeyAsync({ appId });
       // Only a real switch (or a key that was already current) may retire the
-      // warning. "not-applicable" means the key is still legacy and Dyad
+      // warning. "not-applicable" means the key is still legacy and Cimes
       // couldn't act on it, so the offer has to stay on screen.
       if (outcome === "switched") {
         markSwitched();
@@ -1257,7 +1257,7 @@ export function TestsPanel() {
       ? "Wait for the current test run to finish."
       : isRecordingSession
         ? "A recording session is already in progress."
-        : "Click through your app in the preview and Dyad writes the test for you.";
+        : "Click through your app in the preview and Cimes writes the test for you.";
 
   const enableTesting = useCallback(() => {
     if (selectedAppId == null) return;
@@ -2147,8 +2147,8 @@ function EnableTestingScreen({
             {hasSupabaseIsolation
               ? "Each test uses a temporary account, deleted afterward. Enable database backups before testing."
               : hasManagedDatabase
-                ? "Dyad can't isolate this database in the current setup. These tests can create, update, or delete current data, so we strongly recommend enabling data backups before running them."
-                : "These tests can create, update, or delete real data, and Dyad can't isolate a custom or non-database backend. We strongly recommend enabling data backups before running tests, in case they do something unintended."}
+                ? "Cimes can't isolate this database in the current setup. These tests can create, update, or delete current data, so we strongly recommend enabling data backups before running them."
+                : "These tests can create, update, or delete real data, and Cimes can't isolate a custom or non-database backend. We strongly recommend enabling data backups before running tests, in case they do something unintended."}
           </span>
         </div>
       )}

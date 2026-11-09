@@ -15,6 +15,7 @@ type SettingsSection = {
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: SECTION_IDS.general, label: "General" },
+  { id: SECTION_IDS.personalization, label: "Personalization" },
   { id: SECTION_IDS.workflow, label: "Workflow" },
   { id: SECTION_IDS.ai, label: "AI" },
   { id: SECTION_IDS.providers, label: "Model Providers" },

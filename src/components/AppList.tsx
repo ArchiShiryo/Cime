@@ -25,7 +25,12 @@ export function AppList({ show }: { show?: boolean }) {
   const navigate = useNavigate();
   const selectedAppId = useAtomValue(selectedAppIdAtom);
   const openApp = useOpenApp();
-  const { apps, loading, error } = useLoadApps();
+  const { apps: loadedApps, loading, error } = useLoadApps();
+  // Projects have their own page; this list is for coded apps.
+  const apps = useMemo(
+    () => loadedApps.filter((app) => !app.isProject),
+    [loadedApps],
+  );
   const { collections } = useAppCollections();
   const { settings } = useSettings();
   const enableMultiWindow = !!settings?.enableMultiWindow;

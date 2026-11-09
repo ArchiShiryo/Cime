@@ -1,3 +1,9 @@
+import {
+  NEXT_COVER,
+  NITRO_COVER,
+  PORTAL_COVER,
+  REACT_COVER,
+} from "./template_covers";
 export interface Template {
   id: string;
   title: string;
@@ -23,8 +29,7 @@ export const DEFAULT_TEMPLATE = {
   id: "react",
   title: "React.js Template",
   description: "Uses React.js, Vite, Shadcn, Tailwind and TypeScript.",
-  imageUrl:
-    "https://github.com/user-attachments/assets/5b700eab-b28c-498e-96de-8649b14c16d9",
+  imageUrl: REACT_COVER,
   isOfficial: true,
 };
 
@@ -37,8 +42,7 @@ export const localTemplatesData: Template[] = [
     id: "next",
     title: "Next.js Template",
     description: "Uses Next.js, React.js, Shadcn, Tailwind and TypeScript.",
-    imageUrl:
-      "https://github.com/user-attachments/assets/96258e4f-abce-4910-a62a-a9dff77965f2",
+    imageUrl: NEXT_COVER,
     githubUrl: "https://github.com/dyad-sh/nextjs-template",
     isOfficial: true,
   },
@@ -47,8 +51,7 @@ export const localTemplatesData: Template[] = [
     title: "Fullstack Vite+Nitro Template",
     description:
       "Full-stack React + Vite + Nitro backend with Shadcn, Tailwind, TypeScript.",
-    imageUrl:
-      "https://github.com/user-attachments/assets/5b700eab-b28c-498e-96de-8649b14c16d9",
+    imageUrl: NITRO_COVER,
     githubUrl: "https://github.com/dyad-sh/react-vite-nitro",
     isOfficial: true,
     isExperimental: true,
@@ -57,8 +60,7 @@ export const localTemplatesData: Template[] = [
     id: PORTAL_MINI_STORE_ID,
     title: "Portal: Mini Store Template",
     description: "Uses Neon DB, Payload CMS, Next.js",
-    imageUrl:
-      "https://github.com/user-attachments/assets/ed86f322-40bf-4fd5-81dc-3b1d8a16e12b",
+    imageUrl: PORTAL_COVER,
     githubUrl: "https://github.com/dyad-sh/portal-mini-store-template",
     isOfficial: true,
     isExperimental: true,

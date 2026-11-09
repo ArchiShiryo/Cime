@@ -1,4 +1,5 @@
 import log from "electron-log";
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import { z } from "zod";
 import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import type {
@@ -376,6 +377,8 @@ function convertRemoteCatalog(
 }
 
 async function fetchRemoteCatalog(): Promise<BuiltinLanguageModelCatalog | null> {
+  // Cimes uses the catalog built into the app; nothing is fetched from Dyad.
+  if (!DYAD_SERVICES_ENABLED) return null;
   const controller = new AbortController();
   const catalogUrl = getRemoteLanguageModelCatalogUrl();
   const timeoutId = setTimeout(

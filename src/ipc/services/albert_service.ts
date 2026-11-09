@@ -10,14 +10,21 @@ import {
 } from "@/lib/providerApiKey";
 import { readSettings, writeSettings } from "@/main/settings";
 import {
+  parseAlbertModels,
+  type AlbertModelInfo,
+} from "@/shared/albert_models";
+import { systemFetch } from "@/ipc/utils/system_fetch";
+import {
   ALBERT_API_BASE_URL,
   ALBERT_CONTEXT_WINDOW,
+  ALBERT_KNOWN_MODELS,
   ALBERT_ENV_VAR_NAME,
   ALBERT_MAX_OUTPUT_TOKENS,
   ALBERT_MODEL_DISPLAY_NAME,
   ALBERT_MODEL_ID,
   ALBERT_PROVIDER_DISPLAY_NAME,
   ALBERT_PROVIDER_ID,
+  ALBERT_UNRELIABLE_TOOL_MODEL,
 } from "@/shared/albert";
 import type { AlbertStatus } from "@/ipc/types/albert";
 
@@ -25,6 +32,21 @@ import type { AlbertStatus } from "@/ipc/types/albert";
 const logger = log.scope("albert");
 
 const VALIDATION_TIMEOUT_MS = 15_000;
+
+// Test-only: the packaged-app e2e scripts (testing/cimes-e2e) point Cimes at
+// another OpenAI-compatible endpoint. Ignored unless CIMES_E2E=1.
+function getAlbertBaseUrl(): string {
+  return (
+    (process.env.CIMES_E2E === "1" && process.env.CIMES_E2E_BASE_URL) ||
+    ALBERT_API_BASE_URL
+  );
+}
+function getAlbertModelId(): string {
+  return (
+    (process.env.CIMES_E2E === "1" && process.env.CIMES_E2E_MODEL) ||
+    ALBERT_MODEL_ID
+  );
+}
 
 /**
  * Idempotently creates or repairs the Albert provider and its default model.
@@ -37,14 +59,14 @@ export function ensureAlbertProvider(): void {
     .values({
       id: ALBERT_PROVIDER_ID,
       name: ALBERT_PROVIDER_DISPLAY_NAME,
-      api_base_url: ALBERT_API_BASE_URL,
+      api_base_url: getAlbertBaseUrl(),
       env_var_name: ALBERT_ENV_VAR_NAME,
     })
     .onConflictDoUpdate({
       target: language_model_providers.id,
       set: {
         name: ALBERT_PROVIDER_DISPLAY_NAME,
-        api_base_url: ALBERT_API_BASE_URL,
+        api_base_url: getAlbertBaseUrl(),
         env_var_name: ALBERT_ENV_VAR_NAME,
         updatedAt: new Date(),
       },
@@ -53,7 +75,7 @@ export function ensureAlbertProvider(): void {
 
   const modelValues = {
     displayName: ALBERT_MODEL_DISPLAY_NAME,
-    apiName: ALBERT_MODEL_ID,
+    apiName: getAlbertModelId(),
     customProviderId: ALBERT_PROVIDER_ID,
     max_output_tokens: ALBERT_MAX_OUTPUT_TOKENS,
     context_window: ALBERT_CONTEXT_WINDOW,
@@ -64,7 +86,7 @@ export function ensureAlbertProvider(): void {
     .where(
       and(
         eq(language_models.customProviderId, ALBERT_PROVIDER_ID),
-        eq(language_models.apiName, ALBERT_MODEL_ID),
+        eq(language_models.apiName, getAlbertModelId()),
       ),
     )
     .all();
@@ -83,6 +105,41 @@ export function ensureAlbertProvider(): void {
         .run();
     }
   }
+  // Other Albert chat models (GPT-OSS, Mistral, Qwen…): added when missing,
+  // never overwritten, since a connected key refreshes their real limits.
+  // Remove models that were offered by earlier versions but are unreliable.
+  for (const row of db
+    .select({ id: language_models.id, apiName: language_models.apiName })
+    .from(language_models)
+    .where(eq(language_models.customProviderId, ALBERT_PROVIDER_ID))
+    .all()) {
+    if (ALBERT_UNRELIABLE_TOOL_MODEL.test(row.apiName)) {
+      db.delete(language_models).where(eq(language_models.id, row.id)).run();
+    }
+  }
+  for (const known of ALBERT_KNOWN_MODELS) {
+    const present = db
+      .select({ id: language_models.id })
+      .from(language_models)
+      .where(
+        and(
+          eq(language_models.customProviderId, ALBERT_PROVIDER_ID),
+          eq(language_models.apiName, known.id),
+        ),
+      )
+      .all();
+    if (present.length === 0) {
+      db.insert(language_models)
+        .values({
+          displayName: known.displayName,
+          apiName: known.id,
+          customProviderId: ALBERT_PROVIDER_ID,
+          context_window: known.contextWindow,
+          max_output_tokens: ALBERT_MAX_OUTPUT_TOKENS,
+        })
+        .run();
+    }
+  }
   logger.info("provider initialized");
 }
 
@@ -90,17 +147,16 @@ export function ensureAlbertProvider(): void {
  * Checks the key against GET /v1/models: HTTP 200 and the default model
  * must be listed.
  */
-export async function validateAlbertApiKey(rawKey: string): Promise<void> {
+export async function validateAlbertApiKey(
+  rawKey: string,
+): Promise<AlbertModelInfo[]> {
   const apiKey = normalizeProviderApiKeyInput(rawKey);
   if (!apiKey) {
-    throw new DyadError(
-      "Entrez votre clé API Albert.",
-      DyadErrorKind.Validation,
-    );
+    throw new DyadError("Enter your Albert API key.", DyadErrorKind.Validation);
   }
   if (findInvalidProviderApiKeyCharacter(apiKey)) {
     throw new DyadError(
-      "Cette clé Albert n'est pas valide.\nVérifiez-la puis réessayez.",
+      "This Albert key is not valid.\nCheck it and try again.",
       DyadErrorKind.Validation,
     );
   }
@@ -108,14 +164,16 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
   logger.info("validating API key");
   let response: Response;
   try {
-    response = await fetch(`${ALBERT_API_BASE_URL}/models`, {
+    response = await systemFetch(`${getAlbertBaseUrl()}/models`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(VALIDATION_TIMEOUT_MS),
     });
-  } catch {
-    logger.warn("/v1/models -> unreachable");
+  } catch (error) {
+    logger.warn(
+      `/v1/models -> unreachable (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)})`,
+    );
     throw new DyadError(
-      "Impossible de joindre Albert.\nVérifiez votre connexion réseau puis réessayez.",
+      "Could not reach Albert.\nCheck your network connection and try again.",
       DyadErrorKind.Precondition,
     );
   }
@@ -123,19 +181,19 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
 
   if (response.status === 401 || response.status === 403) {
     throw new DyadError(
-      "Cette clé Albert n'est pas valide.\nVérifiez-la puis réessayez.",
+      "This Albert key is not valid.\nCheck it and try again.",
       DyadErrorKind.Auth,
     );
   }
   if (response.status === 429) {
     throw new DyadError(
-      "Albert limite temporairement les requêtes.\nRéessayez dans un instant.",
+      "Albert is temporarily rate-limiting requests.\nTry again in a moment.",
       DyadErrorKind.RateLimited,
     );
   }
   if (!response.ok) {
     throw new DyadError(
-      `Albert a répondu avec une erreur (HTTP ${response.status}).\nRéessayez plus tard.`,
+      `Albert answered with an error (HTTP ${response.status}).\nTry again later.`,
       DyadErrorKind.External,
     );
   }
@@ -145,21 +203,74 @@ export async function validateAlbertApiKey(rawKey: string): Promise<void> {
     body = await response.json();
   } catch {
     throw new DyadError(
-      "Réponse inattendue d'Albert.\nRéessayez plus tard.",
+      "Unexpected answer from Albert.\nTry again later.",
       DyadErrorKind.External,
     );
   }
   const data = (body as { data?: unknown } | null)?.data;
   const hasModel =
     Array.isArray(data) &&
-    data.some((m) => (m as { id?: unknown } | null)?.id === ALBERT_MODEL_ID);
+    data.some((m) => (m as { id?: unknown } | null)?.id === getAlbertModelId());
   if (!hasModel) {
     throw new DyadError(
-      `Le modèle ${ALBERT_MODEL_ID} n'est pas disponible avec cette clé Albert.`,
+      `The model ${getAlbertModelId()} is not available with this Albert key.`,
       DyadErrorKind.Precondition,
     );
   }
-  logger.info(`${ALBERT_MODEL_ID} available`);
+  logger.info(`${getAlbertModelId()} available`);
+  return parseAlbertModels(data);
+}
+
+/**
+ * Offers every chat model the key can use. The default model keeps its fixed
+ * limits (set by ensureAlbertProvider); others take the limits Albert reports.
+ * Models that are no longer listed are left alone.
+ */
+export function syncAlbertModels(models: AlbertModelInfo[]): void {
+  // Drop models the API no longer lists (and ones known to misbehave) so the
+  // picker never offers something that fails. The default model is kept.
+  if (models.length > 0) {
+    const listed = new Set(models.map((model) => model.id));
+    listed.add(getAlbertModelId());
+    for (const row of db
+      .select({ id: language_models.id, apiName: language_models.apiName })
+      .from(language_models)
+      .where(eq(language_models.customProviderId, ALBERT_PROVIDER_ID))
+      .all()) {
+      if (!listed.has(row.apiName)) {
+        db.delete(language_models).where(eq(language_models.id, row.id)).run();
+      }
+    }
+  }
+  for (const model of models) {
+    if (model.id === getAlbertModelId()) continue;
+    const values = {
+      displayName: model.displayName,
+      apiName: model.id,
+      customProviderId: ALBERT_PROVIDER_ID,
+      max_output_tokens: model.maxOutputTokens,
+      context_window: model.contextWindow,
+    };
+    const existing = db
+      .select({ id: language_models.id })
+      .from(language_models)
+      .where(
+        and(
+          eq(language_models.customProviderId, ALBERT_PROVIDER_ID),
+          eq(language_models.apiName, model.id),
+        ),
+      )
+      .all();
+    if (existing.length === 0) {
+      db.insert(language_models).values(values).run();
+    } else {
+      db.update(language_models)
+        .set({ ...values, updatedAt: new Date() })
+        .where(eq(language_models.id, existing[0].id))
+        .run();
+    }
+  }
+  logger.info(`synced ${models.length} Albert chat models`);
 }
 
 function getStoredKey(): string | undefined {
@@ -182,9 +293,10 @@ export function getAlbertStatus(): AlbertStatus {
 }
 
 export async function connectAlbert(rawKey: string): Promise<AlbertStatus> {
-  await validateAlbertApiKey(rawKey);
+  const models = await validateAlbertApiKey(rawKey);
   const apiKey = normalizeProviderApiKeyInput(rawKey);
   ensureAlbertProvider();
+  syncAlbertModels(models);
 
   // Re-read right before writing: validation awaited the network.
   const settings = readSettings();
@@ -196,7 +308,7 @@ export async function connectAlbert(rawKey: string): Promise<AlbertStatus> {
         apiKey: { value: apiKey },
       },
     },
-    selectedModel: { provider: ALBERT_PROVIDER_ID, name: ALBERT_MODEL_ID },
+    selectedModel: { provider: ALBERT_PROVIDER_ID, name: getAlbertModelId() },
   });
   logger.info("selected as default provider");
   return getAlbertStatus();
@@ -205,12 +317,12 @@ export async function connectAlbert(rawKey: string): Promise<AlbertStatus> {
 export async function testAlbertConnection(): Promise<void> {
   const key = getStoredKey() ?? process.env[ALBERT_ENV_VAR_NAME];
   if (!key) {
-    throw new DyadError(
-      "Albert n'est pas connecté.",
-      DyadErrorKind.Precondition,
-    );
+    throw new DyadError("Albert is not connected.", DyadErrorKind.Precondition);
   }
-  await validateAlbertApiKey(key);
+  // Also refreshes the model list, so new Albert models appear after a test.
+  const models = await validateAlbertApiKey(key);
+  ensureAlbertProvider();
+  syncAlbertModels(models);
 }
 
 export function disconnectAlbert(): AlbertStatus {
@@ -224,4 +336,26 @@ export function disconnectAlbert(): AlbertStatus {
       : others,
   });
   return getAlbertStatus();
+}
+
+/** Base URL and key for other Albert endpoints (embeddings…), or null when not connected. */
+export function getAlbertConnection(): {
+  baseUrl: string;
+  apiKey: string;
+} | null {
+  const apiKey = getStoredKey();
+  return apiKey ? { baseUrl: getAlbertBaseUrl(), apiKey } : null;
+}
+
+/** Re-reads the model list with the stored key (never throws): keeps the picker truthful between connects. */
+export async function refreshAlbertModels(): Promise<void> {
+  const key = getStoredKey();
+  if (!key) return;
+  try {
+    const models = await validateAlbertApiKey(key);
+    ensureAlbertProvider();
+    syncAlbertModels(models);
+  } catch (error) {
+    logger.warn("Could not refresh the Albert model list:", error);
+  }
 }

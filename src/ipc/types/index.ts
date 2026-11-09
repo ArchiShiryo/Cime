@@ -85,6 +85,11 @@ export { miscContracts, miscEvents } from "./misc";
 export { freeAgentQuotaContracts } from "./free_agent_quota";
 export { freeModelQuotaContracts } from "./free_model_quota";
 export { albertContracts } from "./albert";
+export { skillsContracts } from "./skills";
+export { knowledgeContracts } from "./knowledge";
+export { projectsContracts } from "./projects";
+export { activityContracts } from "./activity";
+export { memoryContracts } from "./memory";
 export { splashContracts } from "./splash";
 export { audioContracts } from "./audio";
 export { mediaContracts } from "./media";
@@ -153,6 +158,11 @@ export { miscClient, miscEventClient } from "./misc";
 export { freeAgentQuotaClient } from "./free_agent_quota";
 export { freeModelQuotaClient } from "./free_model_quota";
 export { albertClient } from "./albert";
+export { skillsClient } from "./skills";
+export { knowledgeClient } from "./knowledge";
+export { projectsClient } from "./projects";
+export { activityClient } from "./activity";
+export { memoryClient } from "./memory";
 export { splashClient } from "./splash";
 export { audioClient } from "./audio";
 export { mediaClient } from "./media";
@@ -451,6 +461,8 @@ export type {
 export type { FreeAgentQuotaStatus } from "./free_agent_quota";
 export type { FreeModelQuotaStatus } from "./free_model_quota";
 export type { AlbertStatus } from "./albert";
+export type { SkillSummary, ImportedSkillInfo } from "./skills";
+export type { KnowledgeSourceInfo } from "./knowledge";
 
 // Pro types
 export type { TranscribeAudioParams, TranscribeAudioResult } from "./audio";
@@ -572,6 +584,11 @@ import { miscClient, miscEventClient } from "./misc";
 import { freeAgentQuotaClient } from "./free_agent_quota";
 import { freeModelQuotaClient } from "./free_model_quota";
 import { albertClient } from "./albert";
+import { skillsClient } from "./skills";
+import { knowledgeClient } from "./knowledge";
+import { projectsClient } from "./projects";
+import { activityClient } from "./activity";
+import { memoryClient } from "./memory";
 import { splashClient } from "./splash";
 import { audioClient } from "./audio";
 import { mediaClient } from "./media";
@@ -661,6 +678,11 @@ export const ipc = {
   freeAgentQuota: freeAgentQuotaClient,
   freeModelQuota: freeModelQuotaClient,
   albert: albertClient,
+  skills: skillsClient,
+  knowledge: knowledgeClient,
+  projects: projectsClient,
+  activity: activityClient,
+  memory: memoryClient,
   splash: splashClient,
   audio: audioClient,
   media: mediaClient,

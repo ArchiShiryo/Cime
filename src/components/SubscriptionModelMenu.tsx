@@ -1,3 +1,4 @@
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ipc } from "@/ipc/types";
 import { queryKeys } from "@/lib/queryKeys";
@@ -27,6 +28,14 @@ import {
 } from "@/lib/subscriptionMenuPlacement";
 
 export function SubscriptionModelMenu({ children }: { children?: ReactNode }) {
+  // Cimes has no subscription-backed models: render the content only.
+  if (!PAID_FEATURES_ENABLED) return <>{children}</>;
+  return (
+    <SubscriptionModelMenuContent>{children}</SubscriptionModelMenuContent>
+  );
+}
+
+function SubscriptionModelMenuContent({ children }: { children?: ReactNode }) {
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
   const status = useSubscriptionAccount(open);

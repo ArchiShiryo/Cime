@@ -1,3 +1,4 @@
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import {
   type Template,
   type ApiTemplate,
@@ -25,6 +26,8 @@ function convertApiTemplate(apiTemplate: ApiTemplate): Template {
 
 // Fetch templates from API with caching
 export async function fetchApiTemplates(): Promise<Template[]> {
+  // Cimes offers the templates shipped with the app only.
+  if (!DYAD_SERVICES_ENABLED) return [];
   // Return cached data if available
   if (apiTemplatesCache) {
     return apiTemplatesCache;

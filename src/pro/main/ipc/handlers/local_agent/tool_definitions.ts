@@ -64,6 +64,15 @@ import { planningQuestionnaireTool } from "./tools/planning_questionnaire";
 import { writePlanTool } from "./tools/write_plan";
 import { exitPlanTool } from "./tools/exit_plan";
 import { readGuideTool } from "./tools/read_guide";
+import { readSkillTool } from "./tools/read_skill";
+import { searchDocsTool } from "./tools/search_docs";
+import { officialDataTool, legifranceTool } from "./tools/official_data";
+import { batchFilesTool } from "./tools/batch_files";
+import {
+  memoryForgetTool,
+  memoryReadTool,
+  memorySaveTool,
+} from "./tools/memory";
 import {
   buildExecuteSandboxScriptDescription,
   executeSandboxScriptTool,
@@ -113,6 +122,7 @@ import { DyadError, DyadErrorKind } from "@/errors/dyad_error";
 import { ExecuteAddDependencyError } from "@/ipc/processors/executeAddDependency";
 import { withTrackedMutation } from "./subagents/mutation_activity_tracker";
 import { estimateTokens } from "@/ipc/utils/token_utils";
+import { logActivity, summarizeArgs } from "@/activity/activity_log";
 
 const logger = log.scope("local_agent_tools");
 
@@ -194,6 +204,14 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   restartAppTool,
   reinstallAndRestartAppTool,
   readGuideTool,
+  readSkillTool,
+  searchDocsTool,
+  officialDataTool,
+  legifranceTool,
+  batchFilesTool,
+  memorySaveTool,
+  memoryReadTool,
+  memoryForgetTool,
   executeSandboxScriptTool,
   searchMcpToolsTool,
   getMcpToolSchemaTool,
@@ -490,6 +508,11 @@ export const BUILD_MODE_TOOL_NAMES = [
   "reinstall_and_restart_app",
   "update_todos",
   "read_guide",
+  "read_skill",
+  "search_docs",
+  "official_data",
+  "legifrance",
+  "memory_read",
   "planning_questionnaire",
   "write_app_blueprint",
 ] as const satisfies readonly AgentToolName[];
@@ -878,6 +901,7 @@ export function buildAgentToolSet(
         const toolCallId = executionOptions?.toolCallId;
         let presentationXml = "";
         let executionStarted = false;
+        let startedAt = 0;
         const invocationCtx =
           toolCallId && ctx.onToolActivity
             ? {
@@ -980,6 +1004,7 @@ export function buildAgentToolSet(
             // (including failures) for retry/fallback telemetry
             trackFileEditTool(invocationCtx, tool.name, processedArgs);
             executionStarted = true;
+            startedAt = Date.now();
             const result = await withReferencedAppRead(
               tool.name,
               processedArgs,
@@ -987,6 +1012,15 @@ export function buildAgentToolSet(
               (readCtx) => tool.execute(processedArgs, readCtx),
             );
             recordShellReviewOutcome(ctx, tool.name, processedArgs, { result });
+            logActivity({
+              kind: "tool",
+              name: tool.name,
+              status: "ok",
+              ms: Date.now() - startedAt,
+              chatId: invocationCtx.chatId,
+              appId: invocationCtx.appId,
+              detail: summarizeArgs(processedArgs),
+            });
 
             // Only completed mutations unblock run_tests. Failed tool calls are
             // still present in fileEditTracker for retry/fallback telemetry, but
@@ -1034,6 +1068,15 @@ export function buildAgentToolSet(
           });
           const errorMessage = getToolErrorSummary(error);
           const errorDetails = getToolErrorDisplayDetails(error);
+          logActivity({
+            kind: "tool",
+            name: tool.name,
+            status: "error",
+            ms: startedAt ? Date.now() - startedAt : undefined,
+            chatId: invocationCtx.chatId,
+            appId: invocationCtx.appId,
+            detail: `${summarizeArgs(args)} -> ${errorMessage}`,
+          });
 
           const errorXml = `<dyad-output type="error" message="Tool '${tool.name}' failed: ${escapeXmlAttr(errorMessage)}">${escapeXmlContent(errorDetails)}</dyad-output>`;
           invocationCtx.onXmlComplete(errorXml);

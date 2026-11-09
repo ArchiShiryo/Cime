@@ -9,6 +9,7 @@ import {
   Lock,
 } from "lucide-react";
 import { PAID_FEATURES_ENABLED } from "@/shared/branding";
+import { translateUi } from "@/i18n/ui_translate";
 import {
   Tooltip,
   TooltipTrigger,
@@ -73,14 +74,16 @@ export function HomeChatInput({
   const { apps, loading: appsLoading } = useLoadApps();
   const canSelectApp = !appsLoading && apps.length > 0;
 
-  const typingText = useTypingPlaceholder([
-    "an ecommerce store...",
-    "an information page...",
-    "a landing page...",
-  ]);
+  const typingText = useTypingPlaceholder(
+    [
+      "an ecommerce store...",
+      "an information page...",
+      "a landing page...",
+    ].map(translateUi),
+  );
   const placeholder = selectedApp
-    ? `Send a message to ${selectedApp.name}...`
-    : `Ask Cimes to build ${typingText ?? ""}`;
+    ? `${translateUi("Send a message to")} ${selectedApp.name}...`
+    : `${translateUi("Ask Cimes to build")} ${typingText ?? ""}`;
 
   // Use the attachments hook
   const {

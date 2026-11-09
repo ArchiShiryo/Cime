@@ -1,3 +1,4 @@
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import { db } from "../../db";
 import { messages } from "../../db/schema";
 import { eq } from "drizzle-orm";
@@ -25,6 +26,7 @@ const SERVER_TIME_TIMEOUT_MS = 5000;
  * Falls back to local time if the server is unreachable (but logs a warning).
  */
 async function getServerTime(): Promise<number> {
+  if (!DYAD_SERVICES_ENABLED) return Date.now();
   // In test builds, use local time to allow test manipulation
   if (IS_TEST_BUILD) {
     return Date.now();

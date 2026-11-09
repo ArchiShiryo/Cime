@@ -4,7 +4,9 @@ import {
 } from "@/ipc/services/claude_code/runtime";
 import { getClaudeUsageLimits } from "@/ipc/services/claude_code/usage_limits";
 import { db } from "../../db";
-import { chats, messages } from "../../db/schema";
+import { apps, chats, messages } from "../../db/schema";
+import { getDyadAppPath } from "@/paths/paths";
+import { isProjectPath } from "@/projects/config";
 import { desc, eq, and, like } from "drizzle-orm";
 import type { ChatSearchResult, ChatSummary } from "../../lib/schemas";
 
@@ -413,6 +415,52 @@ export function registerChatHandlers() {
 
     return updated[0];
   });
+
+  createTypedHandler(
+    chatContracts.moveChat,
+    async (event, { chatId, targetAppId }) => {
+      const chat = await db.query.chats.findFirst({
+        columns: { appId: true },
+        where: eq(chats.id, chatId),
+      });
+      if (!chat)
+        throw new DyadError("Conversation not found", DyadErrorKind.NotFound);
+      if (chat.appId === targetAppId) return;
+      const [source, target] = await Promise.all([
+        db.query.apps.findFirst({ where: eq(apps.id, chat.appId) }),
+        db.query.apps.findFirst({ where: eq(apps.id, targetAppId) }),
+      ]);
+      if (!source || !target)
+        throw new DyadError("Project not found", DyadErrorKind.NotFound);
+      // Versions and undo points belong to one folder's history: only move between projects.
+      if (
+        !isProjectPath(getDyadAppPath(source.path)) ||
+        !isProjectPath(getDyadAppPath(target.path))
+      ) {
+        throw new DyadError(
+          "Conversations can only be moved between projects",
+          DyadErrorKind.Validation,
+        );
+      }
+      await mutateChatAfterDrainingStreams({
+        chatId,
+        sender: event.sender,
+        mutation: async () => {
+          db.transaction((tx) => {
+            tx.update(chats)
+              .set({ appId: targetAppId, initialCommitHash: null })
+              .where(eq(chats.id, chatId))
+              .run();
+            // Commit hashes point into the old folder's history.
+            tx.update(messages)
+              .set({ sourceCommitHash: null, commitHash: null })
+              .where(eq(messages.chatId, chatId))
+              .run();
+          });
+        },
+      });
+    },
+  );
 
   createTypedHandler(chatContracts.deleteMessages, async (event, chatId) => {
     const inputSettlement = userInputRegistry.settleChat(chatId);

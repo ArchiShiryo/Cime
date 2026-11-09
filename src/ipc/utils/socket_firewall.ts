@@ -1,3 +1,4 @@
+import { DYAD_SERVICES_ENABLED } from "@/shared/branding";
 import {
   DEFAULT_PTY_COMMAND_TIMEOUT_MS,
   PtyCommandExecutionError,
@@ -673,6 +674,8 @@ async function fetchRemoteAllowBuildsSource(
 async function fetchRemoteAllowBuildsSourceFromNetwork(
   fetcher: AllowBuildsTextFetcher,
 ): Promise<AllowBuildsSource | null> {
+  // Cimes does not fetch the allow-list from Dyad; the built-in one is used.
+  if (!DYAD_SERVICES_ENABLED) return null;
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),

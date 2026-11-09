@@ -15,3 +15,48 @@ export const ALBERT_CONTEXT_WINDOW = 131_072;
 // request's max tokens, and reserving the whole window for output makes every
 // request fail.
 export const ALBERT_MAX_OUTPUT_TOKENS = 8_192;
+
+// Other chat models listed in the Albert API guide (guides.ia.numerique.gouv.fr).
+// They are offered from the first launch; once a key is connected, the limits
+// are refreshed from GET /v1/models (see albert_models.ts). Limits here are
+// conservative until then.
+export interface AlbertKnownModel {
+  id: string;
+  displayName: string;
+  contextWindow: number;
+}
+
+export const ALBERT_KNOWN_MODELS: readonly AlbertKnownModel[] = [
+  {
+    id: "gpt-oss-120b",
+    displayName: "GPT-OSS 120B - Albert",
+    contextWindow: 131_072,
+  },
+  {
+    id: "mistral-medium-2508",
+    displayName: "Mistral Medium - Albert",
+    contextWindow: 131_072,
+  },
+  {
+    id: "mistral-small-3-2-24b-instruct-2506",
+    displayName: "Mistral Small 3.2 24B - Albert",
+    contextWindow: 131_072,
+  },
+  {
+    id: "ministral-3-8b-instruct-2512",
+    displayName: "Ministral 3 8B - Albert",
+    contextWindow: 131_072,
+  },
+];
+
+// Models that print their tool calls as plain text instead of calling the tool
+// (QA on Windows: no consent card, nothing runs). They are not offered.
+export const ALBERT_UNRELIABLE_TOOL_MODEL = /qwen3-coder/i;
+
+// Only these families accept a reasoning_effort value; Mistral models reject
+// "medium" (supported: none, high), so nothing is sent to them.
+export const ALBERT_REASONING_EFFORT_MODEL = /^(deepseek|gpt-oss)/i;
+
+export function albertSupportsReasoningEffort(modelId: string): boolean {
+  return ALBERT_REASONING_EFFORT_MODEL.test(modelId);
+}

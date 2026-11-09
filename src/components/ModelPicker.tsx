@@ -1,4 +1,5 @@
 import { showError } from "@/lib/toast";
+import { translateUi } from "@/i18n/ui_translate";
 import { modelForChatBackend } from "@/shared/execution_backend";
 import { ClaudeCodeSubscriptionMenu } from "./ClaudeCodeSubscriptionMenu";
 import {
@@ -804,6 +805,10 @@ export function ModelPicker() {
   const onModelSelect = (params: ModelSelectParams) =>
     performModelSelect({ ...params, recentModels: normalizedRecentModels });
 
+  const isCustomProvider = (providerId: string) =>
+    providers?.find((candidate) => candidate.id === providerId)?.type ===
+    "custom";
+
   const getProviderDisplayName = (providerId: string) => {
     const provider = providers?.find((p) => p.id === providerId);
     return provider?.name ?? providerId;
@@ -1337,7 +1342,7 @@ export function ModelPicker() {
       <DropdownMenuSub key={`${providerId}-${model.modelName}`}>
         <DropdownMenuSubTrigger
           hideChevron
-          aria-label={`${model.displayName}. Effort: ${effortLabel}. Press Enter to select; press Right Arrow to configure effort.`}
+          aria-label={`${model.displayName}. ${translateUi("Effort:")} ${effortLabel}. ${translateUi("Press Enter to select; press Right Arrow to configure effort.")}`}
           className={cn(
             "relative py-1.5 w-full",
             isSelected &&
@@ -1506,6 +1511,12 @@ export function ModelPicker() {
     tier,
     entries: primaryModelEntries
       .filter((entry) => tierFor(entry.model.dollarSigns) === tier)
+      // Cimes: models that need a paid plan or a missing key are not offered.
+      .filter(
+        (entry) =>
+          PAID_FEATURES_ENABLED ||
+          !isModelLocked(entry.providerId, entry.model),
+      )
       .sort(
         (a, b) =>
           (a.providerId === "openai" ? 0 : 1) -
@@ -1586,39 +1597,44 @@ export function ModelPicker() {
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent className={MODEL_MENU_WIDTH_CLASS} align="start">
-          <ClaudeCodeSubscriptionMenu
-            enabled={
-              !!settings.enableClaudeCodeSubscription &&
-              settings.proModelUsage !== "pro"
-            }
-            onEnabledChange={(enabled) =>
-              updateSettings({
-                enableClaudeCodeSubscription: enabled,
-                ...(enabled ? { proModelUsage: "subscription" as const } : {}),
-              })
-            }
-            connected={
-              !!claudeStatus.data?.connected && !!claudeStatus.data?.compatible
-            }
-            detail={
-              claudeStatus.data?.detail ?? "Checking Claude Code connection…"
-            }
-            onRefresh={() => {
-              void queryClient
-                .fetchQuery({
-                  queryKey: queryKeys.system.claudeCodeStatus,
-                  queryFn: () => ipc.chat.claudeCodeStatus({ force: true }),
-                  staleTime: 0,
+          {PAID_FEATURES_ENABLED && (
+            <ClaudeCodeSubscriptionMenu
+              enabled={
+                !!settings.enableClaudeCodeSubscription &&
+                settings.proModelUsage !== "pro"
+              }
+              onEnabledChange={(enabled) =>
+                updateSettings({
+                  enableClaudeCodeSubscription: enabled,
+                  ...(enabled
+                    ? { proModelUsage: "subscription" as const }
+                    : {}),
                 })
-                .catch((error) => showError(error));
-              void claudeModels.refetch();
-            }}
-            catalogMessage={
-              claudeModels.isError
-                ? "Could not load Claude Code suggestions. Try refreshing."
-                : undefined
-            }
-          />
+              }
+              connected={
+                !!claudeStatus.data?.connected &&
+                !!claudeStatus.data?.compatible
+              }
+              detail={
+                claudeStatus.data?.detail ?? "Checking Claude Code connection…"
+              }
+              onRefresh={() => {
+                void queryClient
+                  .fetchQuery({
+                    queryKey: queryKeys.system.claudeCodeStatus,
+                    queryFn: () => ipc.chat.claudeCodeStatus({ force: true }),
+                    staleTime: 0,
+                  })
+                  .catch((error) => showError(error));
+                void claudeModels.refetch();
+              }}
+              catalogMessage={
+                claudeModels.isError
+                  ? "Could not load Claude Code suggestions. Try refreshing."
+                  : undefined
+              }
+            />
+          )}
           <SubscriptionModelMenu>
             <DropdownMenuSeparator />
             {/* Trial user upgrade banner */}
@@ -1831,9 +1847,23 @@ export function ModelPicker() {
                         >
                           Cloud providers
                         </div>
-                        {otherProviderEntries.map(([providerId, models]) =>
-                          renderProviderSubmenu(providerId, models),
-                        )}
+                        {otherProviderEntries
+                          // Cimes: show Albert and any provider the user set up with
+                          // their own key; custom providers (Albert) come first.
+                          .filter(
+                            ([providerId]) =>
+                              PAID_FEATURES_ENABLED ||
+                              isCustomProvider(providerId) ||
+                              isProviderSetup(providerId),
+                          )
+                          .sort(
+                            (a, b) =>
+                              Number(isCustomProvider(b[0])) -
+                              Number(isCustomProvider(a[0])),
+                          )
+                          .map(([providerId, models]) =>
+                            renderProviderSubmenu(providerId, models),
+                          )}
                       </>
                     )}
                   </DropdownMenuSubContent>

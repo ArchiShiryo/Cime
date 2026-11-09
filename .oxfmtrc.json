@@ -10,6 +10,9 @@
     "**/snapshots/**",
     "e2e-tests/fixtures/**",
     ".claude/skills/fix-issue/scripts/goldens/**",
-    "src/prompts/guides/**"
+    "src/prompts/guides/**",
+    "src/skills/builtin-assets/**",
+    "tools/office-bundle/**",
+    "resources/**"
   ]
 }

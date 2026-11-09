@@ -85,7 +85,7 @@ function renderCallbackPage(options: {
     align-items: center;
     justify-content: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    background: linear-gradient(135deg, #f8fafc 0%, #f4efed 100%);
     color: #0f172a;
   }
   @media (prefers-color-scheme: dark) {
@@ -93,8 +93,8 @@ function renderCallbackPage(options: {
     .card { background: #1f2937; border-color: #374151; }
     .muted { color: #9ca3af; }
     a { color: #93c5fd; }
-    .btn { background: #6366f1; color: #ffffff; }
-    .btn:hover { background: #4f46e5; }
+    .btn { background: #005a5b; color: #ffffff; }
+    .btn:hover { background: #004748; }
   }
   .card {
     max-width: 480px;
@@ -127,7 +127,7 @@ function renderCallbackPage(options: {
     display: inline-block;
     padding: 10px 20px;
     border-radius: 10px;
-    background: #6366f1;
+    background: #005a5b;
     color: #ffffff;
     font-weight: 600;
     text-decoration: none;
@@ -135,7 +135,7 @@ function renderCallbackPage(options: {
     cursor: pointer;
     margin-bottom: 16px;
   }
-  .btn:hover { background: #4f46e5; }
+  .btn:hover { background: #004748; }
 </style>
 </head>
 <body>

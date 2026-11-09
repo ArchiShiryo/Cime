@@ -137,8 +137,8 @@ export function SetupBanner({
           ) : (
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {hasProviderSetup
-                ? "Change how Dyad accesses AI."
-                : "Dyad uses AI to build your app."}
+                ? "Change how Cimes accesses AI."
+                : "Cimes uses AI to build your app."}
             </p>
           )}
         </div>

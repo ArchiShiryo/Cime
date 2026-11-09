@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ const ALBERT_KEY_HELP_URL = "https://albert.sites.beta.gouv.fr/";
  * their input.
  */
 export function AlbertOnboarding() {
+  const { t } = useTranslation("cimes");
   const { connect } = useAlbert();
   const [apiKey, setApiKey] = useState("");
   const [connected, setConnected] = useState(false);
@@ -44,18 +46,18 @@ export function AlbertOnboarding() {
         <img src={logo} alt="Canopé" className="h-8 w-auto" />
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bienvenue dans {APP_DISPLAY_NAME}
+            {t("albert.welcome", { app: APP_DISPLAY_NAME })}
           </p>
           <h1 className="text-2xl font-semibold text-primary">
-            Connecter Albert
+            {t("albert.connectTitle")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Entrez votre clé API Albert pour commencer.
+            {t("albert.enterKey")}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="albert-api-key">Clé API Albert</Label>
+          <Label htmlFor="albert-api-key">{t("albert.apiKey")}</Label>
           <Input
             id="albert-api-key"
             data-testid="albert-api-key-input"
@@ -80,7 +82,7 @@ export function AlbertOnboarding() {
         )}
         {connected && (
           <p className="flex items-center gap-2 text-sm text-primary">
-            <CircleCheck size={16} /> Albert est connecté.
+            <CircleCheck size={16} /> {t("albert.connected")}
           </p>
         )}
 
@@ -93,7 +95,7 @@ export function AlbertOnboarding() {
           {connect.isPending && (
             <Loader2 className="mr-2 size-4 animate-spin" />
           )}
-          Connecter
+          {t("albert.connect")}
         </Button>
 
         <div className="text-xs text-muted-foreground">
@@ -102,7 +104,7 @@ export function AlbertOnboarding() {
             className="underline hover:text-foreground"
             onClick={() => ipc.system.openExternalUrl(ALBERT_KEY_HELP_URL)}
           >
-            Où trouver ma clé ?
+            {t("albert.whereKey")}
           </button>
         </div>
       </form>

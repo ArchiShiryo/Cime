@@ -1,8 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   isShellExperimentAvailable,
   shellExecutionGuidance,
 } from "./shell_capability";
+
+// Upstream behavior is tested with paid features on; Cimes cases flip it.
+const branding = vi.hoisted(() => ({ paid: true }));
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  get PAID_FEATURES_ENABLED() {
+    return branding.paid;
+  },
+}));
 
 const eligible = { settings: { enableShellTool: true }, isDyadPro: true };
 describe("shell experiment eligibility", () => {
@@ -29,6 +38,41 @@ describe("shell experiment eligibility", () => {
       false,
     ),
   );
+  it("is on by default in Cimes, without Pro, but still honors refusals", () => {
+    branding.paid = false;
+    try {
+      expect(
+        isShellExperimentAvailable({ settings: {}, isDyadPro: false }),
+      ).toBe(true);
+      expect(
+        isShellExperimentAvailable({
+          settings: { enableShellTool: false },
+          isDyadPro: false,
+        }),
+      ).toBe(false);
+      expect(
+        isShellExperimentAvailable({
+          settings: { agentToolConsents: { run_shell: "never" } },
+          isDyadPro: false,
+        }),
+      ).toBe(false);
+      expect(
+        isShellExperimentAvailable({
+          settings: { runtimeMode2: "docker" },
+          isDyadPro: false,
+        }),
+      ).toBe(false);
+      expect(
+        isShellExperimentAvailable({
+          settings: {},
+          isDyadPro: false,
+          readOnly: true,
+        }),
+      ).toBe(false);
+    } finally {
+      branding.paid = true;
+    }
+  });
   it("names the platform shell and execution limits", () => {
     expect(shellExecutionGuidance("win32", "C:\\App")).toContain(
       "Use PowerShell syntax, not Bash or cmd.exe syntax",

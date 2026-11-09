@@ -9,6 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
+vi.mock("@/shared/branding", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/branding")>()),
+  PAID_FEATURES_ENABLED: true,
+}));
+
 const { account } = vi.hoisted(() => ({
   account: vi.fn((_open: boolean) => ({ data: { connected: false } })),
 }));

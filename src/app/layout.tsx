@@ -56,6 +56,9 @@ import { useAlbert } from "@/hooks/useAlbert";
 import { ipc } from "@/ipc/types";
 import { shouldShowAlbertOnboarding } from "@/lib/albertOnboarding";
 import { PackageManagerWarningProvider } from "@/package_manager_warnings/PackageManagerWarningProvider";
+import { DEFAULT_LANGUAGE } from "@/shared/branding";
+import { startDomTranslation } from "@/i18n/dom_translator";
+import { getUiDictionary, setUiLanguage } from "@/i18n/ui_translate";
 
 let rendererReadySent = false;
 
@@ -200,11 +203,23 @@ function RootLayoutContent({ children }: { children: ReactNode }) {
   // Sync i18n language with persisted user setting
   useEffect(() => {
     const parsed = LanguageSchema.safeParse(settings?.language);
-    const language = parsed.success ? parsed.data : "en";
+    const language = parsed.success ? parsed.data : DEFAULT_LANGUAGE;
     if (i18n.language !== language) {
       i18n.changeLanguage(language);
     }
   }, [settings?.language]);
+
+  // The interface strings that live inside Dyad's components are translated at
+  // display time (see i18n/dom_translator.ts); English needs nothing.
+  const uiLanguage = LanguageSchema.safeParse(settings?.language).success
+    ? settings?.language
+    : DEFAULT_LANGUAGE;
+  // Children read the language while rendering, so set it before they do.
+  setUiLanguage(uiLanguage === "fr" ? "fr" : "en");
+  useEffect(() => {
+    if (uiLanguage !== "fr") return;
+    return startDomTranslation(getUiDictionary()).stop;
+  }, [uiLanguage]);
 
   useEffect(() => {
     setSelectedComponentsPreview([]);

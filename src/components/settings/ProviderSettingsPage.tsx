@@ -232,7 +232,7 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
           setApiKeyValidationDialog({
             message:
               error?.message ||
-              `Dyad could not verify this ${providerDisplayName} API key.`,
+              `Cimes could not verify this ${providerDisplayName} API key.`,
             apiKey: normalizedValue,
             allowKeepInvalidKey: true,
             errorKind: getErrorKind(error),
@@ -309,7 +309,7 @@ export function ProviderSettingsPage({ provider }: ProviderSettingsPageProps) {
       setApiKeyValidationDialog({
         message:
           error?.message ||
-          `Dyad could not verify this ${providerDisplayName} API key.`,
+          `Cimes could not verify this ${providerDisplayName} API key.`,
         apiKey: normalizedValue,
         allowKeepInvalidKey: false,
         errorKind: getErrorKind(error),

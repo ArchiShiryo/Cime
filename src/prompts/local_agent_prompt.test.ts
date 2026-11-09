@@ -183,7 +183,7 @@ describe("local_agent_prompt", () => {
       supabaseConnected: true,
     });
 
-    expect(prompt).toContain("You are Dyad Implementer");
+    expect(prompt).toContain("You are Cimes Implementer");
     expect(prompt).toContain('<provider_invariants provider="supabase">');
     expect(prompt).toContain(SUPABASE_AUTH_REDIRECT_RULE);
     expect(prompt).toContain(SUPABASE_SERVICE_ROLE_BROWSER_RULE);

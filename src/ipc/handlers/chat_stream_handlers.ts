@@ -193,6 +193,9 @@ import {
 } from "../utils/versioned_codebase_context";
 import { getAiMessagesJsonIfWithinLimit } from "../utils/ai_messages_utils";
 import { readSettings, setSentinelActiveChat } from "@/main/settings";
+import { discoverSkills } from "@/skills/registry";
+import { getProjectPromptBlock, getSkillsPromptBlock } from "@/skills/service";
+import { expandSkillInvocation } from "@/skills/prompt";
 import { recordAppSizeForSession } from "@/main/last_session_store";
 import {
   buildLocalAgentAttachmentInfo,
@@ -1426,6 +1429,20 @@ export function registerChatStreamHandlers() {
         logger.error("Failed to expand slash skill references:", e);
       }
 
+      // `/skill-name args` for Claude-format skills (SKILL.md folders): the
+      // model gets the skill instructions, the chat keeps showing the command.
+      if (userPrompt === req.prompt && /^\/[a-z0-9]/.test(userPrompt)) {
+        try {
+          const skills = await discoverSkills({
+            appPath: getDyadAppPath(chat.app.path),
+            disabled: readSettings().disabledSkills,
+          });
+          userPrompt = expandSkillInvocation(userPrompt, skills) ?? userPrompt;
+        } catch (e) {
+          logger.warn("Failed to expand skill invocation:", e);
+        }
+      }
+
       // Resolve @media: mentions to image attachments
       const mediaRefs = parseMediaMentions(userPrompt);
       if (mediaRefs.length > 0) {
@@ -2356,6 +2373,13 @@ ${componentSnippet}
           reinstallAndRestartAppToolAvailable,
           runBuildToolAvailable,
         });
+        systemPrompt += await getSkillsPromptBlock(
+          getDyadAppPath(updatedChat.app.path),
+        );
+        systemPrompt += getProjectPromptBlock(
+          getDyadAppPath(updatedChat.app.path),
+          updatedChat.app.name,
+        );
 
         // Add information for any legacy caller that still injects full
         // referenced-app codebases.
@@ -2788,6 +2812,13 @@ This conversation includes one or more image attachments. When the user uploads 
             codeExplorerAvailable,
             historyExplorerAvailable,
           });
+          readOnlySystemPrompt += await getSkillsPromptBlock(
+            getDyadAppPath(updatedChat.app.path),
+          );
+          readOnlySystemPrompt += getProjectPromptBlock(
+            getDyadAppPath(updatedChat.app.path),
+            updatedChat.app.name,
+          );
           if (rootDatabasePromptState === "supabase-disconnected") {
             readOnlySystemPrompt +=
               "\n\n" + SUPABASE_DISCONNECTED_SYSTEM_PROMPT;

@@ -38,6 +38,8 @@ export const AppBaseSchema = z.object({
   isFavorite: z.boolean(),
   testingEnabled: z.boolean(),
   collectionId: z.number().nullable(),
+  /** True for a Cimes project (documents workspace) rather than a coded app. */
+  isProject: z.boolean().optional(),
 });
 
 /**
@@ -76,6 +78,8 @@ export const CreateAppParamsSchema = z.object({
   name: z.string().min(1),
   initialChatMode: ChatModeSchema.optional(),
   firstPromptCreationOperationId: z.string().min(1).optional(),
+  /** Create a project from this file-organisation template instead of a coded app. */
+  projectTemplateId: z.string().min(1).optional(),
 });
 
 /**

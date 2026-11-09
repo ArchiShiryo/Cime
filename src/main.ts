@@ -6,6 +6,7 @@ import {
   dialog,
   Menu,
   protocol,
+  session,
   net,
   nativeImage,
   crashReporter,
@@ -46,8 +47,15 @@ import { handleDyadProReturn } from "./main/pro";
 import { IS_TEST_BUILD } from "./ipc/utils/test_utils";
 import { BackupManager } from "./backup_manager";
 import { db, getDatabasePath, initializeDatabase } from "./db";
-import { ensureAlbertProvider } from "./ipc/services/albert_service";
-import { AUTO_UPDATE_AVAILABLE } from "./shared/branding";
+import {
+  ensureAlbertProvider,
+  refreshAlbertModels,
+} from "./ipc/services/albert_service";
+import {
+  AUTO_UPDATE_AVAILABLE,
+  DEFAULT_LANGUAGE,
+  DYAD_SERVICES_ENABLED,
+} from "./shared/branding";
 import { showSplash } from "./splash/splash_window";
 import { apps } from "./db/schema";
 import { eq } from "drizzle-orm";
@@ -422,6 +430,14 @@ if (process.defaultApp) {
 }
 
 export async function onReady() {
+  // No background spell-check dictionary download (Google): switch it off
+  // before any window exists.
+  try {
+    session.defaultSession.setSpellCheckerEnabled(false);
+    session.defaultSession.setSpellCheckerLanguages([]);
+  } catch (error) {
+    logger.warn("Could not disable the spell checker:", error);
+  }
   // Take over the sentinel before any startup work that can crash. Migrations,
   // the keychain and git all run below; if one of them kills us, a sentinel
   // still naming the previous session would report this crash as that one.
@@ -455,6 +471,8 @@ export async function onReady() {
     initializeDatabase();
     try {
       ensureAlbertProvider();
+      const refresh = setTimeout(() => void refreshAlbertModels(), 8_000);
+      refresh.unref?.();
     } catch (error) {
       logger.error("Failed to initialize Albert provider", error);
     }
@@ -916,6 +934,9 @@ const createWindow = ({
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
+      // Chromium downloads spell-check dictionaries from Google; Cimes makes no
+      // such background request.
+      spellcheck: false,
       // transparent: true,
     },
     icon: path.join(app.getAppPath(), "assets/icon/logo.png"),
@@ -1189,7 +1210,10 @@ const createWindow = ({
           { type: "separator" },
           {
             type: "submenu",
-            label: `Correct "${params.misspelledWord}"`,
+            label:
+              UI_LANGUAGE === "fr"
+                ? `Corriger « ${params.misspelledWord} »`
+                : `Correct "${params.misspelledWord}"`,
             submenu: suggestions,
           },
         );
@@ -1324,7 +1348,7 @@ const createApplicationMenu = () => {
       : []),
     // Edit menu - enables keyboard shortcuts for clipboard operations
     {
-      label: "Edit",
+      label: UI_LANGUAGE === "fr" ? "Édition" : "Edit",
       submenu: [
         { role: "undo" as const },
         { role: "redo" as const },
@@ -1339,14 +1363,17 @@ const createApplicationMenu = () => {
     },
     // View menu
     {
-      label: "View",
+      label: UI_LANGUAGE === "fr" ? "Affichage" : "View",
       submenu: [
         {
-          label: "Reload Dyad",
+          label: UI_LANGUAGE === "fr" ? "Recharger Cimes" : "Reload Cimes",
           click: () => BrowserWindow.getFocusedWindow()?.reload(),
         },
         {
-          label: "Force Reload Dyad",
+          label:
+            UI_LANGUAGE === "fr"
+              ? "Forcer le rechargement"
+              : "Force Reload Cimes",
           click: () =>
             BrowserWindow.getFocusedWindow()?.webContents.reloadIgnoringCache(),
         },
@@ -1362,7 +1389,7 @@ const createApplicationMenu = () => {
     },
     // Window menu
     {
-      label: "Window",
+      label: UI_LANGUAGE === "fr" ? "Fenêtre" : "Window",
       submenu: [
         { role: "minimize" as const },
         { role: "zoom" as const },
@@ -1381,6 +1408,31 @@ const createApplicationMenu = () => {
   const appMenu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(appMenu);
 };
+
+// Cimes never talks to Dyad's servers. Chromium resolves host names ahead of
+// time for links it renders (speculative DNS), which QA saw for www.dyad.sh;
+// make those names unresolvable at the network layer. Must run before ready.
+if (!DYAD_SERVICES_ENABLED) {
+  app.commandLine.appendSwitch(
+    "host-resolver-rules",
+    "MAP dyad.sh ~NOTFOUND, MAP *.dyad.sh ~NOTFOUND",
+  );
+}
+
+/** Interface language read straight from the settings file (before the app is ready). */
+function readUiLanguageEarly(): "fr" | "en" {
+  try {
+    const raw = JSON.parse(fs.readFileSync(getSettingsFilePath(), "utf8")) as {
+      language?: string;
+    };
+    return raw.language === "en" ? "en" : DEFAULT_LANGUAGE;
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}
+const UI_LANGUAGE = readUiLanguageEarly();
+// Chromium's own texts (context menu, spell-check menu) follow this switch.
+app.commandLine.appendSwitch("lang", UI_LANGUAGE === "fr" ? "fr" : "en-US");
 
 // Register dyad-media:// protocol for serving persistent media attachments.
 // Must be called before app.whenReady().

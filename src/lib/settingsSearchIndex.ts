@@ -1,5 +1,7 @@
+import { PAID_FEATURES_ENABLED } from "@/shared/branding";
 export const SECTION_IDS = {
   general: "general-settings",
+  personalization: "personalization-settings",
   workflow: "workflow-settings",
   ai: "ai-settings",
   providers: "provider-settings",
@@ -29,6 +31,12 @@ export const SETTING_IDS = {
   chatEventNotification: "setting-chat-event-notification",
   maxToolCallSteps: "setting-max-tool-call-steps",
   contextCompaction: "setting-context-compaction",
+  webSearchSearxng: "setting-web-search-searxng",
+  skills: "setting-skills",
+  activityLog: "setting-activity-log",
+  officialSources: "setting-official-sources",
+  personalization: "setting-personalization",
+  knowledge: "setting-knowledge",
   telemetry: "setting-telemetry",
   github: "setting-github",
   vercel: "setting-vercel",
@@ -70,7 +78,7 @@ type SearchableSettingItem = {
   sectionLabel: string;
 };
 
-export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
+const ALL_SETTINGS_SEARCH_ITEMS: SearchableSettingItem[] = [
   // General Settings
   {
     id: SETTING_IDS.theme,
@@ -260,6 +268,104 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
       "local",
       "loop",
     ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.webSearchSearxng,
+    label: "Web search server (SearXNG)",
+    description:
+      "Optional SearXNG server the agent uses for web search instead of DuckDuckGo and Bing",
+    keywords: [
+      "web",
+      "search",
+      "searxng",
+      "internet",
+      "duckduckgo",
+      "bing",
+      "agent",
+    ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.knowledge,
+    label: "Document base",
+    description:
+      "Documents (PDF, Word, Excel, PowerPoint) the agent can search, with optional semantic search through Albert",
+    keywords: [
+      "documents",
+      "rag",
+      "pdf",
+      "search",
+      "knowledge",
+      "base",
+      "embeddings",
+      "albert",
+    ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.personalization,
+    label: "Writing preferences",
+    description:
+      "How the assistant writes for you: form of address, register, length, signature, your service and role",
+    keywords: [
+      "tone",
+      "ton",
+      "vouvoiement",
+      "tutoiement",
+      "signature",
+      "style",
+      "register",
+      "memory",
+      "personalization",
+    ],
+    sectionId: SECTION_IDS.personalization,
+    sectionLabel: "Personalization",
+  },
+  {
+    id: SETTING_IDS.officialSources,
+    label: "Official sources",
+    description:
+      "Official French public data for the agent (data.gouv.fr, public service directory, companies, addresses, tenders, Légifrance)",
+    keywords: [
+      "legifrance",
+      "piste",
+      "data.gouv",
+      "official",
+      "law",
+      "sirene",
+      "boamp",
+      "annuaire",
+    ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.activityLog,
+    label: "Activity log",
+    description:
+      "Recent agent activity (tools, turns, errors) to debug a problem or attach to a bug report",
+    keywords: [
+      "log",
+      "journal",
+      "activity",
+      "debug",
+      "errors",
+      "support",
+      "bug",
+    ],
+    sectionId: SECTION_IDS.ai,
+    sectionLabel: "AI",
+  },
+  {
+    id: SETTING_IDS.skills,
+    label: "Skills",
+    description:
+      "Claude-compatible skills (SKILL.md) the agent loads on demand: enable, import or remove",
+    keywords: ["skills", "skill", "claude", "import", "agent", "expert"],
     sectionId: SECTION_IDS.ai,
     sectionLabel: "AI",
   },
@@ -463,16 +569,15 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
   },
   {
     id: SETTING_IDS.enableShellTool,
-    label: "Shell tool (Pro)",
+    label: "Shell tool",
     description:
-      "Allow reviewed Bash or PowerShell commands in Pro Agent mode on the local host",
+      "Allow Bash or PowerShell commands in Agent mode on the local host (each command needs approval)",
     keywords: [
       "shell",
       "bash",
       "powershell",
       "command",
       "terminal",
-      "pro",
       "experiment",
     ],
     sectionId: SECTION_IDS.experiments,
@@ -727,3 +832,16 @@ export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] = [
     sectionLabel: "Danger Zone",
   },
 ];
+
+// Cimes has no paid offer: hide the settings that only exist for Dyad Pro or a
+// Claude subscription so a search never leads to a missing control.
+const PAID_ONLY_SETTING_IDS = new Set<string>([
+  SETTING_IDS.enableCloudSandbox,
+  SETTING_IDS.autoApproveSafeMcpTools,
+  SETTING_IDS.enableClaudeCodeSubscription,
+]);
+
+export const SETTINGS_SEARCH_INDEX: SearchableSettingItem[] =
+  ALL_SETTINGS_SEARCH_ITEMS.filter(
+    (item) => PAID_FEATURES_ENABLED || !PAID_ONLY_SETTING_IDS.has(item.id),
+  );

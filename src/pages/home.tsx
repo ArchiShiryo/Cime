@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { ResearchNote } from "@/components/ResearchNote";
 import {
   APP_DISPLAY_NAME,
   PAID_FEATURES_ENABLED,
@@ -186,8 +187,9 @@ export default function HomePage() {
       <div className="flex flex-col items-center justify-center max-w-3xl w-full m-auto p-8 relative">
         <div className="w-full">
           <div className="mb-6 text-center">
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+            <h1 className="flex items-center justify-center gap-2 text-4xl font-semibold tracking-tight text-foreground">
               What do you want to build?
+              <ResearchNote id="apps" />
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
               Describe your idea. {APP_DISPLAY_NAME} will turn it into a working

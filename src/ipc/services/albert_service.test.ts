@@ -50,7 +50,8 @@ describe("albert_service", () => {
 
   it("accepts a key when /v1/models is 200 and lists the model", async () => {
     fetchMock.mockResolvedValue(modelsResponse([ALBERT_MODEL_ID, "other"]));
-    await expect(service.validateAlbertApiKey(KEY)).resolves.toBeUndefined();
+    const models = await service.validateAlbertApiKey(KEY);
+    expect(models.map((m) => m.id)).toEqual([ALBERT_MODEL_ID, "other"]);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://albert.api.etalab.gouv.fr/v1/models");
     expect(init.headers.Authorization).toBe(`Bearer ${KEY}`);
@@ -67,7 +68,7 @@ describe("albert_service", () => {
     fetchMock.mockResolvedValue(new Response("{}", { status: 401 }));
     await expect(service.validateAlbertApiKey(KEY)).rejects.toMatchObject({
       kind: DyadErrorKind.Auth,
-      message: expect.stringContaining("n'est pas valide"),
+      message: expect.stringContaining("is not valid"),
     });
   });
 
@@ -75,7 +76,7 @@ describe("albert_service", () => {
     fetchMock.mockRejectedValue(new TypeError("fetch failed"));
     await expect(service.validateAlbertApiKey(KEY)).rejects.toMatchObject({
       kind: DyadErrorKind.Precondition,
-      message: expect.stringContaining("Impossible de joindre Albert"),
+      message: expect.stringContaining("Could not reach Albert"),
     });
   });
 

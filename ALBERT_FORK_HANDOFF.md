@@ -121,8 +121,7 @@ L'animation affichée par Squirrel pendant l'installation est remplacée par `as
   (fonctions Pro), et **pas de quota de 20 messages/jour** sur le mode Agent.
 - `TELEMETRY_ENABLED = false` : PostHog est initialisé désactivé (aucun appel réseau, aucun script
   externe), tout événement est jeté ; bannière de consentement et section Télémétrie masquées. Les
-  rapports de plantage restent locaux. Restent des téléchargements de catalogues/modèles depuis
-  api.dyad.sh, sans donnée d'usage.
+  rapports de plantage restent locaux. (Les catalogues distants de Dyad ont ensuite été supprimés : voir plus bas.)
 
 ## Onboarding Albert
 
@@ -133,8 +132,83 @@ variable `ALBERT_API_KEY` existent (`src/lib/albertOnboarding.ts`).
 
 Thème clair Canopé par défaut ; bascule clair/sombre en bas de la barre latérale.
 
+## Accès web et shell de l'agent (sans Dyad Pro)
+
+Dans Dyad, la recherche web, la lecture de pages et le shell passent par le serveur payant de Dyad
+(ou une relecture OpenAI). Cimes les remplace par des versions locales.
+
+- **Lecture de pages** (`web_fetch`, `tools/local_web.ts`) : téléchargement via `net.fetch` d'Electron (proxy
+  système et certificats de Windows), puis extraction de l'article (`@mozilla/readability`, Apache-2.0),
+  conversion en Markdown (`turndown`, MIT) avec un DOM léger (`linkedom`, ISC). Taille limitée à 2,5 Mo,
+  redirections suivies avec cookies, **adresses locales et privées refusées** (localhost, 192.168.x, 10.x,
+  169.254.x, IPv6 locales, redirections et résolutions DNS comprises), schémas autres que http/https refusés.
+- **Recherche web** (`web_search`, `tools/local_web_search.ts`) : DuckDuckGo (HTML), puis Bing en repli, sans
+  clé. Un serveur **SearXNG** peut être indiqué dans Paramètres > IA pour des résultats plus fiables.
+  Limite connue : ces moteurs limitent parfois les connexions partagées (réseau d'établissement, serveurs
+  cloud) ; le message d'erreur l'explique à l'agent.
+- **Contenu non fiable** : tout texte venu du web est encadré par `<untrusted_web_content>` avec la consigne de ne
+  jamais suivre les instructions qu'il contient.
+- **Shell** (`run_shell`) : actif par défaut, sans Pro. PowerShell sous Windows, Bash ailleurs, sans profil,
+  60 s par défaut, 5 min au maximum. Chaque commande est relue par **le modèle sélectionné** (DeepSeek via
+  Albert, au lieu du modèle OpenAI imposé en amont) puis **soumise à votre validation** (consentement
+  « Ask » par défaut). Réglable dans Paramètres > Expériences et Autorisations de l'agent.
+- Non repris : `web_crawl` (clonage de sites), génération d'images, recherche de code assistée et sous-agents
+  (services payants de Dyad).
+
 ## Limites
 
 - Fournisseur `custom::albert` plutôt que `albert` : sans effet visible pour l'utilisateur.
 - L'URL du lien « Où trouver ma clé ? » (`https://albert.sites.beta.gouv.fr/`) est à confirmer.
 - Icône Cimes (lettre « C » du logo CANOPÉ sur fond turquoise) : `assets/icon/logo.ico` (Windows, 7 tailles) et `logo.png` (Linux). `logo.icns` (macOS) est resté celui de Dyad.
+
+## Skills (compatibles Claude) et MCP
+
+- **Skills** (`src/skills/`) : un skill est un dossier avec un `SKILL.md` (frontmatter `name` + `description`, champs inconnus ignorés). Sources, de la plus faible à la plus forte priorité : skills intégrés (21, `src/skills/builtin/`), `<userData>/skills/`, `<app>/.claude/skills/`, `<app>/.cimes/skills/`. Le prompt n'embarque que les noms et descriptions ; l'outil `read_skill` charge le contenu et les fichiers du skill (confinés à son dossier). `/nom-du-skill args` charge un skill à la main. Les scripts passent par `run_shell` (relecture + accord). `allowed-tools` est lu mais sans effet. Gestion dans Paramètres > IA > Skills (activer/désactiver, importer un dossier ou un .zip/.skill, supprimer).
+- **MCP** : fonctionne sans Dyad Pro (serveurs stdio via npx et HTTP). Le catalogue de la page Plugins est **embarqué** (`src/ipc/shared/bundled_mcp_catalog.ts` : Context7, Mémoire, Raisonnement pas à pas, Playwright, versions épinglées, vérifiés) : plus aucun appel à api.dyad.sh. Chaque appel d'outil demande l'accord de l'utilisateur. L'expérience « scripts en bac à sable » est désactivée par défaut : DeepSeek utilise mieux les outils MCP enregistrés directement. Node.js doit être installé sur le poste pour les serveurs `npx`.
+- **Réseau** : les appels au modèle (fournisseur personnalisé, donc Albert) et la validation de la clé passent par la pile réseau d'Electron (proxy et certificats du système), comme les outils web.
+
+## Vérifié sur l'application empaquetée (Linux, DeepSeek réel)
+
+Via `testing/cimes-e2e/agent.mjs` contre l'API DeepSeek (variables de test `CIMES_E2E*`, voir README du dossier) : réponse + création d'un fichier ; recherche web + lecture de page + `node -v` dans le shell avec validation ; chargement d'un skill intégré par le modèle ; appel d'un serveur MCP (Mémoire) enregistrant puis relisant des données. `skills.mjs` : liste des skills, bascule, import, catalogue de plugins. **Non vérifié** : Windows (PowerShell, proxy réel, npx), prévisualisation d'une app complète (le pnpm du bac à sable est trop lent), modèle Albert réel (nom `deepseek-v4-flash-0731`).
+
+## Modèles Albert
+
+- Modèles préconfigurés dès le premier lancement (identifiants du guide Albert) : `deepseek-v4-flash-0731` (par défaut), `gpt-oss-120b`, `mistral-medium-2508`, `mistral-small-3-2-24b-instruct-2506`, `ministral-3-8b-instruct-2512`, `qwen3-coder-30b-a3b-instruct` (`src/shared/albert.ts`).
+- À la connexion de la clé et au bouton « Tester », Cimes lit `GET /v1/models` et ajoute tous les modèles de génération de texte que la clé peut utiliser, avec leur fenêtre de contexte (`src/shared/albert_models.ts`). Les modèles qui disparaissent de la liste ne sont pas supprimés.
+- Sélecteur de modèles : seuls Albert et les fournisseurs dont l'utilisateur a saisi une clé sont proposés ; plus de lignes d'abonnement Claude/ChatGPT ni de modèles verrouillés.
+- **Non vérifié** : le comportement des modèles autres que DeepSeek avec les outils de l'agent (appel d'outils, shell, MCP). À tester avec une vraie clé, en commençant par GPT-OSS et Mistral Medium.
+
+## Fichiers Office (Word, Excel, PowerPoint) sur un PC verrouillé
+
+Le skill intégré `office-fichiers` livre un script Node unique (`office.mjs`, ~3,4 Mo, sans dépendance ni installation, hors ligne) écrit dans `<userData>/builtin-skills/office-fichiers/scripts/`. Commandes : `read` (docx, xlsx, pptx et PDF — texte seulement, pas de PDF scanné), `md2docx`, `csv2xlsx`, `xlsx2csv`, `json2pptx`, `replace` (remplacement qui garde la mise en forme, y compris texte coupé en plusieurs « runs »). Le même fichier est une bibliothèque (`docx`, `ExcelJS`, `PptxGenJS`, `mammoth`, `JSZip`) pour les scripts écrits par l'agent. Les commandes passent par le shell de l'agent (relecture + accord).
+
+- Sources : `tools/office-bundle/` (`npm install && npm run build` régénère `src/skills/builtin-assets/office.mjs`, exclu de fmt et lint).
+- Vérifié : test unitaire qui exécute vraiment le script (création, remplacement, relecture) ; tour d'agent réel sur l'application empaquetée (skill chargé, .docx créé et relu).
+- Limites : pas d'aperçu ni de conversion PDF, pas de .doc/.xls/.ppt anciens, macros et graphiques Excel existants non conservés à la réécriture. Les fichiers générés n'ont pas pu être ouverts dans Word/LibreOffice ici (LibreOffice inutilisable dans le bac à sable) : à ouvrir dans Office sur un vrai poste.
+- Prérequis : `node` accessible depuis le shell de l'agent (Cimes utilise son Node géré ou celui du système).
+
+## Base de documents (RAG)
+
+- **Pourquoi pas de serveur ni de GPU** : le découpage, l'index mots-clés (BM25 avec accents, pluriels et mots vides français) et la recherche par similarité (calculée en JavaScript, sans module natif) tournent sur le poste. Seul le calcul des vecteurs passe par Albert (`POST /v1/embeddings`), désactivable dans Paramètres > IA > Base de documents (option « Recherche par le sens »).
+- **Fonctionnement** (`src/knowledge/`) : formats PDF, Word, Excel, PowerPoint, Markdown, TXT, CSV, HTML (extraction par le script du skill `office-fichiers`). Index dans `<userData>/knowledge.db` (SQLite à part). Recherche hybride par fusion de rangs. L'agent dispose de l'outil `search_docs` (résultats traités comme des données non fiables) et d'une ligne dans le prompt quand la base contient des documents.
+- **Albert hors ligne ou sans modèle d'embeddings** : la recherche par mots reste disponible ; les vecteurs manquants sont calculés à la prochaine indexation.
+- **Vérifié** : tests unitaires (découpage, classement, indexation de vrais .docx/.xlsx/.pptx, faux serveur d'embeddings, mode sans envoi à Albert) ; tour d'agent réel sur l'application empaquetée avec `search_docs` (réponse citant le fichier et la page) ; écran de réglages.
+- **Non vérifié** : le vrai point d'accès Albert d'embeddings (nom et `type` du modèle, taille des lots, quotas) ; la détection se fait par `GET /v1/models` (type contenant « embedding » ou nom bge/e5/gte). Pas d'OCR : un PDF scanné est signalé en erreur. Pas de reranking (`/v1/rerank`) pour l'instant.
+
+### Embeddings locaux embarqués (CPU, sans GPU ni réseau)
+
+- **Modèle** : `Xenova/multilingual-e5-small` (int8, 118 Mo, 384 dimensions, multilingue dont le français, licence MIT), exécuté par ONNX Runtime Web (WebAssembly, aucun binaire natif) dans un **processus séparé** (`utilityProcess`, `tools/embedding/embedding_worker.mjs`). Le processus démarre à la demande (≈ 8 s de chargement) et s'arrête après 60 s d'inactivité.
+- **Embarquement** : `npm run package|make|publish` exécute `scripts/prepare-embedding.mjs`, qui télécharge le modèle à une révision Hugging Face figée, vérifie les SHA-256, construit le worker (esbuild) et copie les fichiers WASM dans `resources/` (non versionné, ~150 Mo). Forge les place dans les ressources de l'application (`extraResource`). **Aucun téléchargement n'a lieu chez l'utilisateur.** Le build exige l'accès à huggingface.co (GitHub Actions y accède). Le paquet grossit d'environ 130 Mo.
+- **Modes** (Paramètres > IA > Base de documents) : « Sur ce poste » (par défaut), « Avec Albert », « Mots seulement ». Chaque vecteur retient son moteur ; changer de mode relance l'analyse avec le nouveau moteur. Au démarrage, un rattrapage calcule les vecteurs manquants.
+- **Mesuré (bac à sable Linux, 4 cœurs)** : 3,4 / 5,4 / 11 passages par seconde avec 1 / 2 / 4 threads (passages de ~900 caractères) ; ~1 Go de RAM résidente pendant le calcul. Le worker utilise au plus 4 threads et laisse un cœur libre. À mesurer sur vos PC : ~1 500 passages (≈ 500 pages) ≈ 2 à 8 minutes la première fois.
+- **Vérifié** : tests unitaires avec le vrai modèle (recherche par le sens sans mot commun, changement de mode) ; application empaquetée Linux : le worker démarre dans l'`utilityProcess`, indexe, et l'agent retrouve un document par le sens. **Non vérifié sous Windows** (WASM + utilityProcess, performances, antivirus).
+
+## Aucun contact avec les serveurs Dyad (mis à jour)
+
+`DYAD_SERVICES_ENABLED = false` (`src/shared/branding.ts`) : le catalogue de modèles, la configuration distante, les gabarits communautaires, le catalogue MCP, la liste d'autorisation pnpm, l'heure serveur du quota et les vérifications de facturation utilisent uniquement des données locales. Autres appels de fond supprimés : Monaco (éditeur de code) est maintenant embarqué au lieu d'être chargé depuis cdn.jsdelivr.net ; les illustrations des gabarits sont dessinées localement (plus d'images github.com/user-attachments) ; le téléchargement du dictionnaire de correction orthographique (Google) est désactivé.
+
+**Vérifié** avec `testing/cimes-e2e/netprobe.mjs` sur l'application empaquetée : les domaines Dyad sont redirigés vers un écouteur local (auto-test réussi) et le journal réseau de Chromium est lu pendant la navigation dans 7 pages : **aucune connexion vers Dyad et aucune requête de fond** (liste vide). Reste dépendant d'un service externe uniquement ce que l'utilisateur déclenche : Albert, outils web de l'agent, serveurs MCP (npm), npm/pnpm pour les apps générées, et le clonage GitHub des gabarits non fournis dans l'application (Next.js, Vite+Nitro, Portal).
+
+## Palette
+
+Les familles Tailwind violet, purple, indigo, fuchsia et blue sont remappées vers le turquoise Canopé dans `src/styles/globals.css` (un seul endroit) ; les couleurs en dur (terminal, pages de retour OAuth) ont été recolorées.

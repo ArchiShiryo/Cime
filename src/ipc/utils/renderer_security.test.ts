@@ -72,6 +72,9 @@ describe("packaged renderer route coverage", () => {
   it("trusts plugin detail routes with numeric ids only", () => {
     configureTrustedRenderer({ packagedRendererUrl: PACKAGED_RENDERER_URL });
 
+    for (const route of ["documents", "skills", "projects", "project"]) {
+      expect(isTrustedRendererUrl(`file:///${route}`)).toBe(true);
+    }
     expect(isTrustedRendererUrl("file:///plugins/1")).toBe(true);
     expect(isTrustedRendererUrl("file:///plugins/42/")).toBe(true);
     expect(isTrustedRendererUrl("file:///plugins/abc")).toBe(false);

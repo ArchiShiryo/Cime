@@ -41,7 +41,11 @@ import { DeleteCollectionDialog } from "@/components/DeleteCollectionDialog";
 
 export default function AppsPage() {
   const navigate = useNavigate();
-  const { apps, loading, refreshApps } = useLoadApps();
+  const { apps: loadedApps, loading, refreshApps } = useLoadApps();
+  const apps = useMemo(
+    () => loadedApps.filter((app) => !app.isProject),
+    [loadedApps],
+  );
   const { collections, isLoading: collectionsLoading } = useAppCollections();
   const openApp = useOpenApp();
   const [searchQuery, setSearchQuery] = useState("");
